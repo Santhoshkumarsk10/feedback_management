@@ -49,46 +49,60 @@
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
 
-            <div class="filter-input-search">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-modern form-control-sm" placeholder="Search user, action, description, IP...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search user, action, description, IP..." 
+                :suggestions="$auditSuggestions ?? []"
+                header-title="Audit Log Suggestions"
+            />
 
-            <div style="min-width: 135px;">
-                <select name="action" class="form-select form-select-modern form-select-sm">
-                    <option value="">All Actions</option>
-                    <option value="login" @selected(request('action') === 'login')>Login</option>
-                    <option value="logout" @selected(request('action') === 'logout')>Logout</option>
-                    <option value="create" @selected(request('action') === 'create')>Create</option>
-                    <option value="update" @selected(request('action') === 'update')>Update</option>
-                    <option value="toggle" @selected(request('action') === 'toggle')>Toggle Status</option>
-                    <option value="delete" @selected(request('action') === 'delete')>Delete</option>
-                    <option value="export" @selected(request('action') === 'export')>Export</option>
-                </select>
-            </div>
+            <x-custom-select 
+                name="action" 
+                :value="request('action')" 
+                placeholder="All Actions" 
+                search-placeholder="Search actions..." 
+                icon="bi-activity" 
+                min-width="145px" 
+                :options="[
+                    ['value' => 'login', 'label' => 'Login'],
+                    ['value' => 'logout', 'label' => 'Logout'],
+                    ['value' => 'create', 'label' => 'Create'],
+                    ['value' => 'update', 'label' => 'Update'],
+                    ['value' => 'toggle', 'label' => 'Toggle Status'],
+                    ['value' => 'delete', 'label' => 'Delete'],
+                    ['value' => 'export', 'label' => 'Export'],
+                ]" 
+                auto-submit
+            />
 
-            <div style="min-width: 140px;">
-                <select name="module" class="form-select form-select-modern form-select-sm">
-                    <option value="">All Modules</option>
-                    <option value="plants" @selected(request('module') === 'plants')>Plants</option>
-                    <option value="roles" @selected(request('module') === 'roles')>Roles</option>
-                    <option value="users" @selected(request('module') === 'users')>Users</option>
-                    <option value="questions" @selected(request('module') === 'questions')>Questions</option>
-                    <option value="visits" @selected(request('module') === 'visits')>Visits</option>
-                    <option value="feedbacks" @selected(request('module') === 'feedbacks')>Feedbacks</option>
-                    <option value="auth" @selected(request('module') === 'auth')>Auth</option>
-                    <option value="reports" @selected(request('module') === 'reports')>Reports</option>
-                </select>
-            </div>
+            <x-custom-select 
+                name="module" 
+                :value="request('module')" 
+                placeholder="All Modules" 
+                search-placeholder="Search modules..." 
+                icon="bi-boxes" 
+                min-width="145px" 
+                :options="[
+                    ['value' => 'plants', 'label' => 'Plants'],
+                    ['value' => 'roles', 'label' => 'Roles'],
+                    ['value' => 'users', 'label' => 'Users'],
+                    ['value' => 'questions', 'label' => 'Questions'],
+                    ['value' => 'visits', 'label' => 'Visits'],
+                    ['value' => 'feedbacks', 'label' => 'Feedbacks'],
+                    ['value' => 'auth', 'label' => 'Auth & Security'],
+                    ['value' => 'reports', 'label' => 'Reports'],
+                ]" 
+                auto-submit
+            />
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">From:</span>
-                <input type="date" name="from" value="{{ request('from') }}" class="form-control form-control-modern form-control-sm" style="width: 135px;">
+                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
             </div>
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">To:</span>
-                <input type="date" name="to" value="{{ request('to') }}" class="form-control form-control-modern form-control-sm" style="width: 135px;">
+                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
             </div>
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">

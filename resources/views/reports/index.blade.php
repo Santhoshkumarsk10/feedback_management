@@ -120,12 +120,12 @@
         <form method="GET" action="{{ route('reports.index') }}" class="d-flex flex-wrap align-items-center gap-2">
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted fw-bold">From:</span>
-                <input type="date" name="from" value="{{ request('from') }}" class="form-control form-control-modern form-control-sm" style="width: 140px;">
+                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
             </div>
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted fw-bold">To:</span>
-                <input type="date" name="to" value="{{ request('to') }}" class="form-control form-control-modern form-control-sm" style="width: 140px;">
+                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
             </div>
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">

@@ -62,27 +62,37 @@
                 <input type="hidden" name="role" value="{{ request('role') }}">
             @endif
 
-            <div class="filter-input-search">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-modern form-control-sm" placeholder="Search by name, email, department, mobile...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search by name, email, department, mobile..." 
+                :suggestions="$userSuggestions ?? []"
+                header-title="User Directory Suggestions"
+            />
 
-            <div style="min-width: 170px;">
-                <select name="plant_id" class="form-select form-select-modern form-select-sm" onchange="this.form.submit()">
-                    <option value="">All Facilities / Plants</option>
-                    @foreach($plants as $pl)
-                        <option value="{{ $pl->id }}" @selected(request('plant_id') == $pl->id)>{{ $pl->code }} ({{ Str::limit($pl->name, 20) }})</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-custom-select 
+                name="plant_id" 
+                :value="request('plant_id')" 
+                placeholder="All Facilities / Plants" 
+                search-placeholder="Search facilities & codes..." 
+                icon="bi-buildings" 
+                min-width="210px" 
+                :options="$plants->map(fn($pl) => ['value' => $pl->id, 'label' => $pl->name, 'code' => $pl->code])" 
+                auto-submit
+            />
 
-            <div style="min-width: 140px;">
-                <select name="status" class="form-select form-select-modern form-select-sm" onchange="this.form.submit()">
-                    <option value="">All Statuses</option>
-                    <option value="active" @selected(request('status') === 'active')>Active Only</option>
-                    <option value="inactive" @selected(request('status') === 'inactive')>Inactive Only</option>
-                </select>
-            </div>
+            <x-custom-select 
+                name="status" 
+                :value="request('status')" 
+                placeholder="All Statuses" 
+                search-placeholder="Search status..." 
+                icon="bi-check-circle" 
+                min-width="145px" 
+                :options="[
+                    ['value' => 'active', 'label' => 'Active Only', 'dot' => 'active'],
+                    ['value' => 'inactive', 'label' => 'Inactive Only', 'dot' => 'inactive'],
+                ]" 
+                auto-submit
+            />
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
                 <i class="bi bi-funnel-fill"></i> Filter

@@ -30,6 +30,19 @@ class RoleController extends Controller
 
         $roles = $query->orderByDesc('is_system')->orderBy('name')->paginate(10)->withQueryString();
 
+        $roleSuggestions = Role::select('id', 'name', 'slug', 'description', 'is_system')
+            ->orderByDesc('is_system')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'code' => $r->slug,
+                    'name' => $r->name,
+                    'sub' => $r->description ?? ($r->is_system ? 'System Core Role' : 'Custom Operational Role'),
+                    'value' => $r->name,
+                ];
+            });
+
         return view('roles.index', [
             'roles' => $roles,
             'tabCounts' => [
@@ -38,6 +51,7 @@ class RoleController extends Controller
                 'custom' => $customCount,
             ],
             'currentTab' => $tab,
+            'roleSuggestions' => $roleSuggestions,
         ]);
     }
 

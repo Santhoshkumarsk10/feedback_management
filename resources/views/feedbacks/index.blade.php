@@ -49,32 +49,42 @@
                 <input type="hidden" name="tier" value="{{ request('tier') }}">
             @endif
 
-            <div style="min-width: 170px;">
-                <select name="organizer_id" class="form-select form-select-modern form-select-sm">
-                    <option value="">All Organizers</option>
-                    @foreach($organizers as $o)
-                        <option value="{{ $o->id }}" @selected(request('organizer_id') == $o->id)>{{ $o->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-custom-select 
+                name="organizer_id" 
+                :value="request('organizer_id')" 
+                placeholder="All Organizers" 
+                search-placeholder="Search organizers..." 
+                icon="bi-person-badge" 
+                min-width="180px" 
+                :options="$organizers->map(fn($o) => ['value' => $o->id, 'label' => $o->name])" 
+                auto-submit
+            />
 
-            <div style="min-width: 150px;">
-                <select name="rating" class="form-select form-select-modern form-select-sm">
-                    <option value="">Exact Star Rating</option>
-                    @foreach(range(5, 1) as $r)
-                        <option value="{{ $r }}" @selected(request('rating') == $r)>{{ $r }} ★ {{ $r >= 4 ? '(High)' : ($r <= 2 ? '(Low)' : '') }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-custom-select 
+                name="rating" 
+                :value="request('rating')" 
+                placeholder="Exact Star Rating" 
+                search-placeholder="Search rating..." 
+                icon="bi-star-fill" 
+                min-width="170px" 
+                :options="[
+                    ['value' => '5', 'label' => '5 ★ (High / Excellent)'],
+                    ['value' => '4', 'label' => '4 ★ (Good)'],
+                    ['value' => '3', 'label' => '3 ★ (Attention / Neutral)'],
+                    ['value' => '2', 'label' => '2 ★ (Poor)'],
+                    ['value' => '1', 'label' => '1 ★ (Critical)'],
+                ]" 
+                auto-submit
+            />
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">From:</span>
-                <input type="date" name="from" value="{{ request('from') }}" class="form-control form-control-modern form-control-sm" title="From Date" style="width: 135px;">
+                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
             </div>
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">To:</span>
-                <input type="date" name="to" value="{{ request('to') }}" class="form-control form-control-modern form-control-sm" title="To Date" style="width: 135px;">
+                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
             </div>
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">

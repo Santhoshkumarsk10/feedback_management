@@ -36,6 +36,19 @@ class AuditLogController extends Controller
 
         $logs = $query->latest('id')->paginate(10)->withQueryString();
 
+        $auditSuggestions = AuditLog::select('id', 'user_name', 'action', 'module', 'description', 'ip_address')
+            ->latest('id')
+            ->take(30)
+            ->get()
+            ->map(function ($l) {
+                return [
+                    'code' => strtoupper($l->action ?? $l->module),
+                    'name' => $l->description ?? ($l->action . ' on ' . $l->module),
+                    'sub' => ($l->user_name ?? 'System') . ($l->ip_address ? ' • ' . $l->ip_address : ''),
+                    'value' => $l->description ?? $l->action,
+                ];
+            });
+
         return view('audit_logs.index', [
             'logs' => $logs,
             'tabCounts' => [
@@ -45,6 +58,7 @@ class AuditLogController extends Controller
                 'operations' => $operationsCount,
             ],
             'currentTab' => $tab,
+            'auditSuggestions' => $auditSuggestions,
         ]);
     }
 

@@ -32,6 +32,19 @@ class VisitController extends Controller
 
         $visits = $query->latest('visit_date')->latest('id')->paginate(10)->withQueryString();
 
+        $visitSuggestions = Visit::select('id', 'visitor_name', 'visitor_company', 'visitor_mobile')
+            ->latest('id')
+            ->take(30)
+            ->get()
+            ->map(function ($v) {
+                return [
+                    'code' => $v->visitor_company ? substr($v->visitor_company, 0, 8) : null,
+                    'name' => $v->visitor_name,
+                    'sub' => ($v->visitor_company ? $v->visitor_company . ' • ' : '') . $v->visitor_mobile,
+                    'value' => $v->visitor_name,
+                ];
+            });
+
         return view('visits.index', [
             'visits' => $visits,
             'organizers' => User::where('role', 'organizer')->orderBy('name')->get(['id', 'name']),
@@ -41,6 +54,7 @@ class VisitController extends Controller
                 'pending' => $pendingCount,
             ],
             'currentTab' => $tab,
+            'visitSuggestions' => $visitSuggestions,
         ]);
     }
 }

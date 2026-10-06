@@ -43,28 +43,32 @@
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
 
-            <div class="filter-input-search">
-                <i class="bi bi-search"></i>
-                <input name="q" value="{{ request('q') }}" class="form-control form-control-modern form-control-sm" placeholder="Search visitor name, company, mobile...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search visitor name, company, mobile..." 
+                :suggestions="$visitSuggestions ?? []"
+                header-title="Visitor Directory Suggestions"
+            />
 
-            <div style="min-width: 170px;">
-                <select name="organizer_id" class="form-select form-select-modern form-select-sm">
-                    <option value="">All Organizers</option>
-                    @foreach($organizers as $o)
-                        <option value="{{ $o->id }}" @selected(request('organizer_id') == $o->id)>{{ $o->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-custom-select 
+                name="organizer_id" 
+                :value="request('organizer_id')" 
+                placeholder="All Organizers" 
+                search-placeholder="Search organizers..." 
+                icon="bi-person-badge" 
+                min-width="180px" 
+                :options="$organizers->map(fn($o) => ['value' => $o->id, 'label' => $o->name])" 
+                auto-submit
+            />
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">From:</span>
-                <input type="date" name="from" value="{{ request('from') }}" class="form-control form-control-modern form-control-sm" title="From Date" style="width: 135px;">
+                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
             </div>
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted">To:</span>
-                <input type="date" name="to" value="{{ request('to') }}" class="form-control form-control-modern form-control-sm" title="To Date" style="width: 135px;">
+                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
             </div>
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
