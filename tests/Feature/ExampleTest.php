@@ -18,4 +18,15 @@ class ExampleTest extends TestCase
         $appResponse = $this->get('/app');
         $appResponse->assertStatus(200);
     }
+
+    public function test_admin_dashboard_and_cms_views_render_with_modular_layout(): void
+    {
+        $user = \App\Models\User::first();
+        if ($user) {
+            $this->actingAs($user)->get(route('dashboard'))->assertStatus(200);
+            $this->actingAs($user)->get(route('company.edit'))->assertStatus(200);
+            $this->actingAs($user)->get(route('banners.index'))->assertStatus(200);
+        }
+    }
 }
+

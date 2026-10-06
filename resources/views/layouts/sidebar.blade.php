@@ -1,0 +1,96 @@
+<!-- Mobile Sidebar Backdrop Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Enterprise Sidebar -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand Header with Shibaura Logo -->
+    <a href="{{ route('dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-logo-card">
+            <img src="{{ $currentCompany?->logo_url ?? asset('images/shibaura-logo-cropped.webp') }}" alt="{{ $currentCompany?->name ?? 'Shibaura Machine' }}" class="sidebar-logo-img">
+        </div>
+        <div class="sidebar-brand-badge">
+            <span class="d-flex align-items-center gap-1">
+                <span class="status-dot active"></span>
+                <span>Plant Operations</span>
+            </span>
+            <span class="badge-tag">Feedback</span>
+        </div>
+    </a>
+
+    <!-- Navigation Menu -->
+    <div class="sidebar-menu">
+        <div class="menu-category">Analytics & Overview</div>
+        <a class="nav-item-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="menu-category">System Masters</div>
+        <a class="nav-item-link {{ request()->routeIs('plants.*') ? 'active' : '' }}" href="{{ route('plants.index') }}">
+            <i class="bi bi-buildings-fill"></i>
+            <span>Plant Master</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>Role Master</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+            <i class="bi bi-people-fill"></i>
+            <span>User Directory</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('questions.*') ? 'active' : '' }}" href="{{ route('questions.index') }}">
+            <i class="bi bi-patch-question-fill"></i>
+            <span>Feedback Form</span>
+        </a>
+
+        <div class="menu-category">Operations & Visits</div>
+        <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}" href="{{ route('visits.index') }}">
+            <i class="bi bi-person-badge-fill"></i>
+            <span>Plant Visitors</span>
+        </a>
+
+        <div class="menu-category">Brand & Content CMS</div>
+        <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}" href="{{ route('company.edit') }}">
+            <i class="bi bi-building-gear"></i>
+            <span>Company Profile</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}" href="{{ route('banners.index') }}">
+            <i class="bi bi-images"></i>
+            <span>Banner CMS</span>
+        </a>
+
+        <div class="menu-category">Insights & Logs</div>
+        <a class="nav-item-link {{ request()->routeIs('feedbacks.*') ? 'active' : '' }}" href="{{ route('feedbacks.index') }}">
+            <i class="bi bi-chat-square-heart-fill"></i>
+            <span>Feedback Logs</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}">
+            <i class="bi bi-bar-chart-line-fill"></i>
+            <span>Reports & Exports</span>
+        </a>
+        <a class="nav-item-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" href="{{ route('audit-logs.index') }}">
+            <i class="bi bi-clock-history"></i>
+            <span>Audit Logs</span>
+        </a>
+    </div>
+
+    <!-- Sidebar Footer / Auth Profile -->
+    <div class="sidebar-footer">
+        <div class="user-profile-badge">
+            <div class="user-avatar-initials">
+                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+            </div>
+            <div class="user-info-text">
+                <div class="user-name-title">{{ auth()->user()->name ?? 'Administrator' }}</div>
+                <span class="user-role-badge">{{ auth()->user()->role ?? 'admin' }}</span>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('logout') }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Log Out</span>
+            </button>
+        </form>
+    </div>
+</aside>
