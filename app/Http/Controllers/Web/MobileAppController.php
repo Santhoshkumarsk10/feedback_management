@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\Banner;
+use App\Models\Company;
 use App\Models\Feedback;
 use App\Models\Plant;
 use App\Models\Question;
@@ -33,11 +35,20 @@ class MobileAppController extends Controller
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
 
+        $banners = Banner::active()
+            ->forTarget('mobile')
+            ->ordered()
+            ->get();
+
+        $company = Company::current();
+
         return view('app.mobile', [
             'plants' => $plants,
             'organizers' => $organizers,
             'questions' => $questions,
             'sections' => $sections,
+            'banners' => $banners,
+            'company' => $company,
         ]);
     }
 

@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\AuditLog;
 
 /**
  * superadmin -> manages superadmin/admin/organizer and all custom roles
@@ -54,6 +55,19 @@ class UserController extends Controller
         $plants = Plant::orderBy('code')->get();
         $availableRoles = Role::whereIn('slug', $manageableSlugs)->get();
 
+        $userSuggestions = User::whereIn('role', $manageableSlugs)
+            ->select('id', 'name', 'email', 'role', 'department')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'code' => strtoupper(substr($u->role, 0, 4)),
+                    'name' => $u->name,
+                    'sub' => $u->email . ($u->department ? ' • ' . $u->department : ''),
+                    'value' => $u->name,
+                ];
+            });
+
         return view('users.index', [
             'users' => $users,
             'roles' => $manageableSlugs,
@@ -61,6 +75,7 @@ class UserController extends Controller
             'plants' => $plants,
             'roleCounts' => $roleCounts,
             'totalUsers' => $totalUsers,
+            'userSuggestions' => $userSuggestions,
         ]);
     }
 
@@ -84,7 +99,7 @@ class UserController extends Controller
         $data = $this->validated($request);
         $user = User::create($data);
 
-        \App\Models\AuditLog::record('create', 'users', "Registered user account: {$user->name} ({$user->role})", [
+        AuditLog::record('create', 'users', "Registered user account: {$user->name} ({$user->role})", [
             'user_id' => $user->id,
             'plant_id' => $user->plant_id,
             'role' => $user->role,
@@ -128,7 +143,7 @@ class UserController extends Controller
         }
         $user->update($data);
 
-        \App\Models\AuditLog::record('update', 'users', "Updated user account profile: {$user->name}", [
+            AuditLog::record('update', 'users', "Updated user account profile: {$user->name}", [
             'user_id' => $user->id,
             'changes' => $user->getChanges(),
         ]);
@@ -143,7 +158,7 @@ class UserController extends Controller
         $user->update(['is_active' => ! $user->is_active]);
         $status = $user->is_active ? 'activated' : 'deactivated';
 
-        \App\Models\AuditLog::record('toggle', 'users', "Toggled user active state: {$user->name} is now {$status}");
+        AuditLog::record('toggle', 'users', "Toggled user active state: {$user->name} is now {$status}");
 
         return back()->with('success', 'Status updated.');
     }
@@ -156,7 +171,7 @@ class UserController extends Controller
         $role = $user->role;
         $user->delete();
 
-        \App\Models\AuditLog::record('delete', 'users', "Deleted user account: {$name} ({$role})");
+        AuditLog::record('delete', 'users', "Deleted user account: {$name} ({$role})");
 
         return redirect()->route('users.index')->with('success', 'User deleted.');
     }

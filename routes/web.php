@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\BannerController;
+use App\Http\Controllers\Web\CompanyController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\FeedbackController;
 use App\Http\Controllers\Web\PlantController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\MobileAppController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
+use App\Http\Controllers\Web\AuditLogController;
 use Illuminate\Support\Facades\Route;
 
 // Mobile Tablet & APK Application (Unified Visitor & Organizer)
@@ -55,6 +58,14 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin'])->group(fun
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     // Audit Logs Trail
-    Route::get('audit-logs', [\App\Http\Controllers\Web\AuditLogController::class, 'index'])->name('audit-logs.index');
-    Route::get('audit-logs/{auditLog}', [\App\Http\Controllers\Web\AuditLogController::class, 'show'])->name('audit-logs.show');
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+
+    // Company Brand & Profile CMS
+    Route::get('company', [CompanyController::class, 'edit'])->name('company.edit');
+    Route::put('company', [CompanyController::class, 'update'])->name('company.update');
+
+    // CMS Banners Management
+    Route::resource('banners', BannerController::class)->except('show');
+    Route::patch('banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
 });

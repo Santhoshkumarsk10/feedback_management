@@ -30,6 +30,10 @@ class PlantController extends Controller
 
         $plants = $query->orderBy('code')->paginate(10)->withQueryString();
 
+        $allPlantSuggestions = Plant::select('id', 'name', 'code', 'location')
+            ->orderBy('code')
+            ->get();
+
         return view('plants.index', [
             'plants' => $plants,
             'tabCounts' => [
@@ -38,6 +42,7 @@ class PlantController extends Controller
                 'inactive' => $inactiveCount,
             ],
             'currentTab' => $statusTab,
+            'allPlantSuggestions' => $allPlantSuggestions,
         ]);
     }
 

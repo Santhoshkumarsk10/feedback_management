@@ -35,7 +35,7 @@
         <!-- Brand Header with Shibaura Logo -->
         <a href="{{ route('dashboard') }}" class="sidebar-brand">
             <div class="sidebar-logo-card">
-                <img src="{{ asset('images/shibaura-logo-cropped.webp') }}" alt="Shibaura Machine" class="sidebar-logo-img">
+                <img src="{{ $currentCompany?->logo_url ?? asset('images/shibaura-logo-cropped.webp') }}" alt="{{ $currentCompany?->name ?? 'Shibaura Machine' }}" class="sidebar-logo-img">
             </div>
             <div class="sidebar-brand-badge">
                 <span class="d-flex align-items-center gap-1">
@@ -76,6 +76,16 @@
             <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}" href="{{ route('visits.index') }}">
                 <i class="bi bi-person-badge-fill"></i>
                 <span>Plant Visitors</span>
+            </a>
+
+            <div class="menu-category">Brand & Content CMS</div>
+            <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}" href="{{ route('company.edit') }}">
+                <i class="bi bi-building-gear"></i>
+                <span>Company Profile</span>
+            </a>
+            <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}" href="{{ route('banners.index') }}">
+                <i class="bi bi-images"></i>
+                <span>Banner CMS</span>
             </a>
 
             <div class="menu-category">Insights & Logs</div>

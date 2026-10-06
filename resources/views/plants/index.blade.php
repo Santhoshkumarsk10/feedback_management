@@ -45,15 +45,17 @@
 
     <!-- Filter Controls Bar -->
     <div class="filter-controls-body">
-        <form method="GET" action="{{ route('plants.index') }}" class="d-flex flex-wrap align-items-center gap-2">
+        <form method="GET" action="{{ route('plants.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="plantSearchForm">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
 
-            <div class="filter-input-search">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-modern form-control-sm" placeholder="Search plant code, facility name, location...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search plant code, facility name, location..." 
+                :suggestions="$allPlantSuggestions ?? []"
+                header-title="Plant Directory Suggestions"
+            />
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
                 <i class="bi bi-funnel-fill"></i> Filter

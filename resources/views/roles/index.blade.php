@@ -50,10 +50,12 @@
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
 
-            <div class="filter-input-search">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-modern form-control-sm" placeholder="Search role title, identifier slug, description...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search role title, identifier slug, description..." 
+                :suggestions="$roleSuggestions ?? []"
+                header-title="Role Directory Suggestions"
+            />
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
                 <i class="bi bi-funnel-fill"></i> Filter

@@ -3,6 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Schema;
+
+use App\Models\Company;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +16,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (file_exists(app_path('helpers.php'))) {
+            require_once app_path('helpers.php');
+        }
     }
 
     /**
@@ -19,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Pagination\Paginator::useBootstrapFive();
+        Paginator::useBootstrapFive();
+
+        View::composer('*', function ($view) {
+            try {
+                if (Schema::hasTable('companies')) {
+                    $view->with('currentCompany', Company::current());
+                }
+            } catch (\Throwable $e) {
+                // Ignore during migrations / early setup
+            }
+        });
     }
 }

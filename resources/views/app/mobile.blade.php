@@ -234,6 +234,67 @@
             box-shadow: 0 2px 8px rgba(6, 83, 157, 0.12);
         }
 
+        /* Question Inline Promotional Banner */
+        .question-inline-banner {
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            margin-top: 0.85rem;
+        }
+        .question-inline-banner:hover {
+            box-shadow: 0 4px 12px rgba(6, 83, 157, 0.08);
+            border-color: #cbd5e1;
+        }
+        .question-banner-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .question-banner-img-wrap {
+            width: 76px;
+            height: 48px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .question-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .question-banner-meta {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .question-banner-headline {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.25;
+            margin-bottom: 2px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .question-banner-sub {
+            font-size: 0.72rem;
+            color: #64748b;
+            line-height: 1.2;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
         /* Buttons */
         .btn-shibaura {
             background: var(--shibaura-blue);
@@ -333,6 +394,165 @@
             70% { transform: scale(1.1); }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        /* Dynamic CMS Banner Carousel */
+        .cms-banner-carousel-wrapper {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px -4px rgba(6, 83, 157, 0.18);
+            border: 1px solid rgba(6, 83, 157, 0.12);
+            background: #0f172a;
+            margin-bottom: 1.25rem;
+        }
+        .cms-banner-carousel {
+            position: relative;
+            width: 100%;
+            height: 175px;
+            overflow: hidden;
+        }
+        @media (min-width: 576px) {
+            .cms-banner-carousel {
+                height: 200px;
+            }
+        }
+        .cms-banner-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            transform: scale(0.97);
+        }
+        .cms-banner-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            z-index: 2;
+        }
+        .cms-banner-link-wrapper {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            text-decoration: none;
+        }
+        .cms-banner-bg-img {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 4s ease;
+        }
+        .cms-banner-slide.active .cms-banner-bg-img {
+            transform: scale(1.05);
+        }
+        .cms-banner-glass-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.88) 95%);
+        }
+        .cms-banner-text-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 1.25rem;
+            z-index: 3;
+        }
+        .cms-banner-pill-tag {
+            background: rgba(2, 132, 199, 0.9);
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 5px;
+        }
+        .cms-banner-headline {
+            color: #ffffff;
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+            line-height: 1.25;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+        .cms-banner-subtext {
+            color: #cbd5e1;
+            font-size: 0.74rem;
+            margin-bottom: 4px;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .cms-banner-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-top: 2px;
+        }
+        .cms-carousel-controls {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+        }
+        .cms-carousel-arrow {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+        .cms-carousel-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .cms-carousel-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+        .cms-carousel-dot.active {
+            width: 14px;
+            border-radius: 4px;
+            background: #38bdf8;
+        }
     </style>
 </head>
 <body>
@@ -348,7 +568,7 @@
     <!-- Header Navigation -->
     <header class="mobile-header">
         <div class="d-flex align-items-center gap-2">
-            <img src="{{ asset('images/shibaura-logo-cropped.webp') }}" alt="Shibaura Machine" class="mobile-brand-logo">
+            <img src="{{ $company->logo_url ?? asset('images/shibaura-logo-cropped.webp') }}" alt="{{ $company->name ?? 'Shibaura Machine' }}" class="mobile-brand-logo">
             <div class="vr mx-1 text-muted d-none d-sm-block"></div>
             <span class="badge bg-light text-primary border border-primary-subtle fw-semibold d-none d-sm-inline-block" style="font-size: 0.75rem;">
                 Technical Centre
@@ -370,12 +590,66 @@
         <!-- SCREEN 1: VISITOR REGISTRATION / START (NO LOGIN REQUIRED)      -->
         <!-- ============================================================== -->
         <div id="screenVisitorRegister">
+            @if(isset($banners) && $banners->isNotEmpty())
+            <!-- Dynamic Promotional CMS Banners Slider -->
+            <div class="cms-banner-carousel-wrapper" id="cmsBannerWrap">
+                <div class="cms-banner-carousel" id="cmsBannerCarousel">
+                    @foreach($banners as $index => $banner)
+                    <div class="cms-banner-slide {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}">
+                        @if($banner->link_url)
+                            <a href="{{ $banner->link_url }}" target="_blank" class="cms-banner-link-wrapper" title="{{ $banner->title }}">
+                        @else
+                            <div class="cms-banner-link-wrapper">
+                        @endif
+                            <div class="cms-banner-bg-img" style="background-image: url('{{ $banner->image_url }}');"></div>
+                            <div class="cms-banner-glass-overlay"></div>
+                            <div class="cms-banner-text-overlay">
+                                <span class="cms-banner-pill-tag">
+                                    <i class="bi bi-stars"></i> {{ strtoupper($banner->target === 'all' ? 'Featured' : $banner->target) }}
+                                </span>
+                                <h3 class="cms-banner-headline">{{ $banner->title }}</h3>
+                                @if($banner->subtitle)
+                                    <p class="cms-banner-subtext">{{ $banner->subtitle }}</p>
+                                @endif
+                                @if($banner->link_url)
+                                    <span class="cms-banner-cta-btn">
+                                        <span>Explore</span> <i class="bi bi-arrow-right"></i>
+                                    </span>
+                                @endif
+                            </div>
+                        @if($banner->link_url)
+                            </a>
+                        @else
+                            </div>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+
+                @if($banners->count() > 1)
+                <div class="cms-carousel-controls">
+                    <button type="button" class="cms-carousel-arrow prev" onclick="moveCmsBanner(-1)" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="cms-carousel-dots">
+                        @foreach($banners as $index => $banner)
+                            <button type="button" class="cms-carousel-dot {{ $index === 0 ? 'active' : '' }}" onclick="goToCmsBanner({{ $index }})" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
+                    </div>
+                    <button type="button" class="cms-carousel-arrow next" onclick="moveCmsBanner(1)" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                @endif
+            </div>
+            @endif
+
             <div class="mobile-card">
                 <div class="text-center mb-4">
                     <span class="section-badge-pill">
                         <i class="bi bi-qr-code-scan"></i> Customer Evaluation Form
                     </span>
-                    <h4 class="fw-bold text-dark mb-1">Welcome to Shibaura Machine India</h4>
+                    <h4 class="fw-bold text-dark mb-1">Welcome to {{ $company->name ?? 'Shibaura Machine India' }}</h4>
                     <p class="text-muted small mb-0">We value your visit and feedback. Please take 2 minutes to evaluate your plant tour experience.</p>
                 </div>
 
@@ -543,6 +817,44 @@
                                 <!-- Text Field / Comment -->
                                 @elseif($q->type === 'text')
                                     <textarea name="question_{{ $q->id }}" id="inp_q_{{ $q->id }}" rows="2" class="form-control form-control-sm" placeholder="Please write your observations or suggestions here..."></textarea>
+                                @endif
+
+                                <!-- Promotional Banner Under Each Question -->
+                                @if(isset($banners) && $banners->isNotEmpty())
+                                    @php
+                                        $qBanner = $banners[($loop->iteration - 1) % $banners->count()];
+                                    @endphp
+                                    <div class="question-inline-banner">
+                                        @if($qBanner->link_url)
+                                            <a href="{{ $qBanner->link_url }}" target="_blank" class="question-banner-link" title="{{ $qBanner->title }}">
+                                        @else
+                                            <div class="question-banner-link">
+                                        @endif
+                                            <div class="question-banner-img-wrap">
+                                                <img src="{{ $qBanner->image_url }}" alt="{{ $qBanner->title }}" class="question-banner-img" onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'">
+                                            </div>
+                                            <div class="question-banner-meta">
+                                                <div class="d-flex align-items-center gap-1 mb-1">
+                                                    <span class="badge bg-primary-subtle text-primary py-0 px-2 fw-semibold" style="font-size: 0.65rem;">
+                                                        <i class="bi bi-megaphone-fill"></i> SHIBAURA SPOTLIGHT
+                                                    </span>
+                                                    @if($qBanner->link_url)
+                                                        <span class="text-primary ms-auto" style="font-size: 0.7rem; font-weight: 600;">
+                                                            Explore <i class="bi bi-arrow-right"></i>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="question-banner-headline">{{ $qBanner->title }}</div>
+                                                @if($qBanner->subtitle)
+                                                    <div class="question-banner-sub">{{ $qBanner->subtitle }}</div>
+                                                @endif
+                                            </div>
+                                        @if($qBanner->link_url)
+                                            </a>
+                                        @else
+                                            </div>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
                         @endforeach
@@ -721,6 +1033,42 @@
             </div>
         </div>
 
+        <!-- Corporate Brand & Contact Footer -->
+        <footer class="mt-4 pt-4 border-top text-center text-muted">
+            <div class="fw-bold text-dark mb-1 fs-6">{{ $company->name ?? 'Shibaura Machine India Private Limited' }}</div>
+            <div class="mb-2 text-secondary small">
+                <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $company->full_address ?? 'Chembarambakkam, Chennai, Tamil Nadu' }}
+            </div>
+            <div class="d-flex flex-wrap align-items-center justify-content-center gap-3 small text-secondary">
+                @if($company->phone)
+                    <a href="tel:{{ $company->phone }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-telephone-fill text-success me-1"></i> {{ $company->phone }}
+                    </a>
+                @endif
+                @if($company->alter_phone)
+                    <span class="text-muted d-none d-sm-inline">|</span>
+                    <a href="tel:{{ $company->alter_phone }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-phone text-primary me-1"></i> {{ $company->alter_phone }}
+                    </a>
+                @endif
+                @if($company->email)
+                    <span class="text-muted d-none d-sm-inline">|</span>
+                    <a href="mailto:{{ $company->email }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-envelope-fill text-primary me-1"></i> {{ $company->email }}
+                    </a>
+                @endif
+                @if($company->website)
+                    <span class="text-muted d-none d-sm-inline">|</span>
+                    <a href="{{ $company->website }}" target="_blank" class="text-decoration-none text-secondary">
+                        <i class="bi bi-globe text-info me-1"></i> {{ parse_url($company->website, PHP_URL_HOST) ?? 'Website' }}
+                    </a>
+                @endif
+            </div>
+            <div class="mt-2 text-muted" style="font-size: 0.72rem;">
+                &copy; {{ date('Y') }} {{ $company->name ?? 'Shibaura Machine' }}. Precision Industrial Feedback Portal.
+            </div>
+        </footer>
+
     </div>
 
     <!-- Review Inspection Modal -->
@@ -741,6 +1089,47 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // CMS Banner Slider Controls
+        let currentCmsSlide = 0;
+        let cmsSlideInterval = null;
+
+        function initCmsBannerSlider() {
+            const slides = document.querySelectorAll('.cms-banner-slide');
+            if (slides.length <= 1) return;
+
+            cmsSlideInterval = setInterval(() => {
+                moveCmsBanner(1);
+            }, 5500);
+
+            const wrap = document.getElementById('cmsBannerWrap');
+            if (wrap) {
+                wrap.addEventListener('mouseenter', () => clearInterval(cmsSlideInterval));
+                wrap.addEventListener('mouseleave', () => {
+                    clearInterval(cmsSlideInterval);
+                    cmsSlideInterval = setInterval(() => moveCmsBanner(1), 5500);
+                });
+            }
+        }
+
+        function goToCmsBanner(index) {
+            const slides = document.querySelectorAll('.cms-banner-slide');
+            const dots = document.querySelectorAll('.cms-carousel-dot');
+            if (!slides.length) return;
+
+            slides.forEach(s => s.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+
+            currentCmsSlide = (index + slides.length) % slides.length;
+            if (slides[currentCmsSlide]) slides[currentCmsSlide].classList.add('active');
+            if (dots[currentCmsSlide]) dots[currentCmsSlide].classList.add('active');
+        }
+
+        function moveCmsBanner(delta) {
+            goToCmsBanner(currentCmsSlide + delta);
+        }
+
+        document.addEventListener('DOMContentLoaded', initCmsBannerSlider);
+
         let currentSection = 1;
         const totalSections = {{ count($sections) }};
         let activeOrganizer = null;
