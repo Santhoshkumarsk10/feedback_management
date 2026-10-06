@@ -943,7 +943,12 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label small fw-bold text-dark">Password</label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small fw-bold text-dark mb-0">Password</label>
+                            <a href="javascript:void(0)" onclick="openOrgForgotModal()" class="small text-decoration-none text-primary fw-medium" style="font-size: 0.78rem;">
+                                Forgot Password?
+                            </a>
+                        </div>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key"></i></span>
                             <input type="password" id="inpOrgPassword" class="form-control form-control-sm border-start-0" placeholder="••••••••" required>
@@ -979,9 +984,14 @@
                             <span class="badge-modern badge-slate" id="txtOrgRoleBadge">Tour Guide</span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="handleOrganizerLogout()">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="openOrgChangePasswordModal()" title="Change Password">
+                            <i class="bi bi-key-fill text-warning"></i> Password
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" onclick="handleOrganizerLogout()">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Metrics Grid -->
@@ -1081,6 +1091,78 @@
                 </div>
                 <div class="modal-body p-4" id="modalVisitBody">
                     <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organizer Forgot Password Modal -->
+    <div class="modal fade" id="modalOrgForgotPassword" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header bg-light">
+                    <h6 class="modal-title fw-bold text-dark mb-0">
+                        <i class="bi bi-shield-lock text-primary me-1"></i> Organizer Password Assistance
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="alertOrgForgot" class="alert d-none small"></div>
+                    <p class="small text-muted mb-3">
+                        Enter your registered mobile number or email address. We will dispatch password reset instructions to your verified account.
+                    </p>
+                    <form id="formOrgForgot" onsubmit="event.preventDefault(); submitOrgForgotPassword();">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">Mobile Number or Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope-at"></i></span>
+                                <input type="text" id="inpOrgForgotLogin" class="form-control form-control-sm" placeholder="e.g. 9100000001 or ravi@plant.test" required>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 pt-2">
+                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm" id="btnOrgForgotSubmit">
+                                <i class="bi bi-send-fill me-1"></i> Send Reset Link
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organizer Change Password Modal -->
+    <div class="modal fade" id="modalOrgChangePassword" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header bg-light">
+                    <h6 class="modal-title fw-bold text-dark mb-0">
+                        <i class="bi bi-key-fill text-primary me-1"></i> Change Organizer Password
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="alertOrgChangePass" class="alert d-none small"></div>
+                    <form id="formOrgChangePass" onsubmit="event.preventDefault(); submitOrgChangePassword();">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">Current Password</label>
+                            <input type="password" id="inpOrgCurrentPass" class="form-control form-control-sm" placeholder="••••••••" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">New Password (min 8 chars)</label>
+                            <input type="password" id="inpOrgNewPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">Confirm New Password</label>
+                            <input type="password" id="inpOrgConfirmPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" required>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 pt-2">
+                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm" id="btnOrgChangePassSubmit">
+                                <i class="bi bi-check-circle-fill me-1"></i> Update Password
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1506,6 +1588,117 @@
             activeOrganizer = null;
             document.getElementById('txtModeLabel').innerText = 'Organizer Login';
             switchToVisitorMode();
+        }
+
+        function openOrgForgotModal() {
+            const modal = new bootstrap.Modal(document.getElementById('modalOrgForgotPassword'));
+            const alertBox = document.getElementById('alertOrgForgot');
+            alertBox.className = 'alert d-none small';
+            alertBox.innerText = '';
+            document.getElementById('formOrgForgot').reset();
+            modal.show();
+        }
+
+        async function submitOrgForgotPassword() {
+            const btn = document.getElementById('btnOrgForgotSubmit');
+            const alertBox = document.getElementById('alertOrgForgot');
+            const login = document.getElementById('inpOrgForgotLogin').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+            alertBox.className = 'alert d-none small';
+
+            try {
+                const res = await fetch("{{ route('mobile.organizer.forgot_password') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ login })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alertBox.className = 'alert alert-success small d-block';
+                    let msg = data.message;
+                    if (data.reset_url) {
+                        msg += `<div class="mt-2"><a href="${data.reset_url}" target="_blank" class="fw-bold text-success text-decoration-underline">Click here to Reset Password Now &rarr;</a></div>`;
+                    }
+                    alertBox.innerHTML = msg;
+                    document.getElementById('formOrgForgot').reset();
+                } else {
+                    alertBox.className = 'alert alert-danger small d-block';
+                    alertBox.innerText = data.message || 'Error processing request.';
+                }
+            } catch (err) {
+                alertBox.className = 'alert alert-danger small d-block';
+                alertBox.innerText = 'Network error occurred. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Send Reset Link';
+            }
+        }
+
+        function openOrgChangePasswordModal() {
+            const modal = new bootstrap.Modal(document.getElementById('modalOrgChangePassword'));
+            const alertBox = document.getElementById('alertOrgChangePass');
+            alertBox.className = 'alert d-none small';
+            alertBox.innerText = '';
+            document.getElementById('formOrgChangePass').reset();
+            modal.show();
+        }
+
+        async function submitOrgChangePassword() {
+            const btn = document.getElementById('btnOrgChangePassSubmit');
+            const alertBox = document.getElementById('alertOrgChangePass');
+            const current_password = document.getElementById('inpOrgCurrentPass').value;
+            const password = document.getElementById('inpOrgNewPass').value;
+            const password_confirmation = document.getElementById('inpOrgConfirmPass').value;
+
+            if (password !== password_confirmation) {
+                alertBox.className = 'alert alert-danger small d-block';
+                alertBox.innerText = 'New password and confirmation do not match.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+            alertBox.className = 'alert d-none small';
+
+            try {
+                const res = await fetch("{{ route('mobile.organizer.change_password') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        current_password,
+                        password,
+                        password_confirmation
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alertBox.className = 'alert alert-success small d-block';
+                    alertBox.innerText = data.message || 'Password updated successfully!';
+                    document.getElementById('formOrgChangePass').reset();
+                    setTimeout(() => {
+                        const modalEl = document.getElementById('modalOrgChangePassword');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }, 2000);
+                } else {
+                    alertBox.className = 'alert alert-danger small d-block';
+                    alertBox.innerText = data.message || 'Error updating password.';
+                }
+            } catch (err) {
+                alertBox.className = 'alert alert-danger small d-block';
+                alertBox.innerText = 'Network error occurred.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Update Password';
+            }
         }
     </script>
 </body>

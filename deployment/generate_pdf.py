@@ -259,14 +259,20 @@ sudo mv composer.phar /usr/local/bin/composer"""))
 
     # Step 3
     s3 = []
-    s3.append(Paragraph("3. MySQL 8.0 Database Setup & Dedicated User", h1_style))
-    s3.append(Paragraph("Install MySQL 8.0, secure the engine, and provision the dedicated database and credentials:", body_style))
+    s3.append(Paragraph("3. MySQL 8.0 Database Setup & Dedicated User (devteam)", h1_style))
+    s3.append(Paragraph("Create the database and grant full privileges to user <b>devteam</b>:", body_style))
     s3.append(code_box("""sudo apt install -y mysql-server && sudo mysql_secure_installation
 # Run in MySQL shell:
 sudo mysql -u root -p
-CREATE DATABASE plant_feedback CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shibaura_admin'@'localhost' IDENTIFIED BY 'StrongSecretPass@2026';
-GRANT ALL PRIVILEGES ON plant_feedback.* TO 'shibaura_admin'@'localhost';
+CREATE DATABASE IF NOT EXISTS plant_feedback CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# Grant privileges to existing user devteam:
+GRANT ALL PRIVILEGES ON plant_feedback.* TO 'devteam'@'localhost';
+
+# Or create devteam user if not exists:
+# CREATE USER IF NOT EXISTS 'devteam'@'localhost' IDENTIFIED BY 'your_password';
+# GRANT ALL PRIVILEGES ON plant_feedback.* TO 'devteam'@'localhost';
+
 FLUSH PRIVILEGES;
 EXIT;"""))
     story.append(KeepTogether(s3))
@@ -308,8 +314,8 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=plant_feedback
-DB_USERNAME=shibaura_admin
-DB_PASSWORD=StrongSecretPass@2026
+DB_USERNAME=devteam
+DB_PASSWORD=your_devteam_password
 
 SESSION_DRIVER=database
 CACHE_STORE=database

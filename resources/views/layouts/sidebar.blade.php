@@ -72,11 +72,17 @@
             <i class="bi bi-clock-history"></i>
             <span>Audit Logs</span>
         </a>
+
+        <div class="menu-category">Account Security</div>
+        <a class="nav-item-link {{ request()->routeIs('password.change') ? 'active' : '' }}" href="{{ route('password.change') }}">
+            <i class="bi bi-shield-lock-fill text-info"></i>
+            <span>Change Password</span>
+        </a>
     </div>
 
     <!-- Sidebar Footer / Auth Profile -->
     <div class="sidebar-footer">
-        <div class="user-profile-badge">
+        <a href="{{ route('password.change') }}" class="user-profile-badge text-decoration-none" title="Change Password / Account Settings">
             <div class="user-avatar-initials">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
             </div>
@@ -84,10 +90,10 @@
                 <div class="user-name-title">{{ auth()->user()->name ?? 'Administrator' }}</div>
                 <span class="user-role-badge">{{ auth()->user()->role ?? 'admin' }}</span>
             </div>
-        </div>
+        </a>
         <form method="POST" action="{{ route('logout') }}" class="m-0">
             @csrf
-            <button type="submit" class="btn-sidebar-logout">
+            <button type="submit" class="btn-sidebar-logout" title="Sign out of panel">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Log Out</span>
             </button>

@@ -22,18 +22,30 @@ Route::post('/app/feedback', [MobileAppController::class, 'submitFeedback'])->na
 Route::post('/app/organizer/login', [MobileAppController::class, 'organizerLogin'])->name('mobile.organizer.login');
 Route::get('/app/organizer/visits', [MobileAppController::class, 'organizerVisits'])->name('mobile.organizer.visits');
 Route::post('/app/organizer/logout', [MobileAppController::class, 'organizerLogout'])->name('mobile.organizer.logout');
+Route::post('/app/organizer/forgot-password', [MobileAppController::class, 'organizerForgotPassword'])->name('mobile.organizer.forgot_password');
+Route::post('/app/organizer/change-password', [MobileAppController::class, 'organizerChangePassword'])->name('mobile.organizer.change_password');
 
 Route::redirect('/', '/app');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+
+    // Forgot Password & Reset Password
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('throttle:6,1');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('throttle:6,1');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Admin web panel: superadmin + admin
 Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Account Security: Change Password
+    Route::get('change-password', [AuthController::class, 'showChangePassword'])->name('password.change');
+    Route::post('change-password', [AuthController::class, 'updatePassword'])->name('password.change.update');
 
     // Plant Master Routes
     Route::resource('plants', PlantController::class)->except('show');

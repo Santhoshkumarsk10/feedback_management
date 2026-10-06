@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Password;
 
 class MobileAppController extends Controller
 {
@@ -223,4 +224,85 @@ class MobileAppController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Organizer forgot password request.
+     */
+    public function organizerForgotPassword(Request $request)
+    {
+        $request->validate([
+            'login' => 'required|string',
+        ]);
+
+        $login = trim($request->login);
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
+
+        $user = User::where($field, $login)->first();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No organizer account found for that email or mobile number.',
+            ], 404);
+        }
+
+        if (! $user->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is deactivated. Please contact admin.',
+            ], 403);
+        }
+
+        $token = Password::createToken($user);
+        $user->sendPasswordResetNotification($token);
+
+        AuditLog::record('request', 'auth', "Password reset requested via mobile view for {$user->email}.", null, $user);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Password reset instructions dispatched to {$user->email}.",
+            'email' => $user->email,
+            'reset_url' => route('password.reset', ['token' => $token, 'email' => $user->email]),
+        ]);
+    }
+
+    /**
+     * Organizer change password while logged in.
+     */
+    public function organizerChangePassword(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Authentication required.'], 401);
+        }
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed|different:current_password',
+        ], [
+            'password.different' => 'The new password must be different from current password.',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect current password.',
+            ], 422);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($request->password),
+            'remember_token' => \Illuminate\Support\Str::random(60),
+        ])->save();
+
+        AuditLog::record('update', 'auth', "Organizer {$user->name} changed password via mobile portal.", null, $user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully!',
+        ]);
+    }
 }
+
