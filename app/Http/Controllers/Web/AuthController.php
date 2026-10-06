@@ -21,14 +21,28 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
+            'login' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:~^[a-zA-Z0-9@._+\-]+$~',
+                function ($attribute, $value, $fail) {
+                    if (str_contains($value, '@') && !preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $value)) {
+                        $fail('Please provide a valid email address with a valid domain (e.g. name@company.com).');
+                    }
+                },
+            ],
+            'password' => ['required', 'string', 'max:100'],
+        ], [
+            'login.regex' => 'Login credential contains invalid characters.',
         ]);
 
         $field = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
 
         if (Auth::attempt([$field => $data['login'], 'password' => $data['password'], 'is_active' => true], $request->boolean('remember'))) {
-            if (in_array(Auth::user()->role, ['superadmin', 'admin'], true)) {
+            $user = Auth::user();
+            if (in_array($user->role, ['superadmin', 'admin'], true)) {
                 $request->session()->regenerate();
                 AuditLog::record('login', 'auth', 'Administrator successfully logged into operations panel.', [
                     'login_field' => $field,
@@ -37,13 +51,24 @@ class AuthController extends Controller
 
                 return redirect()->intended(route('dashboard'));
             }
-            AuditLog::record('denied', 'auth', 'Login attempt denied: account not authorized for admin panel.', [
-                'user' => Auth::user()->email,
+
+            if ($user->role === 'organizer') {
+                $request->session()->regenerate();
+                AuditLog::record('login', 'auth', "Organizer {$user->name} logged into organizer portal.", [
+                    'login_field' => $field,
+                    'ip' => $request->ip(),
+                ]);
+
+                return redirect()->intended(route('mobile.app'));
+            }
+
+            AuditLog::record('denied', 'auth', 'Login attempt denied: account not authorized.', [
+                'user' => $user->email,
             ]);
             Auth::logout();
         }
 
-        return back()->withErrors(['login' => 'Invalid credentials, or this account has no admin access.'])->onlyInput('login');
+        return back()->withErrors(['login' => 'Invalid credentials, or this account has no access.'])->onlyInput('login');
     }
 
     public function logout(Request $request)
@@ -67,7 +92,20 @@ class AuthController extends Controller
     public function sendResetLinkEmail(Request $request)
     {
         $request->validate([
-            'login' => 'required|string',
+            'login' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:~^[a-zA-Z0-9@._+\-]+$~',
+                function ($attribute, $value, $fail) {
+                    if (str_contains($value, '@') && !preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $value)) {
+                        $fail('Please provide a valid email address with a valid domain (e.g. name@company.com).');
+                    }
+                },
+            ],
+        ], [
+            'login.regex' => 'Login credential contains invalid characters.',
         ]);
 
         $login = trim($request->login);
@@ -114,8 +152,10 @@ class AuthController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => ['required', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'password' => 'required|string|min:8|max:100|confirmed',
+        ], [
+            'email.regex' => 'Please provide a valid email address with domain.',
         ]);
 
         $status = Password::broker()->reset(
@@ -145,8 +185,8 @@ class AuthController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed|different:current_password',
+            'current_password' => 'required|string|max:100',
+            'password' => 'required|string|min:8|max:100|confirmed|different:current_password',
         ], [
             'password.different' => 'The new password must be different from your current password.',
         ]);

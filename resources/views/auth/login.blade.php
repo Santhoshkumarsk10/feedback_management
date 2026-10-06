@@ -202,6 +202,17 @@
             .hero-side { display: none; }
             .form-side { padding: 2.25rem 1.75rem; }
         }
+
+        .input-group-modern input.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .custom-live-err {
+            font-size: 0.8rem;
+            color: #f87171;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -265,30 +276,32 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
                 @csrf
                 <div class="mb-3">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Email or Mobile</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;" for="loginInput">Email or Mobile</label>
                     <div class="input-group-modern">
-                        <input id="loginInput" name="login" value="{{ old('login') }}" placeholder="e.g. superadmin@plant.test" required autofocus autocomplete="username">
+                        <input id="loginInput" name="login" value="{{ old('login') }}" placeholder="e.g. superadmin@plant.test or 9876543210" minlength="3" maxlength="100" required autofocus autocomplete="username">
                         <i class="bi bi-envelope-fill input-icon"></i>
                     </div>
+                    <div class="invalid-feedback d-none custom-live-err" id="live_err_loginInput"></div>
                 </div>
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label class="form-label text-slate-300 small fw-semibold mb-0" style="color: #cbd5e1;">Password</label>
+                        <label class="form-label text-slate-300 small fw-semibold mb-0" style="color: #cbd5e1;" for="passwordInput">Password</label>
                         <a href="{{ route('password.request') }}" class="small text-decoration-none" style="color: #38bdf8; font-size: 0.82rem; font-weight: 500;" title="Recover account password">
                             <i class="bi bi-question-circle me-1"></i>Forgot Password?
                         </a>
                     </div>
                     <div class="input-group-modern">
-                        <input type="password" id="passwordInput" name="password" placeholder="••••••••" required autocomplete="current-password">
+                        <input type="password" id="passwordInput" name="password" placeholder="••••••••" minlength="4" maxlength="64" required autocomplete="current-password">
                         <i class="bi bi-key-fill input-icon"></i>
                         <button type="button" class="toggle-password" onclick="togglePassVisibility()" aria-label="Toggle password">
                             <i class="bi bi-eye" id="eyeIcon"></i>
                         </button>
                     </div>
+                    <div class="invalid-feedback d-none custom-live-err" id="live_err_passwordInput"></div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -342,9 +355,154 @@ function togglePassVisibility() {
 }
 
 function fillCredentials(login, password) {
-    document.getElementById('loginInput').value = login;
-    document.getElementById('passwordInput').value = password;
+    const loginInp = document.getElementById('loginInput');
+    const passInp = document.getElementById('passwordInput');
+    if (loginInp) loginInp.value = login;
+    if (passInp) passInp.value = password;
+    clearLoginLiveErr('loginInput');
+    clearLoginLiveErr('passwordInput');
 }
+
+function showLoginLiveErr(id, msg, persistent = false) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.add('is-invalid');
+    if (errEl) {
+        errEl.textContent = msg;
+        errEl.classList.remove('d-none');
+        errEl.classList.add('d-block');
+        clearTimeout(errEl._timer);
+        if (!persistent) {
+            errEl._timer = setTimeout(() => {
+                errEl.classList.remove('d-block');
+                errEl.classList.add('d-none');
+            }, 2500);
+        }
+    }
+}
+
+function clearLoginLiveErr(id) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.remove('is-invalid');
+    if (errEl) {
+        errEl.classList.remove('d-block');
+        errEl.classList.add('d-none');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const loginInp = document.getElementById('loginInput');
+    const passInp = document.getElementById('passwordInput');
+
+    if (loginInp) {
+        const allowedRegex = /^[a-zA-Z0-9@._+\-]$/;
+        const disallowed = /[^a-zA-Z0-9@._+\-]/g;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // 1. Prevent typing disallowed characters on keystroke
+        loginInp.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (!allowedRegex.test(e.key)) {
+                    e.preventDefault();
+                    showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                }
+            }
+        });
+
+        // 2. Prevent disallowed input on virtual keyboards / mobile
+        loginInp.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    if (!allowedRegex.test(e.data[i])) {
+                        e.preventDefault();
+                        showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                        return;
+                    }
+                }
+            }
+        });
+
+        // 3. Clean paste
+        loginInp.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && disallowed.test(text)) {
+                e.preventDefault();
+                const cleaned = text.replace(disallowed, '');
+                document.execCommand('insertText', false, cleaned);
+            }
+        });
+
+        // 4. Input fallback
+        loginInp.addEventListener('input', function() {
+            if (disallowed.test(this.value)) {
+                this.value = this.value.replace(disallowed, '');
+                showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+            } else if (this.value.trim().length >= 3) {
+                clearLoginLiveErr('loginInput');
+            }
+        });
+
+        // 5. Blur validation
+        loginInp.addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (val.includes('@') && !emailRegex.test(val)) {
+                showLoginLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+            }
+        });
+    }
+
+    if (passInp) {
+        passInp.addEventListener('input', function() {
+            if (this.value.trim().length >= 4) {
+                clearLoginLiveErr('passwordInput');
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            let firstInvalid = null;
+
+            const loginVal = loginInp ? loginInp.value.trim() : '';
+            const passVal = passInp ? passInp.value : '';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!loginVal) {
+                hasError = true;
+                showLoginLiveErr('loginInput', 'Email or Mobile number is required.', true);
+                if (!firstInvalid) firstInvalid = loginInp;
+            } else if (loginVal.length < 3) {
+                hasError = true;
+                showLoginLiveErr('loginInput', 'Must be at least 3 characters.', true);
+                if (!firstInvalid) firstInvalid = loginInp;
+            } else if (loginVal.includes('@') && !emailRegex.test(loginVal)) {
+                hasError = true;
+                showLoginLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+                if (!firstInvalid) firstInvalid = loginInp;
+            }
+
+            if (!passVal) {
+                hasError = true;
+                showLoginLiveErr('passwordInput', 'Password is required.', true);
+                if (!firstInvalid) firstInvalid = passInp;
+            } else if (passVal.length < 4) {
+                hasError = true;
+                showLoginLiveErr('passwordInput', 'Password must be at least 4 characters.', true);
+                if (!firstInvalid) firstInvalid = passInp;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+            }
+        });
+    }
+});
 </script>
 
 </body>

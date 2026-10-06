@@ -106,13 +106,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
-        <i class="bi bi-check-circle-fill fs-5"></i>
-        <div>{{ session('success') }}</div>
-    </div>
-@endif
-
 <!-- Banners Data Table Card -->
 <div class="card-modern">
     <div class="table-responsive">

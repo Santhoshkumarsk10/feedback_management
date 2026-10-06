@@ -15,8 +15,8 @@ class CompanyAndBannerSeeder extends Seeder
             [
                 'name' => 'Shibaura Machine India Private Limited',
                 'email' => 'customercare@shibaura-machine.co.in',
-                'phone' => '+91 44 2681 2000',
-                'alter_phone' => '+91 44 2681 2001',
+                'phone' => '9844268200',
+                'alter_phone' => '9844268201',
                 'address' => 'No. 65 (PO Box 14), Chennai-Bangalore Highway, Chembarambakkam',
                 'city' => 'Chennai',
                 'state' => 'Tamil Nadu',

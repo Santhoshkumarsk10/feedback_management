@@ -61,7 +61,8 @@
            name="{{ $name }}"
            id="{{ $inputId }}"
            value="{{ $currentVal }}"
-           class="form-control form-control-modern form-control-sm search-suggest-input"
+           maxlength="60"
+           class="form-control form-control-modern form-control-sm search-suggest-input @error($name) is-invalid @enderror"
            placeholder="{{ $placeholder }}"
            autocomplete="off"
            aria-autocomplete="list"
@@ -71,6 +72,10 @@
     <button type="button" class="search-clear-btn {{ $currentVal ? '' : 'd-none' }}" title="Clear search" aria-label="Clear search">
         <i class="bi bi-x-circle-fill"></i>
     </button>
+
+    <div class="search-validation-toast d-none" style="position: absolute; top: calc(100% + 4px); left: 0; z-index: 1060; background: #dc3545; color: #fff; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); pointer-events: none;">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> <span>Special character not allowed</span>
+    </div>
 
     @if($suggestionItems->isNotEmpty() || $chips->isNotEmpty())
         <!-- Autocomplete Suggestions Dropdown -->
@@ -215,14 +220,73 @@
             return items.filter(el => !el.classList.contains('d-none'));
         }
 
+        function hasActiveFilterValues() {
+            if (!form) return false;
+            let hasValues = false;
+            const elements = form.querySelectorAll('input:not([type="hidden"]), select');
+            elements.forEach(el => {
+                if (el !== input && el.value && el.value !== 'all' && el.value.trim() !== '') {
+                    hasValues = true;
+                }
+            });
+            return hasValues;
+        }
+
+        function hasActiveUrlFilters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            for (const [key, val] of urlParams.entries()) {
+                if (key !== 'page' && key !== 'tab' && key !== 'tier' && val && val.trim() !== '') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function submitSearch(val) {
             if (val !== undefined && val !== null) {
                 input.value = val;
             }
             closeDropdown();
             if (form) {
-                form.submit();
+                const searchVal = input.value.trim();
+                const activeUrl = hasActiveUrlFilters();
+                const hasFilters = hasActiveFilterValues();
+
+                if (!searchVal && !activeUrl && !hasFilters) {
+                    showSearchToast('Please enter search keywords or select a filter.');
+                    input.focus();
+                    return;
+                }
+
+                if (!searchVal) {
+                    input.disabled = true;
+                    form.submit();
+                    setTimeout(() => { input.disabled = false; }, 100);
+                } else {
+                    form.submit();
+                }
             }
+        }
+
+        if (form && !form._suggestFilterBound) {
+            form._suggestFilterBound = true;
+            form.addEventListener('submit', function(e) {
+                const searchVal = input.value.trim();
+                const activeUrl = hasActiveUrlFilters();
+                const hasFilters = hasActiveFilterValues();
+
+                if (!searchVal && !activeUrl && !hasFilters) {
+                    e.preventDefault();
+                    showSearchToast('Please enter search keywords or select a filter.');
+                    input.focus();
+                    return false;
+                }
+
+                if (!searchVal) {
+                    input.disabled = true;
+                    setTimeout(() => { input.disabled = false; }, 100);
+                }
+            });
         }
 
         function filterSuggestions() {
@@ -286,21 +350,38 @@
             clearActiveItem();
         }
 
+        const searchToast = container.querySelector('.search-validation-toast');
+        let toastTimeout = null;
+
+        function showSearchToast(msg) {
+            if (!searchToast) return;
+            const span = searchToast.querySelector('span');
+            if (span) span.textContent = msg;
+            searchToast.classList.remove('d-none');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                searchToast.classList.add('d-none');
+            }, 2500);
+        }
+
+        // Allowed search characters: Unicode letters, numbers, whitespace, - _ . , / @ & ( )
+        const allowedSearchChar = /^[\p{L}\p{N}\s\-_.,\/@&()]$/u;
+        const disallowedSearchRegex = /[^\p{L}\p{N}\s\-_.,\/@&()]/gu;
+
         // 1. Click / focus -> show suggestions immediately!
         input.addEventListener('click', openDropdown);
         input.addEventListener('focus', openDropdown);
 
-        // 2. Typing -> filter suggestions in real time
-        input.addEventListener('input', function() {
-            if (dropdown && dropdown.style.display === 'none') {
-                dropdown.style.display = 'block';
-                input.setAttribute('aria-expanded', 'true');
-            }
-            filterSuggestions();
-        });
-
-        // 3. Keyboard navigation (ArrowDown, ArrowUp, Enter, Esc)
+        // 2a. Block typing disallowed characters on keystroke
         input.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (!allowedSearchChar.test(e.key)) {
+                    e.preventDefault();
+                    showSearchToast('Special characters like < > { } [ ] ; $ % * = are not allowed.');
+                    return;
+                }
+            }
+
             const visibleItems = getVisibleItems();
             const activeItem = visibleItems.find(el => el.classList.contains('active'));
             let currentIndex = activeItem ? visibleItems.indexOf(activeItem) : -1;
@@ -340,6 +421,44 @@
             } else if (e.key === 'Escape') {
                 closeDropdown();
             }
+        });
+
+        // 2b. Block disallowed characters on virtual keyboards / mobile IME
+        input.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    if (!allowedSearchChar.test(e.data[i])) {
+                        e.preventDefault();
+                        showSearchToast('Special characters like < > { } [ ] ; $ % * = are not allowed.');
+                        return;
+                    }
+                }
+            }
+        });
+
+        // 2c. Clean paste
+        input.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && disallowedSearchRegex.test(text)) {
+                e.preventDefault();
+                const cleaned = text.replace(disallowedSearchRegex, '');
+                document.execCommand('insertText', false, cleaned);
+                showSearchToast('Disallowed special characters removed.');
+                filterSuggestions();
+            }
+        });
+
+        // 2d. Typing -> fallback filter and update suggestions
+        input.addEventListener('input', function() {
+            if (disallowedSearchRegex.test(this.value)) {
+                this.value = this.value.replace(disallowedSearchRegex, '');
+                showSearchToast('Special characters like < > { } [ ] ; $ % * = are not allowed.');
+            }
+            if (dropdown && dropdown.style.display === 'none') {
+                dropdown.style.display = 'block';
+                input.setAttribute('aria-expanded', 'true');
+            }
+            filterSuggestions();
         });
 
         // 4. Click suggestion item

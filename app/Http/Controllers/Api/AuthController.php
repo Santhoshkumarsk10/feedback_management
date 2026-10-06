@@ -23,8 +23,10 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
+            'login' => ['required', 'string', 'min:3', 'max:100', 'regex:~^[a-zA-Z0-9@._+\-]+$~'],
+            'password' => ['required', 'string', 'max:100'],
+        ], [
+            'login.regex' => 'Login credential contains invalid characters.',
         ]);
 
         $field = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
@@ -70,8 +72,8 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed|different:current_password',
+            'current_password' => 'required|string|max:100',
+            'password' => 'required|string|min:8|max:100|confirmed|different:current_password',
         ], [
             'password.different' => 'The new password must be different from your current password.',
         ]);
@@ -105,10 +107,18 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $request->validate([
-            'login' => 'required|string',
+            'login' => ['required', 'string', 'min:3', 'max:100', 'regex:~^[a-zA-Z0-9@._+\-]+$~'],
+        ], [
+            'login.regex' => 'Login credential contains invalid characters.',
         ]);
 
         $login = trim($request->login);
+        if (str_contains($login, '@') && !preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $login)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide a valid email address with a valid domain (e.g. name@company.com).',
+            ], 422);
+        }
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
 
         $user = User::where($field, $login)->first();
@@ -147,8 +157,10 @@ class AuthController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => ['required', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'password' => 'required|string|min:8|max:100|confirmed',
+        ], [
+            'email.regex' => 'Please provide a valid email address with domain.',
         ]);
 
         $status = Password::broker()->reset(

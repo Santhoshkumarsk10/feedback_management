@@ -30,6 +30,13 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’@+]+$~u'],
+            'role' => 'nullable|string|max:50',
+            'plant_id' => 'nullable|integer|exists:plants,id',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
         $manageableSlugs = $this->manageableSlugs();
 
         // Calculate counts for quick filter tabs
@@ -179,17 +186,36 @@ class UserController extends Controller
     private function validated(Request $request, ?User $user = null): array
     {
         $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => ['nullable', 'email', 'max:150', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
-            'mobile' => ['nullable', 'digits_between:10,15', 'required_without:email', Rule::unique('users', 'mobile')->ignore($user?->id)],
+            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
+            'mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/', 'required_without:email', Rule::unique('users', 'mobile')->ignore($user?->id)],
             'role_id' => 'required|exists:roles,id',
             'plant_id' => 'nullable|exists:plants,id',
-            'department' => 'nullable|string|max:100',
-            'password' => [$user ? 'nullable' : 'required', 'string', 'min:6'],
+            'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'password' => [$user ? 'nullable' : 'required', 'string', 'min:6', 'max:60'],
+        ], [
+            'name.required' => 'Full Name is required.',
+            'name.min' => 'Full Name must be at least :min characters.',
+            'name.max' => 'Full Name cannot exceed :max characters.',
+            'name.regex' => 'Full Name may only contain letters, spaces, hyphens, and dots.',
+
+            'email.email' => 'Please provide a valid official email address.',
+            'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',
+            'email.required_without' => 'Either Email Address or Mobile Number is required.',
+
+            'mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'mobile.required_without' => 'Either Mobile Number or Email Address is required.',
+
+            'department.regex' => 'Department may only contain letters, numbers, spaces, and allowed symbols (&, -, /, .).',
+            'department.min' => 'Department must be at least :min characters.',
+            'department.max' => 'Department cannot exceed :max characters.',
+
+            'password.min' => 'Password must be at least :min characters.',
+            'password.max' => 'Password cannot exceed :max characters.',
         ]);
 
         $roleObj = Role::find($data['role_id']);
-        $data['role'] = $roleObj?->slug ?? 'organizer';
+        $data['role'] = in_array($roleObj?->slug, ['superadmin', 'admin', 'organizer'], true) ? $roleObj->slug : 'organizer';
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

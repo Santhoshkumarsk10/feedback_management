@@ -67,6 +67,12 @@
                 </a>
             @endif
         </form>
+        @error('q')
+            <div class="text-danger small mt-2 w-100 d-flex align-items-center gap-1">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ $message }}</span>
+            </div>
+        @enderror
     </div>
 </div>
 

@@ -26,17 +26,29 @@ class CompanyController extends Controller
         $company = Company::current();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'alter_phone' => 'nullable|string|max:30',
-            'address' => 'nullable|string|max:1000',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'pincode' => 'nullable|string|max:20',
-            'website' => 'nullable|url|max:255',
-            'description' => 'nullable|string|max:2000',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:3072',
+            'name' => ['required', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'phone' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
+            'alter_phone' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
+            'address' => ['nullable', 'string', 'min:3', 'max:500', 'regex:~^[\p{L}\p{N}\s,\.\-/#()&\'’]+$~u'],
+            'city' => ['nullable', 'string', 'min:2', 'max:50', 'regex:~^[\p{L}\s\.\-]+$~u'],
+            'state' => ['nullable', 'string', 'min:2', 'max:50', 'regex:~^[\p{L}\s\.\-]+$~u'],
+            'pincode' => ['nullable', 'regex:/^[1-9][0-9]{5}$/'],
+            'website' => ['nullable', 'url', 'max:200'],
+            'description' => ['nullable', 'string', 'min:5', 'max:1000', 'regex:~^[\p{L}\p{N}\s\.\,\-\–\—\_\&\/\(\)\'\"\!\?\:\;\%\r\n]+$~u'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:3072'],
+        ], [
+            'name.required' => 'Company Name is required.',
+            'name.regex' => 'Company Name may only contain letters, numbers, spaces, and allowed symbols (&, -, —, _, /, ., ,, (), \').',
+            'email.email' => 'Please provide a valid company email address.',
+            'email.regex' => 'Please provide a valid company email address with domain (e.g. info@company.com).',
+            'phone.regex' => 'Primary Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'alter_phone.regex' => 'Alternate Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'address.regex' => 'Address may only contain letters, numbers, spaces, and valid address symbols (,, ., -, /, #, (), &, \').',
+            'city.regex' => 'City name may only contain letters, spaces, hyphens, and dots.',
+            'state.regex' => 'State name may only contain letters, spaces, hyphens, and dots.',
+            'pincode.regex' => 'PIN Code must be a valid 6-digit postal code (e.g. 600123).',
+            'description.regex' => 'Description contains unsupported special characters.',
         ]);
 
         if ($request->hasFile('logo')) {

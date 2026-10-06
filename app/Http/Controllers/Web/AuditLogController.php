@@ -10,6 +10,15 @@ class AuditLogController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate([
+            'tab' => 'nullable|string|in:all,masters,security,operations',
+            'action' => 'nullable|string|max:50',
+            'module' => 'nullable|string|max:50',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ]);
+
         $tab = $request->input('tab', 'all');
 
         $query = AuditLog::with('user')

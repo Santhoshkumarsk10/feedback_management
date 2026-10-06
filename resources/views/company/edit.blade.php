@@ -31,31 +31,7 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border-0 mb-4" role="alert" style="background: #ecfdf5; border-left: 4px solid #10b981 !important;">
-        <i class="bi bi-check-circle-fill text-success fs-4"></i>
-        <div>
-            <div class="fw-bold text-dark">Changes Saved Successfully</div>
-            <div class="small text-secondary">{{ session('success') }}</div>
-        </div>
-    </div>
-@endif
-
-@if(isset($errors) && $errors->any())
-    <div class="alert alert-danger p-3 rounded-3 shadow-sm border-0 mb-4" style="background: #fef2f2; border-left: 4px solid #ef4444 !important;">
-        <div class="fw-bold text-danger mb-2 d-flex align-items-center gap-2">
-            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-            <span>Please correct the errors below before saving:</span>
-        </div>
-        <ul class="mb-0 ps-3 small text-danger">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-<form action="{{ route('company.update') }}" method="POST" enctype="multipart/form-data" id="companyMasterForm">
+<form action="{{ route('company.update') }}" method="POST" enctype="multipart/form-data" id="companyMasterForm" novalidate>
     @csrf
     @method('PUT')
 
@@ -87,11 +63,14 @@
                                    name="name" 
                                    value="{{ old('name', $company->name) }}" 
                                    placeholder="e.g. Shibaura Machine India Private Limited" 
+                                   minlength="2"
+                                   maxlength="150"
                                    required>
                         </div>
                         @error('name')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_name"></div>
                     </div>
 
                     <!-- Website -->
@@ -104,7 +83,8 @@
                                    id="website" 
                                    name="website" 
                                    value="{{ old('website', $company->website) }}" 
-                                   placeholder="https://www.shibaura-machine.co.in">
+                                   placeholder="https://www.shibaura-machine.co.in"
+                                   maxlength="200">
                         </div>
                         @error('website')
                             <div class="text-danger small mt-1">{{ $message }}</div>
@@ -176,38 +156,49 @@
                             @error('email')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_email"></div>
                         </div>
 
                         <div class="col-12 col-md-4">
-                            <label class="form-label-modern" for="phone">Primary Phone</label>
+                            <label class="form-label-modern" for="phone">Primary Phone (10 Digits)</label>
                             <div class="input-icon-wrapper">
                                 <i class="bi bi-telephone"></i>
-                                <input type="text" 
+                                <input type="tel" 
                                        class="form-control-modern @error('phone') is-invalid @enderror" 
                                        id="phone" 
                                        name="phone" 
                                        value="{{ old('phone', $company->phone) }}" 
-                                       placeholder="+91 44 2681 2000">
+                                       placeholder="e.g. 9844268200"
+                                       maxlength="10"
+                                       minlength="10"
+                                       pattern="^[6-9][0-9]{9}$"
+                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9">
                             </div>
                             @error('phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_phone"></div>
                         </div>
 
                         <div class="col-12 col-md-4">
-                            <label class="form-label-modern" for="alter_phone">Alternate Phone</label>
+                            <label class="form-label-modern" for="alter_phone">Alternate Phone (10 Digits)</label>
                             <div class="input-icon-wrapper">
                                 <i class="bi bi-phone"></i>
-                                <input type="text" 
+                                <input type="tel" 
                                        class="form-control-modern @error('alter_phone') is-invalid @enderror" 
                                        id="alter_phone" 
                                        name="alter_phone" 
                                        value="{{ old('alter_phone', $company->alter_phone) }}" 
-                                       placeholder="+91 44 2681 2001">
+                                       placeholder="e.g. 9844268201"
+                                       maxlength="10"
+                                       minlength="10"
+                                       pattern="^[6-9][0-9]{9}$"
+                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9">
                             </div>
                             @error('alter_phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_alter_phone"></div>
                         </div>
                     </div>
                 </div>
@@ -233,7 +224,9 @@
                                   id="address" 
                                   name="address" 
                                   rows="3" 
-                                  placeholder="Plant Plot No, Chennai-Bangalore Highway, Industrial Estate, Landmark">{{ old('address', $company->address) }}</textarea>
+                                  placeholder="Plant Plot No, Chennai-Bangalore Highway, Industrial Estate, Landmark"
+                                  minlength="3"
+                                  maxlength="500">{{ old('address', $company->address) }}</textarea>
                         @error('address')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -250,7 +243,9 @@
                                        id="city" 
                                        name="city" 
                                        value="{{ old('city', $company->city) }}" 
-                                       placeholder="Chennai">
+                                       placeholder="Chennai"
+                                       minlength="2"
+                                       maxlength="50">
                             </div>
                             @error('city')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -266,7 +261,9 @@
                                        id="state" 
                                        name="state" 
                                        value="{{ old('state', $company->state) }}" 
-                                       placeholder="Tamil Nadu">
+                                       placeholder="Tamil Nadu"
+                                       minlength="2"
+                                       maxlength="50">
                             </div>
                             @error('state')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -282,11 +279,16 @@
                                        id="pincode" 
                                        name="pincode" 
                                        value="{{ old('pincode', $company->pincode) }}" 
-                                       placeholder="600123">
+                                       placeholder="600123"
+                                       minlength="6"
+                                       maxlength="6"
+                                       pattern="^[1-9][0-9]{5}$"
+                                       title="6-digit postal PIN code">
                             </div>
                             @error('pincode')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_pincode"></div>
                         </div>
                     </div>
                 </div>
@@ -309,7 +311,9 @@
                               id="description" 
                               name="description" 
                               rows="3" 
-                              placeholder="Brief summary of company manufacturing capabilities, engineering heritage, and customer excellence mission...">{{ old('description', $company->description) }}</textarea>
+                              placeholder="Brief summary of company manufacturing capabilities, engineering heritage, and customer excellence mission..."
+                              minlength="5"
+                              maxlength="1000">{{ old('description', $company->description) }}</textarea>
                     @error('description')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
@@ -583,14 +587,49 @@ function showCopyToast(msg) {
 
 // Real-time reactive simulator updates
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('companyMasterForm');
     const nameInput = document.getElementById('name');
     const emailInput = document.getElementById('email');
     const phoneInput = document.getElementById('phone');
+    const alterPhoneInput = document.getElementById('alter_phone');
     const websiteInput = document.getElementById('website');
     const cityInput = document.getElementById('city');
     const stateInput = document.getElementById('state');
     const pincodeInput = document.getElementById('pincode');
     const descInput = document.getElementById('description');
+
+    function showCompanyLiveErr(id, msg, persistent = false) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.add('is-invalid');
+        if (errEl) {
+            errEl.textContent = msg;
+            errEl.classList.remove('d-none');
+            errEl.classList.add('d-block');
+            clearTimeout(errEl._timer);
+            if (!persistent) {
+                errEl._timer = setTimeout(() => {
+                    errEl.classList.remove('d-block');
+                    errEl.classList.add('d-none');
+                }, 2500);
+            }
+        }
+    }
+
+    function clearCompanyLiveErr(id) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.remove('is-invalid');
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+    }
+
+    const disallowedChars = /[<>{}\[\]$^*~=\\\|]/g;
+    const phoneRegex = /^[6-9][0-9]{9}$/;
+    const pinRegex = /^[1-9][0-9]{5}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     function updateLocation() {
         const city = (cityInput ? cityInput.value.trim() : '') || 'Chennai';
@@ -600,23 +639,114 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (nameInput) {
+        nameInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && disallowedChars.test(e.key)) {
+                e.preventDefault();
+                showCompanyLiveErr('name', 'Special characters like < > { } [ ] $ ^ * = \\ | are not allowed.');
+            }
+        });
+        nameInput.addEventListener('beforeinput', e => {
+            if (e.data && disallowedChars.test(e.data)) {
+                e.preventDefault();
+                showCompanyLiveErr('name', 'Special characters like < > { } [ ] $ ^ * = \\ | are not allowed.');
+            }
+        });
         nameInput.addEventListener('input', e => {
+            if (disallowedChars.test(e.target.value)) {
+                e.target.value = e.target.value.replace(disallowedChars, '');
+                showCompanyLiveErr('name', 'Special characters like < > { } [ ] $ ^ * = \\ | are not allowed.');
+            } else if (e.target.value.trim().length >= 2) {
+                clearCompanyLiveErr('name');
+            }
             const el = document.getElementById('liveNamePreview');
             if (el) el.textContent = e.target.value.trim() || 'Company Entity Name';
         });
     }
 
     if (emailInput) {
+        const emailDisallowed = /[^a-zA-Z0-9@._+\-]/;
+        emailInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && emailDisallowed.test(e.key)) {
+                e.preventDefault();
+                showCompanyLiveErr('email', 'Spaces and symbols other than @, ., _, +, - are not allowed in email.');
+            }
+        });
+        emailInput.addEventListener('beforeinput', e => {
+            if (e.data && emailDisallowed.test(e.data)) {
+                e.preventDefault();
+                showCompanyLiveErr('email', 'Spaces and symbols other than @, ., _, +, - are not allowed in email.');
+            }
+        });
         emailInput.addEventListener('input', e => {
+            if (emailDisallowed.test(e.target.value)) {
+                e.target.value = e.target.value.replace(/[^a-zA-Z0-9@._+\-]/g, '');
+            } else if (emailRegex.test(e.target.value.trim()) || !e.target.value.trim()) {
+                clearCompanyLiveErr('email');
+            }
             const el = document.getElementById('liveEmailPreview');
             if (el) el.textContent = e.target.value.trim() || 'contact@company.com';
+        });
+        emailInput.addEventListener('blur', e => {
+            const val = e.target.value.trim();
+            if (val && !emailRegex.test(val)) {
+                showCompanyLiveErr('email', 'Please enter a valid company email address with domain (e.g. info@company.com).');
+            }
         });
     }
 
     if (phoneInput) {
+        phoneInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !/[0-9]/.test(e.key)) {
+                e.preventDefault();
+                showCompanyLiveErr('phone', 'Only digits 0-9 are allowed in Phone.');
+            }
+        });
+        phoneInput.addEventListener('beforeinput', e => {
+            if (e.data && !/^[0-9]+$/.test(e.data)) {
+                e.preventDefault();
+                showCompanyLiveErr('phone', 'Only digits 0-9 are allowed in Phone.');
+            }
+        });
         phoneInput.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+            if (phoneRegex.test(e.target.value) || !e.target.value) {
+                clearCompanyLiveErr('phone');
+            }
             const el = document.getElementById('livePhonePreview');
             if (el) el.textContent = e.target.value.trim() || '+91 000 000 0000';
+        });
+        phoneInput.addEventListener('blur', e => {
+            const val = e.target.value.trim();
+            if (val && !phoneRegex.test(val)) {
+                showCompanyLiveErr('phone', 'Phone must be a 10-digit number starting with 6, 7, 8, or 9.');
+            }
+        });
+    }
+
+    if (alterPhoneInput) {
+        alterPhoneInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !/[0-9]/.test(e.key)) {
+                e.preventDefault();
+                showCompanyLiveErr('alter_phone', 'Only digits 0-9 are allowed in Phone.');
+            }
+        });
+        alterPhoneInput.addEventListener('beforeinput', e => {
+            if (e.data && !/^[0-9]+$/.test(e.data)) {
+                e.preventDefault();
+                showCompanyLiveErr('alter_phone', 'Only digits 0-9 are allowed in Phone.');
+            }
+        });
+        alterPhoneInput.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+            if (phoneRegex.test(e.target.value) || !e.target.value) {
+                clearCompanyLiveErr('alter_phone');
+            }
+        });
+        alterPhoneInput.addEventListener('blur', e => {
+            const val = e.target.value.trim();
+            if (val && !phoneRegex.test(val)) {
+                showCompanyLiveErr('alter_phone', 'Alternate Phone must be a 10-digit number starting with 6, 7, 8, or 9.');
+            }
         });
     }
 
@@ -627,22 +757,145 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (cityInput) cityInput.addEventListener('input', updateLocation);
-    if (stateInput) stateInput.addEventListener('input', updateLocation);
+    const addrInput = document.getElementById('address');
+    if (addrInput) {
+        addrInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && disallowedChars.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        addrInput.addEventListener('input', e => {
+            if (disallowedChars.test(e.target.value)) {
+                e.target.value = e.target.value.replace(disallowedChars, '');
+            }
+        });
+    }
+
+    if (cityInput) {
+        cityInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !/[a-zA-Z\s\.\-]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        cityInput.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[^a-zA-Z\s\.\-]/g, '').slice(0, 50);
+            updateLocation();
+        });
+    }
+
+    if (stateInput) {
+        stateInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !/[a-zA-Z\s\.\-]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+        stateInput.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[^a-zA-Z\s\.\-]/g, '').slice(0, 50);
+            updateLocation();
+        });
+    }
 
     if (pincodeInput) {
+        pincodeInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !/[0-9]/.test(e.key)) {
+                e.preventDefault();
+                showCompanyLiveErr('pincode', 'Only digits 0-9 are allowed.');
+            }
+        });
+        pincodeInput.addEventListener('beforeinput', e => {
+            if (e.data && !/^[0-9]+$/.test(e.data)) {
+                e.preventDefault();
+                showCompanyLiveErr('pincode', 'Only digits 0-9 are allowed.');
+            }
+        });
         pincodeInput.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+            if (pinRegex.test(e.target.value) || !e.target.value) {
+                clearCompanyLiveErr('pincode');
+            }
             const el = document.getElementById('livePincodePreview');
             if (el) el.textContent = e.target.value.trim() || '—';
+        });
+        pincodeInput.addEventListener('blur', e => {
+            const val = e.target.value.trim();
+            if (val && !pinRegex.test(val)) {
+                showCompanyLiveErr('pincode', 'Pincode must be exactly 6 digits.');
+            }
         });
     }
 
     if (descInput) {
+        descInput.addEventListener('keydown', e => {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && disallowedChars.test(e.key)) {
+                e.preventDefault();
+            }
+        });
         descInput.addEventListener('input', e => {
+            if (disallowedChars.test(e.target.value)) {
+                e.target.value = e.target.value.replace(disallowedChars, '');
+            }
             const el = document.getElementById('liveDescPreview');
             if (el) {
                 const val = e.target.value.trim();
                 el.textContent = val ? `"${val}"` : `"Precision industrial manufacturing and customer excellence."`;
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            let firstInvalid = null;
+
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+            if (!nameVal) {
+                hasError = true;
+                showCompanyLiveErr('name', 'Official Company Name is required.', true);
+                if (!firstInvalid) firstInvalid = nameInput;
+            } else if (nameVal.length < 2) {
+                hasError = true;
+                showCompanyLiveErr('name', 'Company Name must be at least 2 characters.', true);
+                if (!firstInvalid) firstInvalid = nameInput;
+            }
+
+            if (emailInput && emailInput.value.trim()) {
+                if (!emailRegex.test(emailInput.value.trim())) {
+                    hasError = true;
+                    showCompanyLiveErr('email', 'Please enter a valid company email address with domain (e.g. info@company.com).', true);
+                    if (!firstInvalid) firstInvalid = emailInput;
+                }
+            }
+
+            if (phoneInput && phoneInput.value.trim()) {
+                if (!phoneRegex.test(phoneInput.value.trim())) {
+                    hasError = true;
+                    showCompanyLiveErr('phone', 'Primary Phone must be a 10-digit number starting with 6, 7, 8, or 9.', true);
+                    if (!firstInvalid) firstInvalid = phoneInput;
+                }
+            }
+
+            if (alterPhoneInput && alterPhoneInput.value.trim()) {
+                if (!phoneRegex.test(alterPhoneInput.value.trim())) {
+                    hasError = true;
+                    showCompanyLiveErr('alter_phone', 'Alternate Phone must be a 10-digit number starting with 6, 7, 8, or 9.', true);
+                    if (!firstInvalid) firstInvalid = alterPhoneInput;
+                }
+            }
+
+            if (pincodeInput && pincodeInput.value.trim()) {
+                if (!pinRegex.test(pincodeInput.value.trim())) {
+                    hasError = true;
+                    showCompanyLiveErr('pincode', 'Pincode must be exactly 6 digits.', true);
+                    if (!firstInvalid) firstInvalid = pincodeInput;
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             }
         });
     }
