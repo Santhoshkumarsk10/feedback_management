@@ -11,6 +11,10 @@
     </div>
 
     <div class="topbar-right">
+        <a href="{{ route('password.change') }}" class="btn-modern-secondary btn-sm" title="Account Security & Change Password">
+            <i class="bi bi-shield-lock-fill text-info"></i>
+            <span class="d-none d-lg-inline">Security</span>
+        </a>
         <a href="/apk/shibaura-plant-feedback.apk" class="btn-modern-secondary btn-sm" title="Download Android Tablet / Mobile APK">
             <i class="bi bi-android2 text-success"></i>
             <span class="d-none d-lg-inline">Tablet APK</span>

@@ -22,10 +22,13 @@ Route::prefix('cms')->group(function () {
 // ---------- Organizer app: JWT ----------
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/refresh', [AuthController::class, 'refresh']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
 
 Route::middleware(['auth:api', 'role:organizer'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     Route::prefix('organizer')->group(function () {
         Route::get('/dashboard', [OrganizerController::class, 'dashboard']);
@@ -33,3 +36,4 @@ Route::middleware(['auth:api', 'role:organizer'])->group(function () {
         Route::get('/feedback/{id}', [OrganizerController::class, 'feedbackDetail']);
     });
 });
+

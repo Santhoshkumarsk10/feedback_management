@@ -3,19 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Enterprise Login — PlantPulse Feedback</title>
+    <title>Set New Password — Shibaura Plant Pulse</title>
 
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('android-chrome-192x192.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
-    <!-- Typography: Myriad Pro Font Family -->
-    <!-- Typography: Inter, Poppins, Roboto, Noto Sans -->
+    <!-- Typography: Inter, Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -23,8 +20,8 @@
 
     <style>
         :root {
-            --font-heading: 'Inter', 'Poppins', 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
-            --font-body: 'Inter', 'Poppins', 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+            --font-heading: 'Inter', 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
         }
 
         body {
@@ -40,7 +37,6 @@
             overflow-x: hidden;
         }
 
-        /* Ambient glowing orbs */
         .ambient-orb {
             position: absolute;
             border-radius: 50%;
@@ -65,7 +61,7 @@
 
         .login-card-container {
             width: 100%;
-            max-width: 980px;
+            max-width: 920px;
             background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -126,7 +122,7 @@
             background: rgba(30, 41, 59, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 0.75rem 1rem 0.75rem 2.85rem;
+            padding: 0.75rem 2.85rem 0.75rem 2.85rem;
             color: #ffffff;
             font-size: 0.92rem;
             transition: all 0.2s ease;
@@ -138,10 +134,6 @@
             box-shadow: 0 0 0 3px rgba(6, 83, 157, 0.3);
             outline: none;
             color: #ffffff;
-        }
-
-        .input-group-modern input:focus + .input-icon {
-            color: #38bdf8;
         }
 
         .toggle-password {
@@ -180,22 +172,24 @@
             box-shadow: 0 6px 24px rgba(6, 83, 157, 0.55);
         }
 
-        .quick-demo-pill {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .btn-ghost-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #94a3b8;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            cursor: pointer;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             transition: all 0.2s ease;
-            text-align: left;
         }
 
-        .quick-demo-pill:hover {
-            background: rgba(6, 83, 157, 0.3);
-            border-color: rgba(56, 189, 248, 0.5);
-            color: #38bdf8;
+        .btn-ghost-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
 
         @media (max-width: 768px) {
@@ -216,24 +210,24 @@
             <div>
                 <div class="brand-badge-pill mb-4">
                     <i class="bi bi-shield-lock-fill"></i>
-                    <span>Plant Operations Portal</span>
+                    <span>Secure Password Update</span>
                 </div>
-                <h2 class="text-white fw-bold mb-3" style="font-family: var(--font-heading); font-size: 2.2rem; letter-spacing: -0.03em;">
-                    Intelligent Plant Feedback & Visitor Insights.
+                <h2 class="text-white fw-bold mb-3" style="font-family: var(--font-heading); font-size: 2.1rem; letter-spacing: -0.03em;">
+                    Create a New Secure Password.
                 </h2>
                 <p class="text-slate-400" style="color: #94a3b8; line-height: 1.6;">
-                    Monitor operational feedback, organizer engagement, and visitor safety evaluations across plant facilities in real time.
+                    Choose a strong, unique password to safeguard your plant operations account and maintain security compliance.
                 </p>
             </div>
 
             <div class="pt-4 border-top border-white border-opacity-10">
                 <div class="d-flex align-items-center gap-3">
                     <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #34d399; font-size: 1.3rem;">
-                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <i class="bi bi-check2-circle"></i>
                     </div>
                     <div>
-                        <div class="text-white fw-semibold small">Live KPI Tracking</div>
-                        <div class="small" style="color: #64748b;">Instant sentiment scores & tour reports</div>
+                        <div class="text-white fw-semibold small">Password Policy</div>
+                        <div class="small" style="color: #64748b;">Minimum 8 characters with high entropy</div>
                     </div>
                 </div>
             </div>
@@ -246,18 +240,11 @@
                     <div style="background: white; border-radius: 10px; padding: 6px 14px; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                         <img src="{{ asset('images/shibaura-logo-cropped.webp') }}" alt="Shibaura Machine" style="max-height: 28px; width: auto;">
                     </div>
-                    <span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1 small">Feedback Portal</span>
+                    <span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-1 small">Account Recovery</span>
                 </div>
-                <h4 class="text-white fw-bold mb-1">Sign in to your account</h4>
-                <p class="small text-slate-400" style="color: #94a3b8;">Enter your credentials to access the operations dashboard</p>
+                <h4 class="text-white fw-bold mb-1">Set new password</h4>
+                <p class="small text-slate-400" style="color: #94a3b8;">Enter your verified email and specify your new password below.</p>
             </div>
-
-            @if(session('status'))
-                <div class="alert alert-success py-2 px-3 rounded-3 small mb-3 border-0 text-white d-flex align-items-center gap-2" style="background: rgba(16, 185, 129, 0.85);">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ session('status') }}</span>
-                </div>
-            @endif
 
             @if($errors->any())
                 <div class="alert alert-danger py-2 px-3 rounded-3 small mb-3 border-0 bg-danger text-white">
@@ -265,86 +252,67 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ route('password.update') }}">
                 @csrf
+                <input type="hidden" name="token" value="{{ $token }}">
+
                 <div class="mb-3">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Email or Mobile</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Email Address</label>
                     <div class="input-group-modern">
-                        <input id="loginInput" name="login" value="{{ old('login') }}" placeholder="e.g. superadmin@plant.test" required autofocus autocomplete="username">
+                        <input type="email" id="emailInput" name="email" value="{{ old('email', $email) }}" required readonly style="opacity: 0.85;">
                         <i class="bi bi-envelope-fill input-icon"></i>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label class="form-label text-slate-300 small fw-semibold mb-0" style="color: #cbd5e1;">Password</label>
-                        <a href="{{ route('password.request') }}" class="small text-decoration-none" style="color: #38bdf8; font-size: 0.82rem; font-weight: 500;" title="Recover account password">
-                            <i class="bi bi-question-circle me-1"></i>Forgot Password?
-                        </a>
-                    </div>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">New Password</label>
                     <div class="input-group-modern">
-                        <input type="password" id="passwordInput" name="password" placeholder="••••••••" required autocomplete="current-password">
+                        <input type="password" id="passwordInput" name="password" placeholder="Minimum 8 characters" required autofocus>
                         <i class="bi bi-key-fill input-icon"></i>
-                        <button type="button" class="toggle-password" onclick="togglePassVisibility()" aria-label="Toggle password">
-                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        <button type="button" class="toggle-password" onclick="togglePass('passwordInput', 'eyeIcon1')" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye" id="eyeIcon1"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check">
-                        <input class="form-check-input bg-dark border-secondary" type="checkbox" name="remember" id="remember" checked>
-                        <label class="form-check-label small" style="color: #94a3b8;" for="remember">
-                            Remember for 30 days
-                        </label>
+                <div class="mb-4">
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Confirm New Password</label>
+                    <div class="input-group-modern">
+                        <input type="password" id="passwordConfirmInput" name="password_confirmation" placeholder="Repeat new password" required>
+                        <i class="bi bi-lock-fill input-icon"></i>
+                        <button type="button" class="toggle-password" onclick="togglePass('passwordConfirmInput', 'eyeIcon2')" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye" id="eyeIcon2"></i>
+                        </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-brand-submit mb-4">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Dashboard
-                </button>
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <button type="submit" class="btn-brand-submit">
+                        <i class="bi bi-check-lg me-1"></i> Update Password & Sign In
+                    </button>
+                    <a href="{{ route('login') }}" class="btn-ghost-back">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Login
+                    </a>
+                </div>
             </form>
-
-            <!-- Quick Demo Credentials Box -->
-            <div class="p-3 rounded-3" style="background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15);">
-                <div class="d-flex align-items-center gap-1 text-slate-400 small fw-semibold mb-2" style="color: #94a3b8; font-size: 0.75rem;">
-                    <i class="bi bi-lightning-charge-fill text-warning"></i> Quick Demo Login (Click to fill):
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('superadmin@plant.test', 'password')">
-                        👑 <strong>Super Admin</strong>
-                    </button>
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('admin@plant.test', 'password')">
-                        🛡️ <strong>Admin</strong>
-                    </button>
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('ravi@plant.test', 'password')">
-                        🏭 <strong>Organizer</strong>
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-function togglePassVisibility() {
-    const input = document.getElementById('passwordInput');
-    const icon = document.getElementById('eyeIcon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
+    function togglePass(inputId, iconId) {
+        const inp = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            inp.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
     }
-}
-
-function fillCredentials(login, password) {
-    document.getElementById('loginInput').value = login;
-    document.getElementById('passwordInput').value = password;
-}
 </script>
 
 </body>
