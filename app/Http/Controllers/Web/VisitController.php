@@ -11,7 +11,12 @@ class VisitController extends Controller
 {
     public function index(Request $request)
     {
-        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date']);
+        $request->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+            'organizer_id' => 'nullable|integer|exists:users,id',
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ]);
 
         $tab = $request->input('tab', 'all');
 

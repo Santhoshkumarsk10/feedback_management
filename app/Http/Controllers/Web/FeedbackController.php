@@ -11,7 +11,13 @@ class FeedbackController extends Controller
 {
     public function index(Request $request)
     {
-        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date', 'rating' => 'nullable|integer|between:1,5']);
+        $request->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+            'rating' => 'nullable|integer|between:1,5',
+            'organizer_id' => 'nullable|integer|exists:users,id',
+            'tier' => 'nullable|string|in:all,5_star,4_star,critical',
+        ]);
 
         $tier = $request->input('tier', 'all');
 

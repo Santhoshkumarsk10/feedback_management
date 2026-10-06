@@ -12,6 +12,10 @@ class RoleController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ]);
+
         $tab = $request->input('tab', 'all');
 
         $query = Role::withCount('users')
@@ -63,10 +67,15 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'slug' => 'nullable|string|max:50|unique:roles,slug',
-            'description' => 'nullable|string|max:500',
+            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'slug' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[a-zA-Z0-9_\-]+$/', 'unique:roles,slug'],
+            'description' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;\r\n]+$~u'],
             'is_active' => 'boolean',
+        ], [
+            'name.min' => 'Role name must be at least 2 characters.',
+            'name.regex' => 'Role name contains invalid characters.',
+            'slug.regex' => 'Role slug identifier may only contain letters, numbers, hyphens, and underscores.',
+            'description.regex' => 'Role description contains invalid characters.',
         ]);
 
         $slug = !empty($validated['slug']) ? Str::slug($validated['slug'], '_') : Str::slug($validated['name'], '_');
@@ -102,10 +111,15 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'slug' => ['nullable', 'string', 'max:50', Rule::unique('roles', 'slug')->ignore($role->id)],
-            'description' => 'nullable|string|max:500',
+            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'slug' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[a-zA-Z0-9_\-]+$/', Rule::unique('roles', 'slug')->ignore($role->id)],
+            'description' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;\r\n]+$~u'],
             'is_active' => 'boolean',
+        ], [
+            'name.min' => 'Role name must be at least 2 characters.',
+            'name.regex' => 'Role name contains invalid characters.',
+            'slug.regex' => 'Role slug identifier may only contain letters, numbers, hyphens, and underscores.',
+            'description.regex' => 'Role description contains invalid characters.',
         ]);
 
         $data = [

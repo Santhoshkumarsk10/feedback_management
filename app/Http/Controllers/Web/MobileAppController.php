@@ -42,6 +42,15 @@ class MobileAppController extends Controller
             ->get();
 
         $company = Company::current();
+        $authUser = Auth::user();
+        $organizerStats = null;
+        if ($authUser && in_array($authUser->role, ['organizer', 'admin', 'superadmin'], true)) {
+            $organizerStats = [
+                'total_visits' => Visit::where('organizer_id', $authUser->id)->count(),
+                'today_visits' => Visit::where('organizer_id', $authUser->id)->whereDate('visit_date', today())->count(),
+                'avg_rating' => round(Feedback::where('organizer_id', $authUser->id)->avg('overall_rating') ?? 5, 1),
+            ];
+        }
 
         return view('app.mobile', [
             'plants' => $plants,
@@ -50,6 +59,8 @@ class MobileAppController extends Controller
             'sections' => $sections,
             'banners' => $banners,
             'company' => $company,
+            'authUser' => $authUser,
+            'organizerStats' => $organizerStats,
         ]);
     }
 
@@ -61,17 +72,22 @@ class MobileAppController extends Controller
         $validated = $request->validate([
             'organizer_id' => 'required|exists:users,id',
             'plant_id' => 'nullable|exists:plants,id',
-            'visitor_name' => 'required|string|max:100',
-            'visitor_company' => 'required|string|max:150',
-            'visitor_mobile' => 'nullable|string|max:20',
-            'visitor_email' => 'nullable|email|max:150',
-            'visitor_designation' => 'nullable|string|max:150',
-            'purpose' => 'nullable|string|max:255',
+            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'visitor_company' => ['required', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
+            'visitor_email' => ['nullable', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'purpose' => ['nullable', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'overall_rating' => 'nullable|integer|between:1,5',
-            'comments' => 'nullable|string|max:2000',
+            'comments' => ['nullable', 'string', 'max:2000'],
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
             'answers.*.answer' => 'nullable',
+        ], [
+            'visitor_mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'visitor_name.regex' => 'Visitor Name may only contain letters, spaces, hyphens, and dots.',
+            'visitor_company.regex' => 'Company Name contains invalid characters.',
+            'visitor_email.regex' => 'Please provide a valid email address with domain (e.g. name@domain.com).',
         ]);
 
         $organizer = User::findOrFail($validated['organizer_id']);

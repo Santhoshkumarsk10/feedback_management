@@ -53,11 +53,15 @@ class QuestionController extends Controller
     private function data(Request $r): array
     {
         $d = $r->validate([
-            'question' => 'required|string|max:255',
-            'section' => 'nullable|string|max:150',
+            'question' => ['required', 'string', 'min:3', 'max:255', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()?!\'’"“”:]+$~u'],
+            'section' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’:]+$~u'],
             'type' => 'required|in:rating,mcq,text',
-            'options' => 'required_if:type,mcq|nullable|string',
-            'sort_order' => 'nullable|integer|min:0',
+            'options' => 'required_if:type,mcq|nullable|string|max:2000',
+            'sort_order' => 'nullable|integer|min:0|max:9999',
+        ], [
+            'question.min' => 'The question text must be at least 3 characters.',
+            'question.regex' => 'The question text contains invalid characters.',
+            'section.regex' => 'The section name contains invalid characters.',
         ]);
 
         return [

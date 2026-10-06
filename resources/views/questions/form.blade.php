@@ -25,7 +25,7 @@
             </div>
 
             <div class="card-body p-4">
-                <form method="POST" action="{{ $question->exists ? route('questions.update', $question) : route('questions.store') }}" id="questionForm">
+                <form method="POST" action="{{ $question->exists ? route('questions.update', $question) : route('questions.store') }}" id="questionForm" novalidate>
                     @csrf
                     @if($question->exists)
                         @method('PUT')
@@ -34,7 +34,11 @@
                     <!-- Section Assignment -->
                     <div class="mb-3">
                         <label class="form-modern-label">Form Section <span class="text-danger">*</span></label>
-                        <input list="sectionList" name="section" id="sectionInput" class="form-control form-control-modern" value="{{ old('section', $question->section) }}" placeholder="Select or type section name e.g. Section 2 — Overall Experience" required>
+                        <input list="sectionList" name="section" id="sectionInput" class="form-control form-control-modern @error('section') is-invalid @enderror" value="{{ old('section', $question->section) }}" placeholder="Select or type section name e.g. Section 2 — Overall Experience" minlength="2" maxlength="150" required>
+                        @error('section')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_section"></div>
                         <datalist id="sectionList">
                             <option value="Section 1 — Visit Details & Purpose">
                             <option value="Section 2 — Overall Experience">
@@ -50,22 +54,32 @@
                     <!-- Question Text -->
                     <div class="mb-3">
                         <label class="form-modern-label">Question Text <span class="text-danger">*</span></label>
-                        <input name="question" id="questionInput" class="form-control form-control-modern" value="{{ old('question', $question->question) }}" placeholder="e.g. How would you rate the quality and relevance of the demonstrations?" required>
+                        <input name="question" id="questionInput" class="form-control form-control-modern @error('question') is-invalid @enderror" value="{{ old('question', $question->question) }}" placeholder="e.g. How would you rate the quality and relevance of the demonstrations?" minlength="3" maxlength="255" required>
+                        @error('question')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_question"></div>
                     </div>
 
                     <!-- Type and Order -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-modern-label">Response Type <span class="text-danger">*</span></label>
-                            <select name="type" id="questionTypeSelect" class="form-select form-select-modern">
+                            <select name="type" id="questionTypeSelect" class="form-select form-select-modern @error('type') is-invalid @enderror">
                                 @foreach(['rating' => '⭐ Rating Scale (1 to 5 Stars)', 'mcq' => '🔘 Multiple Choice (Options)', 'text' => '📝 Free Text (Open comments)'] as $k => $l)
                                     <option value="{{ $k }}" @selected(old('type', $question->type) === $k)>{{ $l }}</option>
                                 @endforeach
                             </select>
+                            @error('type')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label">Display Order / Sequence</label>
-                            <input type="number" min="0" name="sort_order" class="form-control form-control-modern" value="{{ old('sort_order', $question->sort_order ?? 0) }}">
+                            <input type="number" min="0" max="9999" name="sort_order" class="form-control form-control-modern @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $question->sort_order ?? 0) }}">
+                            @error('sort_order')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                             <div class="small text-muted mt-1">Lower numbers appear first within the section.</div>
                         </div>
                     </div>
@@ -76,7 +90,11 @@
                             Multiple Choice Options
                             <small class="text-muted fw-normal">(One answer option per line)</small>
                         </label>
-                        <textarea name="options" id="optionsInput" rows="4" class="form-control form-control-modern" placeholder="Definitely&#10;To some extent&#10;Not really&#10;Not applicable">{{ old('options', implode("\n", $question->options ?? [])) }}</textarea>
+                        <textarea name="options" id="optionsInput" rows="4" class="form-control form-control-modern @error('options') is-invalid @enderror" placeholder="Definitely&#10;To some extent&#10;Not really&#10;Not applicable" maxlength="2000">{{ old('options', implode("\n", $question->options ?? [])) }}</textarea>
+                        @error('options')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_options"></div>
                         <div class="small text-muted mt-1">Only required when response type is set to Multiple Choice.</div>
                     </div>
 
@@ -208,6 +226,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('questionForm');
     const typeSelect = document.getElementById('questionTypeSelect');
     const optionsBox = document.getElementById('optionsBox');
     const optionsInput = document.getElementById('optionsInput');
@@ -221,6 +240,150 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewMcq = document.getElementById('previewMcq');
     const previewOptionsList = document.getElementById('previewOptionsList');
     const previewText = document.getElementById('previewText');
+
+    function showLiveErr(id, msg, persistent = false) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = id === 'section' ? sectionInput : (id === 'question' ? questionInput : optionsInput);
+        if (input) input.classList.add('is-invalid');
+        if (errEl) {
+            errEl.textContent = msg;
+            errEl.classList.remove('d-none');
+            errEl.classList.add('d-block');
+            clearTimeout(errEl._timer);
+            if (!persistent) {
+                errEl._timer = setTimeout(() => {
+                    errEl.classList.remove('d-block');
+                    errEl.classList.add('d-none');
+                }, 2500);
+            }
+        }
+    }
+
+    function clearLiveErr(id) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = id === 'section' ? sectionInput : (id === 'question' ? questionInput : optionsInput);
+        if (input) input.classList.remove('is-invalid');
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+    }
+
+    const forbiddenCharRegex = /[<>{}\[\]$^*~=\\\|]/;
+    const disallowedChars = /[<>{}\[\]$^*~=\\\|]/g;
+
+    function bindQuestionFieldInterceptors(input, id, minLen, maxLen, msg) {
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (forbiddenCharRegex.test(e.key)) {
+                    e.preventDefault();
+                    showLiveErr(id, msg);
+                    return;
+                }
+                if (maxLen && this.value.length >= maxLen && this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+
+        input.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    if (forbiddenCharRegex.test(e.data[i])) {
+                        e.preventDefault();
+                        showLiveErr(id, msg);
+                        return;
+                    }
+                }
+            }
+        });
+
+        input.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && disallowedChars.test(text)) {
+                e.preventDefault();
+                let cleaned = text.replace(disallowedChars, '');
+                if (maxLen) {
+                    const avail = maxLen - (this.value.length - (this.selectionEnd - this.selectionStart));
+                    if (avail > 0) cleaned = cleaned.slice(0, avail);
+                    else cleaned = '';
+                }
+                document.execCommand('insertText', false, cleaned);
+            }
+        });
+
+        input.addEventListener('input', function() {
+            if (disallowedChars.test(this.value)) {
+                this.value = this.value.replace(disallowedChars, '');
+                showLiveErr(id, msg);
+            } else if (this.value.trim().length >= minLen) {
+                clearLiveErr(id);
+            }
+            if (maxLen && this.value.length > maxLen) {
+                this.value = this.value.slice(0, maxLen);
+            }
+        });
+    }
+
+    bindQuestionFieldInterceptors(sectionInput, 'section', 2, 50, 'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.');
+    bindQuestionFieldInterceptors(questionInput, 'question', 3, 255, 'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.');
+    bindQuestionFieldInterceptors(optionsInput, 'options', 2, 1000, 'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.');
+
+    optionsInput.addEventListener('input', function() {
+        const lines = (this.value || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length >= 2) {
+            clearLiveErr('options');
+        }
+    });
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            let firstInvalid = null;
+
+            const sVal = sectionInput.value.trim();
+            if (!sVal) {
+                hasError = true;
+                showLiveErr('section', 'Form Section is required.', true);
+                if (!firstInvalid) firstInvalid = sectionInput;
+            } else if (sVal.length < 2) {
+                hasError = true;
+                showLiveErr('section', 'Form Section must be at least 2 characters.', true);
+                if (!firstInvalid) firstInvalid = sectionInput;
+            }
+
+            const qVal = questionInput.value.trim();
+            if (!qVal) {
+                hasError = true;
+                showLiveErr('question', 'Question Text is required.', true);
+                if (!firstInvalid) firstInvalid = questionInput;
+            } else if (qVal.length < 3) {
+                hasError = true;
+                showLiveErr('question', 'Question Text must be at least 3 characters.', true);
+                if (!firstInvalid) firstInvalid = questionInput;
+            }
+
+            if (typeSelect.value === 'mcq') {
+                const lines = (optionsInput.value || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length < 2) {
+                    hasError = true;
+                    showLiveErr('options', 'Please enter at least 2 Multiple Choice options (one per line).', true);
+                    if (!firstInvalid) firstInvalid = optionsInput;
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
 
     function updatePreview() {
         const type = typeSelect.value;
@@ -236,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewScaleLabel.classList.remove('d-none');
             previewMcq.classList.add('d-none');
             previewText.classList.add('d-none');
+            clearLiveErr('options');
         } else if (type === 'mcq') {
             optionsBox.classList.remove('d-none');
             previewRating.classList.add('d-none');
@@ -261,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
             previewScaleLabel.classList.add('d-none');
             previewMcq.classList.add('d-none');
             previewText.classList.remove('d-none');
+            clearLiveErr('options');
         }
     }
 

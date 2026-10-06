@@ -6,31 +6,6 @@
 @section('content')
 <div class="row g-4 justify-content-center">
     <div class="col-xl-8 col-lg-10">
-
-        @if(session('success'))
-            <div class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-3 shadow-sm border-0 mb-4" role="alert" style="background: #ecfdf5; border-left: 4px solid #10b981 !important;">
-                <i class="bi bi-check-circle-fill text-success fs-4"></i>
-                <div>
-                    <div class="fw-bold text-dark">Password Updated Successfully</div>
-                    <div class="small text-secondary">{{ session('success') }}</div>
-                </div>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger p-3 rounded-3 shadow-sm border-0 mb-4" style="background: #fef2f2; border-left: 4px solid #ef4444 !important;">
-                <div class="fw-bold text-danger mb-2 d-flex align-items-center gap-2">
-                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                    <span>Please correct the issues below:</span>
-                </div>
-                <ul class="mb-0 ps-3 small text-danger">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <!-- User Identity Banner -->
         <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
             <div class="card-body p-4">
@@ -83,17 +58,17 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-                <form action="{{ route('password.change.update') }}" method="POST">
+                <form action="{{ route('password.change.update') }}" method="POST" id="changePasswordForm" novalidate>
                     @csrf
 
                     <!-- Current Password -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small">
+                        <label class="form-label fw-bold text-dark small" for="current_password">
                             Current Password <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-                            <input type="password" id="current_password" name="current_password" class="form-control border-start-0 border-end-0 @error('current_password') is-invalid @enderror" placeholder="Enter your current password" required autocomplete="current-password">
+                            <input type="password" id="current_password" name="current_password" class="form-control border-start-0 border-end-0 @error('current_password') is-invalid @enderror" placeholder="Enter your current password" minlength="4" maxlength="64" required autocomplete="current-password">
                             <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" onclick="toggleField('current_password', 'eyeCurrent')">
                                 <i class="bi bi-eye text-muted" id="eyeCurrent"></i>
                             </button>
@@ -101,18 +76,19 @@
                         @error('current_password')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_current_password"></div>
                     </div>
 
                     <hr class="my-4 text-muted opacity-25">
 
                     <!-- New Password -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small">
+                        <label class="form-label fw-bold text-dark small" for="password">
                             New Password <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shield-lock"></i></span>
-                            <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 @error('password') is-invalid @enderror" placeholder="Enter new password (min. 8 characters)" required autocomplete="new-password">
+                            <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 @error('password') is-invalid @enderror" placeholder="Enter new password (min. 8 characters)" minlength="8" maxlength="64" required autocomplete="new-password">
                             <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" onclick="toggleField('password', 'eyeNew')">
                                 <i class="bi bi-eye text-muted" id="eyeNew"></i>
                             </button>
@@ -120,20 +96,22 @@
                         @error('password')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_password"></div>
                     </div>
 
                     <!-- Confirm New Password -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small">
+                        <label class="form-label fw-bold text-dark small" for="password_confirmation">
                             Confirm New Password <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-check2-circle"></i></span>
-                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control border-start-0 border-end-0" placeholder="Re-enter new password" required autocomplete="new-password">
+                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control border-start-0 border-end-0" placeholder="Re-enter new password" minlength="8" maxlength="64" required autocomplete="new-password">
                             <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" onclick="toggleField('password_confirmation', 'eyeConfirm')">
                                 <i class="bi bi-eye text-muted" id="eyeConfirm"></i>
                             </button>
                         </div>
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_password_confirmation"></div>
                     </div>
 
                     <!-- Password Policy Tips Box -->
@@ -154,7 +132,7 @@
                             </div>
                             <div class="col-sm-6">
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check-circle text-primary"></i> Uses mixed case and numbers
+                                    <i class="bi bi-check-circle text-primary"></i> Max length limit 64 characters
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -195,5 +173,120 @@
             icon.classList.add('bi-eye');
         }
     }
+
+    function showPassLiveErr(id, msg, persistent = false) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.add('is-invalid');
+        if (errEl) {
+            errEl.textContent = msg;
+            errEl.classList.remove('d-none');
+            errEl.classList.add('d-block');
+            clearTimeout(errEl._timer);
+            if (!persistent) {
+                errEl._timer = setTimeout(() => {
+                    errEl.classList.remove('d-block');
+                    errEl.classList.add('d-none');
+                }, 2500);
+            }
+        }
+    }
+
+    function clearPassLiveErr(id) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.remove('is-invalid');
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('changePasswordForm');
+        const currPass = document.getElementById('current_password');
+        const newPass = document.getElementById('password');
+        const confirmPass = document.getElementById('password_confirmation');
+
+        if (currPass) {
+            currPass.addEventListener('input', function() {
+                if (this.value.trim().length >= 4) {
+                    clearPassLiveErr('current_password');
+                }
+            });
+        }
+
+        if (newPass) {
+            newPass.addEventListener('input', function() {
+                if (this.value.trim().length >= 8) {
+                    clearPassLiveErr('password');
+                }
+                if (confirmPass && confirmPass.value.trim() && this.value === confirmPass.value) {
+                    clearPassLiveErr('password_confirmation');
+                }
+            });
+        }
+
+        if (confirmPass) {
+            confirmPass.addEventListener('input', function() {
+                if (this.value === newPass.value) {
+                    clearPassLiveErr('password_confirmation');
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+                let firstInvalid = null;
+
+                const currVal = currPass ? currPass.value : '';
+                const newVal = newPass ? newPass.value : '';
+                const confVal = confirmPass ? confirmPass.value : '';
+
+                if (!currVal) {
+                    hasError = true;
+                    showPassLiveErr('current_password', 'Current password is required.', true);
+                    if (!firstInvalid) firstInvalid = currPass;
+                } else if (currVal.length < 4) {
+                    hasError = true;
+                    showPassLiveErr('current_password', 'Current password must be at least 4 characters.', true);
+                    if (!firstInvalid) firstInvalid = currPass;
+                }
+
+                if (!newVal) {
+                    hasError = true;
+                    showPassLiveErr('password', 'New password is required.', true);
+                    if (!firstInvalid) firstInvalid = newPass;
+                } else if (newVal.length < 8) {
+                    hasError = true;
+                    showPassLiveErr('password', 'New password must be at least 8 characters.', true);
+                    if (!firstInvalid) firstInvalid = newPass;
+                } else if (currVal && newVal === currVal) {
+                    hasError = true;
+                    showPassLiveErr('password', 'The new password must be different from your current password.', true);
+                    if (!firstInvalid) firstInvalid = newPass;
+                }
+
+                if (!confVal) {
+                    hasError = true;
+                    showPassLiveErr('password_confirmation', 'Please confirm your new password.', true);
+                    if (!firstInvalid) firstInvalid = confirmPass;
+                } else if (confVal !== newVal) {
+                    hasError = true;
+                    showPassLiveErr('password_confirmation', 'Confirmation password does not match.', true);
+                    if (!firstInvalid) firstInvalid = confirmPass;
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endsection

@@ -44,7 +44,7 @@
 
     <!-- Filter Controls Bar -->
     <div class="filter-controls-body">
-        <form method="GET" action="{{ route('feedbacks.index') }}" class="d-flex flex-wrap align-items-center gap-2">
+        <form method="GET" action="{{ route('feedbacks.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="feedbackFilterForm" onsubmit="const hasVal = Array.from(this.querySelectorAll('input:not([type=hidden]), select')).some(el => el.value && el.value.trim() !== ''); const urlParams = new URLSearchParams(window.location.search); urlParams.delete('tier'); urlParams.delete('page'); if(!hasVal && !urlParams.toString()){ event.preventDefault(); const firstTrigger = this.querySelector('button.custom-select-trigger, input:not([type=hidden])'); if(firstTrigger) { firstTrigger.focus(); firstTrigger.classList.add('border-danger'); setTimeout(() => firstTrigger.classList.remove('border-danger'), 2000); } }">
             @if(request('tier'))
                 <input type="hidden" name="tier" value="{{ request('tier') }}">
             @endif

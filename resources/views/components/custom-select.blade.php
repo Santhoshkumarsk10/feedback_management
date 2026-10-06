@@ -354,16 +354,17 @@
 
         // Search input events
         if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const q = searchInput.value;
-                if (searchClear) {
-                    if (q.length > 0) searchClear.classList.remove('d-none');
-                    else searchClear.classList.add('d-none');
-                }
-                filterOptions(q);
-            });
+            const allowedCustomSelectChar = /^[\p{L}\p{N}\s\-_.,\/@&()]$/u;
+            const disallowedCustomSelectRegex = /[^\p{L}\p{N}\s\-_.,\/@&()]/gu;
 
             searchInput.addEventListener('keydown', function(e) {
+                if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    if (!allowedCustomSelectChar.test(e.key)) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
                 const visible = getVisibleOptions();
                 const focused = visible.find(el => el.classList.contains('is-focused'));
                 let idx = focused ? visible.indexOf(focused) : -1;
@@ -395,6 +396,38 @@
                     closeDropdown();
                     trigger.focus();
                 }
+            });
+
+            searchInput.addEventListener('beforeinput', function(e) {
+                if (e.data) {
+                    for (let i = 0; i < e.data.length; i++) {
+                        if (!allowedCustomSelectChar.test(e.data[i])) {
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                }
+            });
+
+            searchInput.addEventListener('paste', function(e) {
+                const text = (e.clipboardData || window.clipboardData)?.getData('text');
+                if (text && disallowedCustomSelectRegex.test(text)) {
+                    e.preventDefault();
+                    const cleaned = text.replace(disallowedCustomSelectRegex, '');
+                    document.execCommand('insertText', false, cleaned);
+                }
+            });
+
+            searchInput.addEventListener('input', function() {
+                if (disallowedCustomSelectRegex.test(this.value)) {
+                    this.value = this.value.replace(disallowedCustomSelectRegex, '');
+                }
+                const q = this.value;
+                if (searchClear) {
+                    if (q.length > 0) searchClear.classList.remove('d-none');
+                    else searchClear.classList.add('d-none');
+                }
+                filterOptions(q);
             });
         }
 

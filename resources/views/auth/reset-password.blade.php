@@ -196,6 +196,17 @@
             .hero-side { display: none; }
             .form-side { padding: 2.25rem 1.75rem; }
         }
+
+        .input-group-modern input.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .custom-live-err {
+            font-size: 0.8rem;
+            color: #f87171;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -252,38 +263,40 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('password.update') }}">
+            <form method="POST" action="{{ route('password.update') }}" id="resetPasswordForm" novalidate>
                 @csrf
                 <input type="hidden" name="token" value="{{ $token }}">
 
                 <div class="mb-3">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Email Address</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;" for="emailInput">Email Address</label>
                     <div class="input-group-modern">
-                        <input type="email" id="emailInput" name="email" value="{{ old('email', $email) }}" required readonly style="opacity: 0.85;">
+                        <input type="email" id="emailInput" name="email" value="{{ old('email', $email) }}" required readonly maxlength="100" style="opacity: 0.85;">
                         <i class="bi bi-envelope-fill input-icon"></i>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">New Password</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;" for="passwordInput">New Password</label>
                     <div class="input-group-modern">
-                        <input type="password" id="passwordInput" name="password" placeholder="Minimum 8 characters" required autofocus>
+                        <input type="password" id="passwordInput" name="password" placeholder="Minimum 8 characters" minlength="8" maxlength="64" required autofocus autocomplete="new-password">
                         <i class="bi bi-key-fill input-icon"></i>
                         <button type="button" class="toggle-password" onclick="togglePass('passwordInput', 'eyeIcon1')" aria-label="Toggle password visibility">
                             <i class="bi bi-eye" id="eyeIcon1"></i>
                         </button>
                     </div>
+                    <div class="invalid-feedback d-none custom-live-err" id="live_err_passwordInput"></div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Confirm New Password</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;" for="passwordConfirmInput">Confirm New Password</label>
                     <div class="input-group-modern">
-                        <input type="password" id="passwordConfirmInput" name="password_confirmation" placeholder="Repeat new password" required>
+                        <input type="password" id="passwordConfirmInput" name="password_confirmation" placeholder="Repeat new password" minlength="8" maxlength="64" required autocomplete="new-password">
                         <i class="bi bi-lock-fill input-icon"></i>
                         <button type="button" class="toggle-password" onclick="togglePass('passwordConfirmInput', 'eyeIcon2')" aria-label="Toggle password visibility">
                             <i class="bi bi-eye" id="eyeIcon2"></i>
                         </button>
                     </div>
+                    <div class="invalid-feedback d-none custom-live-err" id="live_err_passwordConfirmInput"></div>
                 </div>
 
                 <div class="d-flex flex-column gap-2 mb-3">
@@ -313,6 +326,96 @@
             icon.classList.add('bi-eye');
         }
     }
+
+    function showResetLiveErr(id, msg, persistent = false) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.add('is-invalid');
+        if (errEl) {
+            errEl.textContent = msg;
+            errEl.classList.remove('d-none');
+            errEl.classList.add('d-block');
+            clearTimeout(errEl._timer);
+            if (!persistent) {
+                errEl._timer = setTimeout(() => {
+                    errEl.classList.remove('d-block');
+                    errEl.classList.add('d-none');
+                }, 2500);
+            }
+        }
+    }
+
+    function clearResetLiveErr(id) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (input) input.classList.remove('is-invalid');
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('resetPasswordForm');
+        const passInp = document.getElementById('passwordInput');
+        const passConf = document.getElementById('passwordConfirmInput');
+
+        if (passInp) {
+            passInp.addEventListener('input', function() {
+                if (this.value.trim().length >= 8) {
+                    clearResetLiveErr('passwordInput');
+                }
+                if (passConf && passConf.value.trim() && this.value === passConf.value) {
+                    clearResetLiveErr('passwordConfirmInput');
+                }
+            });
+        }
+
+        if (passConf) {
+            passConf.addEventListener('input', function() {
+                if (this.value === passInp.value) {
+                    clearResetLiveErr('passwordConfirmInput');
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+                let firstInvalid = null;
+
+                const passVal = passInp ? passInp.value : '';
+                const confVal = passConf ? passConf.value : '';
+
+                if (!passVal) {
+                    hasError = true;
+                    showResetLiveErr('passwordInput', 'New password is required.', true);
+                    if (!firstInvalid) firstInvalid = passInp;
+                } else if (passVal.length < 8) {
+                    hasError = true;
+                    showResetLiveErr('passwordInput', 'New password must be at least 8 characters.', true);
+                    if (!firstInvalid) firstInvalid = passInp;
+                }
+
+                if (!confVal) {
+                    hasError = true;
+                    showResetLiveErr('passwordConfirmInput', 'Please confirm your new password.', true);
+                    if (!firstInvalid) firstInvalid = passConf;
+                } else if (confVal !== passVal) {
+                    hasError = true;
+                    showResetLiveErr('passwordConfirmInput', 'Passwords do not match.', true);
+                    if (!firstInvalid) firstInvalid = passConf;
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                }
+            });
+        }
+    });
 </script>
 
 </body>

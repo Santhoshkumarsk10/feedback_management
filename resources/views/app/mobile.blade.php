@@ -659,7 +659,7 @@
                             <label class="form-label small fw-bold text-dark">Full Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person-fill"></i></span>
-                                <input type="text" id="inpVisitorName" class="form-control form-control-sm border-start-0" placeholder="e.g. Ramesh Kumar" required>
+                                <input type="text" id="inpVisitorName" class="form-control form-control-sm border-start-0" placeholder="e.g. Ramesh Kumar" minlength="2" maxlength="100" required>
                             </div>
                         </div>
 
@@ -667,7 +667,7 @@
                             <label class="form-label small fw-bold text-dark">Company / Organization <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-buildings-fill"></i></span>
-                                <input type="text" id="inpVisitorCompany" class="form-control form-control-sm border-start-0" placeholder="e.g. Tata Motors / Motherson Group" required>
+                                <input type="text" id="inpVisitorCompany" class="form-control form-control-sm border-start-0" placeholder="e.g. Tata Motors / Motherson Group" minlength="2" maxlength="150" required>
                             </div>
                         </div>
 
@@ -675,7 +675,7 @@
                             <label class="form-label small fw-bold text-dark">Mobile Number</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone-fill"></i></span>
-                                <input type="tel" id="inpVisitorMobile" class="form-control form-control-sm border-start-0" placeholder="9876543210">
+                                <input type="tel" id="inpVisitorMobile" class="form-control form-control-sm border-start-0" placeholder="9876543210" minlength="10" maxlength="10" pattern="^[6-9][0-9]{9}$" title="10-digit mobile number starting with 6, 7, 8, or 9" inputmode="numeric">
                             </div>
                         </div>
 
@@ -683,7 +683,7 @@
                             <label class="form-label small fw-bold text-dark">Email Address</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope-fill"></i></span>
-                                <input type="email" id="inpVisitorEmail" class="form-control form-control-sm border-start-0" placeholder="ramesh@company.com">
+                                <input type="email" id="inpVisitorEmail" class="form-control form-control-sm border-start-0" placeholder="ramesh@company.com" maxlength="100">
                             </div>
                         </div>
 
@@ -691,7 +691,7 @@
                             <label class="form-label small fw-bold text-dark">Designation / Role</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-briefcase-fill"></i></span>
-                                <input type="text" id="inpVisitorDesignation" class="form-control form-control-sm border-start-0" placeholder="e.g. General Manager — Manufacturing">
+                                <input type="text" id="inpVisitorDesignation" class="form-control form-control-sm border-start-0" placeholder="e.g. General Manager — Manufacturing" maxlength="100">
                             </div>
                         </div>
 
@@ -816,7 +816,7 @@
 
                                 <!-- Text Field / Comment -->
                                 @elseif($q->type === 'text')
-                                    <textarea name="question_{{ $q->id }}" id="inp_q_{{ $q->id }}" rows="2" class="form-control form-control-sm" placeholder="Please write your observations or suggestions here..."></textarea>
+                                    <textarea name="question_{{ $q->id }}" id="inp_q_{{ $q->id }}" rows="2" class="form-control form-control-sm" placeholder="Please write your observations or suggestions here..." maxlength="1000"></textarea>
                                 @endif
 
                                 <!-- Promotional Banner Under Each Question -->
@@ -938,7 +938,7 @@
                         <label class="form-label small fw-bold text-dark">Mobile Number or Email</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person-badge"></i></span>
-                            <input type="text" id="inpOrgLogin" class="form-control form-control-sm border-start-0" placeholder="e.g. 9100000001 or ravi@plant.test" required>
+                            <input type="text" id="inpOrgLogin" class="form-control form-control-sm border-start-0" placeholder="e.g. 9100000001 or ravi@plant.test" minlength="3" maxlength="100" required>
                         </div>
                     </div>
 
@@ -951,7 +951,7 @@
                         </div>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key"></i></span>
-                            <input type="password" id="inpOrgPassword" class="form-control form-control-sm border-start-0" placeholder="••••••••" required>
+                            <input type="password" id="inpOrgPassword" class="form-control form-control-sm border-start-0" placeholder="••••••••" minlength="4" maxlength="64" required>
                         </div>
                     </div>
 
@@ -1116,7 +1116,7 @@
                             <label class="form-label small fw-bold text-dark">Mobile Number or Email</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-envelope-at"></i></span>
-                                <input type="text" id="inpOrgForgotLogin" class="form-control form-control-sm" placeholder="e.g. 9100000001 or ravi@plant.test" required>
+                                <input type="text" id="inpOrgForgotLogin" class="form-control form-control-sm" placeholder="e.g. 9100000001 or ravi@plant.test" minlength="3" maxlength="100" required>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2 pt-2">
@@ -1146,15 +1146,15 @@
                     <form id="formOrgChangePass" onsubmit="event.preventDefault(); submitOrgChangePassword();">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-dark">Current Password</label>
-                            <input type="password" id="inpOrgCurrentPass" class="form-control form-control-sm" placeholder="••••••••" required>
+                            <input type="password" id="inpOrgCurrentPass" class="form-control form-control-sm" placeholder="••••••••" minlength="4" maxlength="64" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-dark">New Password (min 8 chars)</label>
-                            <input type="password" id="inpOrgNewPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" required>
+                            <input type="password" id="inpOrgNewPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" maxlength="64" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-dark">Confirm New Password</label>
-                            <input type="password" id="inpOrgConfirmPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" required>
+                            <input type="password" id="inpOrgConfirmPass" class="form-control form-control-sm" placeholder="••••••••" minlength="8" maxlength="64" required>
                         </div>
                         <div class="d-flex justify-content-end gap-2 pt-2">
                             <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
@@ -1210,7 +1210,140 @@
             goToCmsBanner(currentCmsSlide + delta);
         }
 
-        document.addEventListener('DOMContentLoaded', initCmsBannerSlider);
+        document.addEventListener('DOMContentLoaded', () => {
+            initCmsBannerSlider();
+
+            function applyKeystrokeFilter(input, { allowedCharRegex = null, forbiddenCharRegex = null, stripRegex = null, maxLen = null }) {
+                if (!input) return;
+
+                // 1. Block physical keystroke
+                input.addEventListener('keydown', function(e) {
+                    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        if (allowedCharRegex && !allowedCharRegex.test(e.key)) {
+                            e.preventDefault();
+                            return;
+                        }
+                        if (forbiddenCharRegex && forbiddenCharRegex.test(e.key)) {
+                            e.preventDefault();
+                            return;
+                        }
+                        if (maxLen && this.value.length >= maxLen && this.selectionStart === this.selectionEnd) {
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                });
+
+                // 2. Block virtual keyboard / IME input
+                input.addEventListener('beforeinput', function(e) {
+                    if (e.data) {
+                        for (let i = 0; i < e.data.length; i++) {
+                            const ch = e.data[i];
+                            if (allowedCharRegex && !allowedCharRegex.test(ch)) {
+                                e.preventDefault();
+                                return;
+                            }
+                            if (forbiddenCharRegex && forbiddenCharRegex.test(ch)) {
+                                e.preventDefault();
+                                return;
+                            }
+                        }
+                    }
+                });
+
+                // 3. Clean paste
+                input.addEventListener('paste', function(e) {
+                    const text = (e.clipboardData || window.clipboardData)?.getData('text');
+                    if (text && stripRegex) {
+                        e.preventDefault();
+                        let cleaned = text.replace(stripRegex, '');
+                        if (maxLen) {
+                            const avail = maxLen - (this.value.length - (this.selectionEnd - this.selectionStart));
+                            if (avail > 0) cleaned = cleaned.slice(0, avail);
+                            else cleaned = '';
+                        }
+                        document.execCommand('insertText', false, cleaned);
+                    }
+                });
+
+                // 4. Fallback sanitization
+                input.addEventListener('input', function() {
+                    if (stripRegex && stripRegex.test(this.value)) {
+                        this.value = this.value.replace(stripRegex, '');
+                    }
+                    if (maxLen && this.value.length > maxLen) {
+                        this.value = this.value.slice(0, maxLen);
+                    }
+                });
+            }
+
+            // Visitor Name: letters, spaces, hyphens, dots, apostrophes
+            applyKeystrokeFilter(document.getElementById('inpVisitorName'), {
+                allowedCharRegex: /^[a-zA-Z\s\.\-']$/,
+                stripRegex: /[^a-zA-Z\s\.\-']/g,
+                maxLen: 100
+            });
+
+            // Visitor Mobile: digits only
+            applyKeystrokeFilter(document.getElementById('inpVisitorMobile'), {
+                allowedCharRegex: /^[0-9]$/,
+                stripRegex: /[^0-9]/g,
+                maxLen: 10
+            });
+
+            // Visitor Email: standard email chars only
+            const visitorEmailInp = document.getElementById('inpVisitorEmail');
+            applyKeystrokeFilter(visitorEmailInp, {
+                allowedCharRegex: /^[a-zA-Z0-9@._+\-]$/,
+                stripRegex: /[^a-zA-Z0-9@._+\-]/g,
+                maxLen: 100
+            });
+            if (visitorEmailInp) {
+                visitorEmailInp.addEventListener('blur', function() {
+                    const val = this.value.trim();
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (val && !emailRegex.test(val)) {
+                        alert('Please enter a valid email address with a valid domain (e.g., name@domain.com).');
+                        this.focus();
+                    }
+                });
+            }
+
+            // Visitor Company & Designation: block dangerous tags and symbols
+            const disallowedDangerous = /[<>{}\[\]$^*~=\\\|]/;
+            const disallowedDangerousGlobal = /[<>{}\[\]$^*~=\\\|]/g;
+
+            applyKeystrokeFilter(document.getElementById('inpVisitorCompany'), {
+                forbiddenCharRegex: disallowedDangerous,
+                stripRegex: disallowedDangerousGlobal,
+                maxLen: 150
+            });
+
+            applyKeystrokeFilter(document.getElementById('inpVisitorDesignation'), {
+                forbiddenCharRegex: disallowedDangerous,
+                stripRegex: disallowedDangerousGlobal,
+                maxLen: 100
+            });
+
+            // Organizer Modal Login & Forgot: standard email / mobile / alphanumeric
+            ['inpOrgLogin', 'inpOrgForgotLogin'].forEach(id => {
+                const el = document.getElementById(id);
+                applyKeystrokeFilter(el, {
+                    allowedCharRegex: /^[a-zA-Z0-9@._+\-]$/,
+                    stripRegex: /[^a-zA-Z0-9@._+\-]/g,
+                    maxLen: 100
+                });
+            });
+
+            // Question feedback textareas
+            document.querySelectorAll('textarea[name^="question_"]').forEach(tx => {
+                applyKeystrokeFilter(tx, {
+                    forbiddenCharRegex: disallowedDangerous,
+                    stripRegex: disallowedDangerousGlobal,
+                    maxLen: 1000
+                });
+            });
+        });
 
         let currentSection = 1;
         const totalSections = {{ count($sections) }};
@@ -1280,10 +1413,42 @@
         }
 
         function startSurvey() {
+            const name = document.getElementById('inpVisitorName').value.trim();
+            const company = document.getElementById('inpVisitorCompany').value.trim();
+            const mob = document.getElementById('inpVisitorMobile').value.trim();
+
+            if (!name || name.length < 2) {
+                alert('Please enter your full name (minimum 2 characters).');
+                document.getElementById('inpVisitorName').focus();
+                return;
+            }
+
+            if (!company || company.length < 2) {
+                alert('Please enter your company / organization (minimum 2 characters).');
+                document.getElementById('inpVisitorCompany').focus();
+                return;
+            }
+
+            if (mob && !/^[6-9]\d{9}$/.test(mob)) {
+                alert('Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.');
+                document.getElementById('inpVisitorMobile').focus();
+                return;
+            }
+
+            const email = document.getElementById('inpVisitorEmail').value.trim();
+            if (email) {
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    alert('Please enter a valid email address with a valid domain (e.g., name@domain.com).');
+                    document.getElementById('inpVisitorEmail').focus();
+                    return;
+                }
+            }
+
             visitorData = {
-                visitor_name: document.getElementById('inpVisitorName').value.trim(),
-                visitor_company: document.getElementById('inpVisitorCompany').value.trim(),
-                visitor_mobile: document.getElementById('inpVisitorMobile').value.trim(),
+                visitor_name: name,
+                visitor_company: company,
+                visitor_mobile: mob,
                 visitor_email: document.getElementById('inpVisitorEmail').value.trim(),
                 visitor_designation: document.getElementById('inpVisitorDesignation').value.trim(),
                 plant_id: document.getElementById('selPlant').value,
@@ -1394,7 +1559,14 @@
                 if (res.ok && data.success) {
                     showThankYouScreen(payload);
                 } else {
-                    alert(data.message || 'Error saving feedback. Please try again.');
+                    let errMsg = data.message || 'Error saving feedback. Please try again.';
+                    if (data.errors) {
+                        const firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey] && data.errors[firstKey][0]) {
+                            errMsg = data.errors[firstKey][0];
+                        }
+                    }
+                    alert(errMsg);
                 }
             } catch (err) {
                 console.error(err);
@@ -1485,11 +1657,30 @@
 
         async function handleOrganizerLogin() {
             const btn = document.getElementById('btnOrgSubmit');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying...';
-
             const login = document.getElementById('inpOrgLogin').value.trim();
             const password = document.getElementById('inpOrgPassword').value;
+
+            if (!login) {
+                alert('Please enter your mobile number or email address.');
+                document.getElementById('inpOrgLogin').focus();
+                return;
+            }
+            if (login.includes('@')) {
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(login)) {
+                    alert('Please enter a valid email address with a valid domain (e.g., name@domain.com).');
+                    document.getElementById('inpOrgLogin').focus();
+                    return;
+                }
+            }
+            if (!password || password.length < 4) {
+                alert('Please enter your password (minimum 4 characters).');
+                document.getElementById('inpOrgPassword').focus();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying...';
 
             try {
                 const res = await fetch("{{ route('mobile.organizer.login') }}", {
@@ -1603,6 +1794,23 @@
             const btn = document.getElementById('btnOrgForgotSubmit');
             const alertBox = document.getElementById('alertOrgForgot');
             const login = document.getElementById('inpOrgForgotLogin').value.trim();
+
+            if (!login) {
+                alertBox.className = 'alert alert-danger small d-block';
+                alertBox.innerText = 'Please enter your registered mobile number or email address.';
+                document.getElementById('inpOrgForgotLogin').focus();
+                return;
+            }
+
+            if (login.includes('@')) {
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(login)) {
+                    alertBox.className = 'alert alert-danger small d-block';
+                    alertBox.innerText = 'Please enter a valid email address with a valid domain (e.g., name@domain.com).';
+                    document.getElementById('inpOrgForgotLogin').focus();
+                    return;
+                }
+            }
 
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';

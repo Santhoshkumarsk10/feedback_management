@@ -117,7 +117,7 @@
     </div>
 
     <div class="filter-controls-body">
-        <form method="GET" action="{{ route('reports.index') }}" class="d-flex flex-wrap align-items-center gap-2">
+        <form method="GET" action="{{ route('reports.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="reportsFilterForm" onsubmit="const fromVal = this.querySelector('[name=from]')?.value?.trim(); const toVal = this.querySelector('[name=to]')?.value?.trim(); const urlParams = new URLSearchParams(window.location.search); if(!fromVal && !toVal && !urlParams.get('from') && !urlParams.get('to')) { event.preventDefault(); const fromInp = this.querySelector('[name=from]'); if(fromInp) { fromInp.focus(); fromInp.classList.add('is-invalid'); setTimeout(() => fromInp.classList.remove('is-invalid'), 2000); } }">
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted fw-bold">From:</span>
                 <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />

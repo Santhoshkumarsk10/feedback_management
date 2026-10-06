@@ -8,13 +8,13 @@
         <div class="sidebar-logo-card">
             <img src="{{ $currentCompany?->logo_url ?? asset('images/shibaura-logo-cropped.webp') }}" alt="{{ $currentCompany?->name ?? 'Shibaura Machine' }}" class="sidebar-logo-img">
         </div>
-        <div class="sidebar-brand-badge">
+        {{-- <div class="sidebar-brand-badge">
             <span class="d-flex align-items-center gap-1">
                 <span class="status-dot active"></span>
                 <span>Plant Operations</span>
             </span>
             <span class="badge-tag">Feedback</span>
-        </div>
+        </div> --}}
     </a>
 
     <!-- Navigation Menu -->

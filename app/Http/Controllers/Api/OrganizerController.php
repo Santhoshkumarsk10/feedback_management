@@ -34,7 +34,11 @@ class OrganizerController extends Controller
     /** Everyone this organizer showed around. ?from=&to=&q= */
     public function visits(Request $request)
     {
-        $request->validate(['from' => 'nullable|date', 'to' => 'nullable|date']);
+        $request->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date',
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ]);
 
         return Visit::where('organizer_id', auth('api')->id())
             ->with('feedback:id,visit_id,overall_rating,submitted_at')

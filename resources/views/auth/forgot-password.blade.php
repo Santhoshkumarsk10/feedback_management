@@ -183,6 +183,17 @@
             .hero-side { display: none; }
             .form-side { padding: 2.25rem 1.75rem; }
         }
+
+        .input-group-modern input.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .custom-live-err {
+            font-size: 0.8rem;
+            color: #f87171;
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -265,14 +276,15 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.email') }}" id="forgotPasswordForm" novalidate>
                 @csrf
                 <div class="mb-4">
-                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;">Registered Email or Mobile</label>
+                    <label class="form-label text-slate-300 small fw-semibold" style="color: #cbd5e1;" for="loginInput">Registered Email or Mobile</label>
                     <div class="input-group-modern">
-                        <input id="loginInput" name="login" value="{{ old('login') }}" placeholder="e.g. superadmin@plant.test or 9100000001" required autofocus autocomplete="username">
+                        <input id="loginInput" name="login" value="{{ old('login') }}" placeholder="e.g. superadmin@plant.test or 9100000001" minlength="3" maxlength="100" required autofocus autocomplete="username">
                         <i class="bi bi-envelope-at-fill input-icon"></i>
                     </div>
+                    <div class="invalid-feedback d-none custom-live-err" id="live_err_loginInput"></div>
                     <div class="form-text small" style="color: #64748b;">
                         We will verify your user record and send a secure reset link.
                     </div>
@@ -290,6 +302,124 @@
         </div>
     </div>
 </div>
+
+<script>
+function showForgotLiveErr(id, msg, persistent = false) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.add('is-invalid');
+    if (errEl) {
+        errEl.textContent = msg;
+        errEl.classList.remove('d-none');
+        errEl.classList.add('d-block');
+        clearTimeout(errEl._timer);
+        if (!persistent) {
+            errEl._timer = setTimeout(() => {
+                errEl.classList.remove('d-block');
+                errEl.classList.add('d-none');
+            }, 2500);
+        }
+    }
+}
+
+function clearForgotLiveErr(id) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.remove('is-invalid');
+    if (errEl) {
+        errEl.classList.remove('d-block');
+        errEl.classList.add('d-none');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('forgotPasswordForm');
+    const loginInp = document.getElementById('loginInput');
+
+    if (loginInp) {
+        const allowedRegex = /^[a-zA-Z0-9@._+\-]$/;
+        const disallowed = /[^a-zA-Z0-9@._+\-]/g;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // 1. Prevent typing disallowed characters on keystroke
+        loginInp.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (!allowedRegex.test(e.key)) {
+                    e.preventDefault();
+                    showForgotLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                }
+            }
+        });
+
+        // 2. Prevent disallowed input on virtual keyboards / mobile
+        loginInp.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    if (!allowedRegex.test(e.data[i])) {
+                        e.preventDefault();
+                        showForgotLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                        return;
+                    }
+                }
+            }
+        });
+
+        // 3. Clean paste
+        loginInp.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && disallowed.test(text)) {
+                e.preventDefault();
+                const cleaned = text.replace(disallowed, '');
+                document.execCommand('insertText', false, cleaned);
+            }
+        });
+
+        // 4. Input fallback
+        loginInp.addEventListener('input', function() {
+            if (disallowed.test(this.value)) {
+                this.value = this.value.replace(disallowed, '');
+                showForgotLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+            } else if (this.value.trim().length >= 3) {
+                clearForgotLiveErr('loginInput');
+            }
+        });
+
+        // 5. Blur validation
+        loginInp.addEventListener('blur', function() {
+            const val = this.value.trim();
+            if (val.includes('@') && !emailRegex.test(val)) {
+                showForgotLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            const loginVal = loginInp ? loginInp.value.trim() : '';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!loginVal) {
+                hasError = true;
+                showForgotLiveErr('loginInput', 'Email or Mobile number is required.', true);
+            } else if (loginVal.length < 3) {
+                hasError = true;
+                showForgotLiveErr('loginInput', 'Must be at least 3 characters.', true);
+            } else if (loginVal.includes('@') && !emailRegex.test(loginVal)) {
+                hasError = true;
+                showForgotLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                if (loginInp) {
+                    loginInp.focus();
+                }
+            }
+        });
+    }
+});
+</script>
 
 </body>
 </html>

@@ -15,6 +15,10 @@ class BannerController extends Controller
      */
     public function index(Request $request)
     {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ]);
+
         $statusTab = $request->input('tab', 'all');
         $targetFilter = $request->input('target', 'all');
 
@@ -82,13 +86,18 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:500',
+            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',
-            'sort_order' => 'required|integer|min:0',
+            'sort_order' => 'required|integer|min:0|max:9999',
             'is_active' => 'boolean',
+        ], [
+            'title.regex' => 'The banner title contains invalid characters.',
+            'title.min' => 'The banner title must be at least 2 characters.',
+            'subtitle.regex' => 'The subtitle contains invalid characters.',
+            'subtitle.min' => 'The subtitle must be at least 2 characters.',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
@@ -135,13 +144,18 @@ class BannerController extends Controller
     public function update(Request $request, Banner $banner)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:500',
+            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',
-            'sort_order' => 'required|integer|min:0',
+            'sort_order' => 'required|integer|min:0|max:9999',
             'is_active' => 'boolean',
+        ], [
+            'title.regex' => 'The banner title contains invalid characters.',
+            'title.min' => 'The banner title must be at least 2 characters.',
+            'subtitle.regex' => 'The subtitle contains invalid characters.',
+            'subtitle.min' => 'The subtitle must be at least 2 characters.',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');

@@ -27,7 +27,7 @@
             </div>
 
             <div class="card-body p-4">
-                <form method="POST" action="{{ $role->exists ? route('roles.update', $role) : route('roles.store') }}">
+                <form method="POST" action="{{ $role->exists ? route('roles.update', $role) : route('roles.store') }}" id="roleForm" novalidate>
                     @csrf
                     @if($role->exists)
                         @method('PUT')
@@ -35,15 +35,19 @@
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label class="form-modern-label">Role Title / Display Name <span class="text-danger">*</span></label>
+                            <label class="form-modern-label" for="role_name">Role Title / Display Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person-badge"></i></span>
-                                <input name="name" class="form-control form-control-modern border-start-0" value="{{ old('name', $role->name) }}" placeholder="e.g. Quality Supervisor" required>
+                                <input name="name" id="role_name" class="form-control form-control-modern @error('name') is-invalid @enderror border-start-0" value="{{ old('name', $role->name) }}" placeholder="e.g. Quality Supervisor" minlength="2" maxlength="70" required>
                             </div>
+                            @error('name')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_role_name"></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-modern-label">
+                            <label class="form-modern-label" for="role_slug">
                                 Role Slug / Identifier 
                                 @if($role->is_system)
                                     <small class="text-muted fw-normal">(Fixed for core system)</small>
@@ -51,14 +55,22 @@
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-hash"></i></span>
-                                <input name="slug" class="form-control form-control-modern border-start-0" value="{{ old('slug', $role->slug) }}" placeholder="e.g. quality_supervisor" {{ $role->is_system ? 'readonly' : '' }}>
+                                <input name="slug" id="role_slug" class="form-control form-control-modern @error('slug') is-invalid @enderror border-start-0" value="{{ old('slug', $role->slug) }}" placeholder="e.g. quality_supervisor" maxlength="50" {{ $role->is_system ? 'readonly' : '' }}>
                             </div>
+                            @error('slug')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_role_slug"></div>
                             <div class="small text-muted mt-1">Machine-readable key (auto-generated if left blank)</div>
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-modern-label">Role Description & Responsibilities</label>
-                            <textarea name="description" rows="3" class="form-control form-control-modern" placeholder="e.g. Responsible for escorting customers during injection molding trials and gathering evaluations">{{ old('description', $role->description) }}</textarea>
+                            <label class="form-modern-label" for="role_description">Role Description & Responsibilities</label>
+                            <textarea name="description" id="role_description" rows="3" class="form-control form-control-modern @error('description') is-invalid @enderror" placeholder="e.g. Responsible for escorting customers during injection molding trials and gathering evaluations" maxlength="500">{{ old('description', $role->description) }}</textarea>
+                            @error('description')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_role_description"></div>
                         </div>
                     </div>
 
@@ -127,3 +139,172 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('roleForm');
+    if (!form) return;
+
+    const nameInput = document.getElementById('role_name');
+    const slugInput = document.getElementById('role_slug');
+    const descInput = document.getElementById('role_description');
+
+    function showLiveErr(id, msg) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (errEl) {
+            errEl.innerHTML = `<i class="bi bi-exclamation-circle-fill me-1"></i> ${msg}`;
+            errEl.classList.remove('d-none');
+            errEl.classList.add('d-block');
+        }
+        if (input) input.classList.add('is-invalid');
+    }
+
+    function clearLiveErr(id) {
+        const errEl = document.getElementById('live_err_' + id);
+        const input = document.getElementById(id);
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+        if (input) input.classList.remove('is-invalid');
+    }
+
+    function bindFieldInterceptors(input, id, { allowedCharRegex = null, forbiddenCharRegex = null, stripRegex = null, maxLen = null, errMsg = '' }) {
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (allowedCharRegex && !allowedCharRegex.test(e.key)) {
+                    e.preventDefault();
+                    showLiveErr(id, errMsg);
+                    return;
+                }
+                if (forbiddenCharRegex && forbiddenCharRegex.test(e.key)) {
+                    e.preventDefault();
+                    showLiveErr(id, errMsg);
+                    return;
+                }
+                if (maxLen && this.value.length >= maxLen && this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+
+        input.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    const ch = e.data[i];
+                    if (allowedCharRegex && !allowedCharRegex.test(ch)) {
+                        e.preventDefault();
+                        showLiveErr(id, errMsg);
+                        return;
+                    }
+                    if (forbiddenCharRegex && forbiddenCharRegex.test(ch)) {
+                        e.preventDefault();
+                        showLiveErr(id, errMsg);
+                        return;
+                    }
+                }
+            }
+        });
+
+        input.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && stripRegex) {
+                e.preventDefault();
+                let cleaned = text.replace(stripRegex, '');
+                if (maxLen) {
+                    const avail = maxLen - (this.value.length - (this.selectionEnd - this.selectionStart));
+                    if (avail > 0) cleaned = cleaned.slice(0, avail);
+                    else cleaned = '';
+                }
+                document.execCommand('insertText', false, cleaned);
+            }
+        });
+
+        input.addEventListener('input', function() {
+            if (stripRegex && stripRegex.test(this.value)) {
+                this.value = this.value.replace(stripRegex, '');
+                showLiveErr(id, errMsg);
+            } else if (this.value.trim().length >= 2 || (id === 'role_description' && this.value.trim().length === 0)) {
+                clearLiveErr(id);
+            }
+            if (maxLen && this.value.length > maxLen) {
+                this.value = this.value.slice(0, maxLen);
+            }
+        });
+    }
+
+    bindFieldInterceptors(nameInput, 'role_name', {
+        allowedCharRegex: /^[\p{L}\p{N}\s\-–—_&/,\.()'’]$/u,
+        stripRegex: /[^\p{L}\p{N}\s\-–—_&/,\.()'’]/gu,
+        maxLen: 70,
+        errMsg: 'Special characters like < > { } [ ] $ ^ * = \\ | are not allowed.'
+    });
+
+    bindFieldInterceptors(slugInput, 'role_slug', {
+        allowedCharRegex: /^[a-zA-Z0-9_\-]$/,
+        stripRegex: /[^a-zA-Z0-9_\-]/g,
+        maxLen: 50,
+        errMsg: 'Only letters, numbers, hyphens, and underscores are allowed.'
+    });
+
+    bindFieldInterceptors(descInput, 'role_description', {
+        forbiddenCharRegex: /[<>{}\[\]$^*~=\\\|]/,
+        stripRegex: /[<>{}\[\]$^*~=\\\|]/g,
+        maxLen: 500,
+        errMsg: 'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.'
+    });
+
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+        let firstInvalid = null;
+
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        if (nameVal.length === 0) {
+            hasError = true;
+            showLiveErr('role_name', 'Role Title / Display Name is required.');
+            if (!firstInvalid) firstInvalid = nameInput;
+        } else if (nameVal.length < 2) {
+            hasError = true;
+            showLiveErr('role_name', 'Role Title must be at least 2 characters.');
+            if (!firstInvalid) firstInvalid = nameInput;
+        } else if (nameVal.length > 70) {
+            hasError = true;
+            showLiveErr('role_name', 'Role Title cannot exceed 70 characters.');
+            if (!firstInvalid) firstInvalid = nameInput;
+        }
+
+        const slugVal = slugInput ? slugInput.value.trim() : '';
+        if (slugVal && (slugVal.length < 2 || slugVal.length > 50)) {
+            hasError = true;
+            showLiveErr('role_slug', 'Role Slug must be between 2 and 50 characters.');
+            if (!firstInvalid) firstInvalid = slugInput;
+        } else if (slugVal && !/^[a-zA-Z0-9_\-]+$/.test(slugVal)) {
+            hasError = true;
+            showLiveErr('role_slug', 'Role Slug may only contain letters, numbers, hyphens, and underscores.');
+            if (!firstInvalid) firstInvalid = slugInput;
+        }
+
+        const descVal = descInput ? descInput.value.trim() : '';
+        if (descVal && descVal.length > 500) {
+            hasError = true;
+            showLiveErr('role_description', 'Role Description cannot exceed 500 characters.');
+            if (!firstInvalid) firstInvalid = descInput;
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return false;
+        }
+    });
+});
+</script>
+@endpush

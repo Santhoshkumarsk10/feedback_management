@@ -35,17 +35,24 @@ class VisitorController extends Controller
     {
         $data = $request->validate([
             'organizer_id' => 'required|integer',
-            'visitor_name' => 'required|string|max:100',
-            'visitor_designation' => 'nullable|string|max:150',
-            'visitor_mobile' => 'nullable|digits_between:10,15',
-            'visitor_company' => 'nullable|string|max:150',
-            'visitor_email' => 'nullable|email|max:150',
-            'purpose' => 'nullable|string|max:255',
+            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
+            'visitor_company' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_email' => ['nullable', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:150'],
+            'purpose' => ['nullable', 'string', 'min:2', 'max:255', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'overall_rating' => 'nullable|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
             'answers.*.answer' => 'nullable|string|max:2000',
+        ], [
+            'visitor_mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'visitor_name.regex' => 'Visitor Name may only contain letters, spaces, hyphens, and dots.',
+            'visitor_company.regex' => 'Company Name contains invalid characters.',
+            'visitor_email.regex' => 'Please provide a valid email address with domain.',
+            'visitor_designation.regex' => 'Visitor Designation contains invalid characters.',
+            'purpose.regex' => 'Purpose contains invalid characters.',
         ]);
 
         $organizer = User::where('id', $data['organizer_id'])

@@ -30,21 +30,11 @@
             </div>
 
             <div class="card-modern-body p-4">
-                @if(isset($errors) && $errors->any())
-                    <div class="alert alert-danger mb-4">
-                        <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Please resolve the following errors:</div>
-                        <ul class="mb-0 ps-3">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <form action="{{ $isEdit ? route('banners.update', $banner) : route('banners.store') }}" 
                       method="POST" 
                       enctype="multipart/form-data" 
-                      id="bannerForm">
+                      id="bannerForm"
+                      novalidate>
                     @csrf
                     @if($isEdit)
                         @method('PUT')
@@ -59,10 +49,13 @@
                                name="title" 
                                value="{{ old('title', $banner->title) }}" 
                                placeholder="e.g. Leading Precision Injection Moulding Solutions" 
+                               minlength="2"
+                               maxlength="200"
                                required>
                         @error('title')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_bannerTitleInput"></div>
                     </div>
 
                     <div class="mb-3">
@@ -72,10 +65,13 @@
                                id="bannerSubtitleInput" 
                                name="subtitle" 
                                value="{{ old('subtitle', $banner->subtitle) }}" 
-                               placeholder="e.g. Empowering Indian Manufacturing with Japanese Engineering Excellence">
+                               placeholder="e.g. Empowering Indian Manufacturing with Japanese Engineering Excellence"
+                               minlength="2"
+                               maxlength="500">
                         @error('subtitle')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_bannerSubtitleInput"></div>
                     </div>
 
                     <!-- Target Device & Sort Order -->
@@ -107,11 +103,13 @@
                                    name="sort_order" 
                                    value="{{ old('sort_order', $banner->sort_order ?? 0) }}" 
                                    min="0" 
+                                   max="9999"
                                    required>
                             <small class="text-muted d-block mt-1">Lower numbers appear first (e.g. 1, 2, 3)</small>
                             @error('sort_order')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
+                            <div class="invalid-feedback d-none custom-live-err" id="live_err_sort_order"></div>
                         </div>
                     </div>
 
@@ -122,7 +120,7 @@
                             <input type="file" 
                                    id="bannerImageInput" 
                                    name="image" 
-                                   accept="image/*"
+                                   accept="image/*" 
                                    onchange="previewBannerFile(this)"
                                    {{ $isEdit ? '' : 'required' }}>
                             <div class="upload-dropzone-content">
@@ -150,6 +148,7 @@
                         @error('image')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_bannerImageInput"></div>
                     </div>
 
                     <!-- Link URL -->
@@ -162,11 +161,13 @@
                                    id="link_url" 
                                    name="link_url" 
                                    value="{{ old('link_url', $banner->link_url) }}" 
-                                   placeholder="https://www.shibaura-machine.co.in/machines">
+                                   placeholder="https://www.shibaura-machine.co.in/machines"
+                                   maxlength="500">
                         </div>
                         @error('link_url')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        <div class="invalid-feedback d-none custom-live-err" id="live_err_link_url"></div>
                     </div>
 
                     <!-- Is Active Switch -->
@@ -352,8 +353,45 @@
 </style>
 
 <script>
+function showBannerLiveErr(id, msg, persistent = false) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.add('is-invalid');
+    if (id === 'bannerImageInput') {
+        const dropzone = document.getElementById('bannerDropzone');
+        if (dropzone) dropzone.classList.add('border-danger');
+    }
+    if (errEl) {
+        errEl.textContent = msg;
+        errEl.classList.remove('d-none');
+        errEl.classList.add('d-block');
+        clearTimeout(errEl._timer);
+        if (!persistent) {
+            errEl._timer = setTimeout(() => {
+                errEl.classList.remove('d-block');
+                errEl.classList.add('d-none');
+            }, 2500);
+        }
+    }
+}
+
+function clearBannerLiveErr(id) {
+    const errEl = document.getElementById('live_err_' + id);
+    const input = document.getElementById(id);
+    if (input) input.classList.remove('is-invalid');
+    if (id === 'bannerImageInput') {
+        const dropzone = document.getElementById('bannerDropzone');
+        if (dropzone) dropzone.classList.remove('border-danger');
+    }
+    if (errEl) {
+        errEl.classList.remove('d-block');
+        errEl.classList.add('d-none');
+    }
+}
+
 function previewBannerFile(input) {
     if (input.files && input.files[0]) {
+        clearBannerLiveErr('bannerImageInput');
         const file = input.files[0];
         const reader = new FileReader();
 
@@ -373,20 +411,154 @@ function previewBannerFile(input) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bannerForm');
     const titleInp = document.getElementById('bannerTitleInput');
     const subInp = document.getElementById('bannerSubtitleInput');
+    const sortInp = document.getElementById('sort_order');
+    const imageInp = document.getElementById('bannerImageInput');
+    const linkInp = document.getElementById('link_url');
 
-    if (titleInp) {
-        titleInp.addEventListener('input', e => {
-            const el = document.getElementById('simBannerTitle');
-            if (el) el.textContent = e.target.value.trim() || 'Banner Title Headline';
+    const forbiddenCharRegex = /[<>{}\[\]$^*~=\\\|]/;
+    const disallowedChars = /[<>{}\[\]$^*~=\\\|]/g;
+
+    function bindBannerInputInterceptors(input, id, previewId, maxLen, fallbackText, msg) {
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (forbiddenCharRegex.test(e.key)) {
+                    e.preventDefault();
+                    showBannerLiveErr(id, msg);
+                    return;
+                }
+                if (maxLen && this.value.length >= maxLen && this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+
+        input.addEventListener('beforeinput', function(e) {
+            if (e.data) {
+                for (let i = 0; i < e.data.length; i++) {
+                    if (forbiddenCharRegex.test(e.data[i])) {
+                        e.preventDefault();
+                        showBannerLiveErr(id, msg);
+                        return;
+                    }
+                }
+            }
+        });
+
+        input.addEventListener('paste', function(e) {
+            const text = (e.clipboardData || window.clipboardData)?.getData('text');
+            if (text && disallowedChars.test(text)) {
+                e.preventDefault();
+                let cleaned = text.replace(disallowedChars, '');
+                if (maxLen) {
+                    const avail = maxLen - (this.value.length - (this.selectionEnd - this.selectionStart));
+                    if (avail > 0) cleaned = cleaned.slice(0, avail);
+                    else cleaned = '';
+                }
+                document.execCommand('insertText', false, cleaned);
+            }
+        });
+
+        input.addEventListener('input', function() {
+            if (disallowedChars.test(this.value)) {
+                this.value = this.value.replace(disallowedChars, '');
+                showBannerLiveErr(id, msg);
+            } else if (this.value.trim().length >= 2 || (id === 'bannerSubtitleInput' && this.value.trim().length === 0)) {
+                clearBannerLiveErr(id);
+            }
+            if (maxLen && this.value.length > maxLen) {
+                this.value = this.value.slice(0, maxLen);
+            }
+            const el = document.getElementById(previewId);
+            if (el) el.textContent = this.value.trim() || fallbackText;
         });
     }
 
-    if (subInp) {
-        subInp.addEventListener('input', e => {
-            const el = document.getElementById('simBannerSubtitle');
-            if (el) el.textContent = e.target.value.trim() || 'Supporting subtitle caption text';
+    bindBannerInputInterceptors(
+        titleInp,
+        'bannerTitleInput',
+        'simBannerTitle',
+        100,
+        'Banner Title Headline',
+        'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.'
+    );
+
+    bindBannerInputInterceptors(
+        subInp,
+        'bannerSubtitleInput',
+        'simBannerSubtitle',
+        200,
+        'Supporting subtitle caption text',
+        'Tags and symbols like < > { } [ ] $ ^ * = \\ | are not allowed.'
+    );
+
+    if (sortInp) {
+        sortInp.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                clearBannerLiveErr('sort_order');
+            }
+        });
+    }
+
+    if (linkInp) {
+        linkInp.addEventListener('input', function() {
+            if (!this.value.trim() || /^https?:\/\//i.test(this.value.trim())) {
+                clearBannerLiveErr('link_url');
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            let firstInvalid = null;
+
+            const titleVal = titleInp ? titleInp.value.trim() : '';
+            if (!titleVal) {
+                hasError = true;
+                showBannerLiveErr('bannerTitleInput', 'Banner Title / Headline is required.', true);
+                if (!firstInvalid) firstInvalid = titleInp;
+            } else if (titleVal.length < 2) {
+                hasError = true;
+                showBannerLiveErr('bannerTitleInput', 'Banner Title must be at least 2 characters.', true);
+                if (!firstInvalid) firstInvalid = titleInp;
+            }
+
+            const sortVal = sortInp ? sortInp.value.trim() : '';
+            if (sortVal === '' || isNaN(sortVal)) {
+                hasError = true;
+                showBannerLiveErr('sort_order', 'Display priority / sort order is required.', true);
+                if (!firstInvalid) firstInvalid = sortInp;
+            }
+
+            @if(!$isEdit)
+            if (imageInp && (!imageInp.files || imageInp.files.length === 0)) {
+                hasError = true;
+                showBannerLiveErr('bannerImageInput', 'Banner Graphic Asset image is required.', true);
+                if (!firstInvalid) firstInvalid = imageInp;
+            }
+            @endif
+
+            if (linkInp && linkInp.value.trim()) {
+                if (!/^https?:\/\//i.test(linkInp.value.trim())) {
+                    hasError = true;
+                    showBannerLiveErr('link_url', 'Destination URL must start with http:// or https://', true);
+                    if (!firstInvalid) firstInvalid = linkInp;
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         });
     }
 });
