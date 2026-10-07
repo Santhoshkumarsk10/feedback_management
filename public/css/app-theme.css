@@ -689,6 +689,9 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 .badge-rose { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
 .badge-slate { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 .badge-cyan { background: #cffafe; color: #0e7490; border: 1px solid #a5f3fc; }
+.border-indigo { border-color: #6366f1 !important; }
+.bg-indigo-subtle { background-color: #e0e7ff !important; }
+.text-indigo { color: #4338ca !important; }
 
 .status-dot {
     width: 6px;

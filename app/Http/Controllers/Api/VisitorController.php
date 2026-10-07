@@ -17,7 +17,7 @@ class VisitorController extends Controller
     /** Screen 1: list of organizers to pick from. */
     public function organizers()
     {
-        return User::where('role', 'organizer')->where('is_active', true)
+        return User::whereIn('role', ['organizer', 'staff'])->where('is_active', true)
             ->orderBy('name')->get(['id', 'name', 'department']);
     }
 
@@ -56,7 +56,7 @@ class VisitorController extends Controller
         ]);
 
         $organizer = User::where('id', $data['organizer_id'])
-            ->where('role', 'organizer')->where('is_active', true)->firstOrFail();
+            ->whereIn('role', ['organizer', 'staff'])->where('is_active', true)->firstOrFail();
 
         // all active + required questions must be answered
         $answered = collect($data['answers'])
@@ -103,6 +103,71 @@ class VisitorController extends Controller
             return $feedback;
         });
 
-        return response()->json(['message' => 'Thank you for your feedback!', 'feedback_id' => $feedback->id], 201);
+        return response()->json([
+            'message' => 'Thank you for your feedback!',
+            'feedback_id' => $feedback->id,
+            'visitor_code' => $feedback->visit?->visitor_code,
+        ], 201);
+    }
+
+    /**
+     * Look up visitor details by their unique visitor ID / pass number.
+     * Enables submitting feedback using Visitor ID without login.
+     */
+    public function lookup(string $visitor_id)
+    {
+        $visitor = \App\Models\Visitor::where('visitor_id', $visitor_id)
+            ->orWhere('external_id', $visitor_id)
+            ->first();
+
+        if (! $visitor) {
+            return response()->json([
+                'success' => false,
+                'message' => "Visitor with ID '{$visitor_id}' not found. Please check your pass or contact the front desk.",
+            ], 404);
+        }
+
+        // Find today's visit or create one under current shift
+        $visit = Visit::where(function ($q) use ($visitor) {
+            $q->where('visitor_id', $visitor->id)->orWhere('visitor_code', $visitor->visitor_id);
+        })->whereDate('visit_date', today())->with(['feedback', 'shift', 'organizer:id,name,department'])->latest('id')->first();
+
+        if (! $visit) {
+            $currentShift = \App\Models\Shift::current();
+            $visit = Visit::create([
+                'visitor_id' => $visitor->id,
+                'visitor_code' => $visitor->visitor_id,
+                'visitor_name' => $visitor->name,
+                'visitor_company' => $visitor->company,
+                'visitor_designation' => $visitor->designation,
+                'visitor_mobile' => $visitor->mobile,
+                'visitor_email' => $visitor->email,
+                'visit_date' => today(),
+                'shift_id' => $currentShift?->id,
+                'purpose' => 'Plant & Facility Tour',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'visitor' => [
+                'id' => $visitor->id,
+                'visitor_id' => $visitor->visitor_id,
+                'name' => $visitor->name,
+                'company' => $visitor->company,
+                'designation' => $visitor->designation,
+                'mobile' => $visitor->mobile,
+                'email' => $visitor->email,
+            ],
+            'visit' => [
+                'id' => $visit->id,
+                'visitor_code' => $visit->visitor_code,
+                'shift_name' => $visit->shift?->name,
+                'organizer_id' => $visit->organizer_id,
+                'organizer_name' => $visit->organizer?->name,
+                'has_feedback' => ! is_null($visit->feedback),
+                'rating' => $visit->feedback?->overall_rating,
+            ],
+        ]);
     }
 }

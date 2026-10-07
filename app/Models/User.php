@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
-    public const ROLES = ['superadmin', 'admin', 'organizer'];
+    public const ROLES = ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'];
 
     protected $fillable = [
         'name', 'email', 'mobile', 'password', 'role', 'role_id', 'plant_id', 'department', 'is_active',
@@ -29,6 +30,22 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            if (!empty($user->role)) {
+                $spatieRole = $user->role === 'organizer' ? 'staff' : $user->role;
+                try {
+                    if (Role::where('name', $spatieRole)->exists() && !$user->hasRole($spatieRole)) {
+                        $user->syncRoles([$spatieRole]);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore during migration or uninitialized tables
+                }
+            }
+        });
+    }
+
     // ---- JWT ----
     public function getJWTIdentifier()
     {
@@ -40,7 +57,7 @@ class User extends Authenticatable implements JWTSubject
         return ['role' => $this->role];
     }
 
-    // ---- Relations (organizer) ----
+    // ---- Relations ----
     public function plant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Plant::class);

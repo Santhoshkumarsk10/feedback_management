@@ -17,6 +17,248 @@
 @endsection
 
 @section('content')
+<!-- Live Duty Shift Tracker & Active Shift Monitor -->
+<div class="card-modern mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
+    <div class="card-body p-3 p-md-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-lg-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
+                        <span class="spinner-grow spinner-grow-sm text-success" style="width: 0.65rem; height: 0.65rem;" role="status"></span>
+                        LIVE DUTY SHIFT TRACKER
+                    </span>
+                    <span class="small text-muted" id="liveClockDisplay">
+                        <i class="bi bi-clock me-1"></i> {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('h:i:s A') }} IST
+                    </span>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                    <h4 class="fw-bold text-dark mb-0">
+                        {{ $currentShift ? $currentShift->name : 'Off Shift Operations' }}
+                    </h4>
+                    @if($currentShift)
+                        <span class="badge bg-primary text-white fs-6 px-3 py-1">
+                            {{ $currentShift->formatted_24h_range }}
+                        </span>
+                        <span class="text-secondary small fw-semibold">
+                            ({{ $currentShift->formatted_12h_range }})
+                        </span>
+                    @endif
+                </div>
+
+                @if($currentShift)
+                    @php
+                        $prog = $currentShift->shift_progress;
+                    @endphp
+                    <div class="mb-2" style="max-width: 520px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span class="text-muted fw-semibold">Shift Progress: {{ $prog['percent'] }}% Elapsed</span>
+                            <span class="fw-bold text-primary"><i class="bi bi-hourglass-split"></i> {{ $prog['remaining_formatted'] }}</span>
+                        </div>
+                        <div class="progress-modern" style="height: 8px;">
+                            <div class="progress-bar-emerald" style="width: {{ $prog['percent'] }}%; height: 100%; background: linear-gradient(90deg, #38bdf8, #06539d);"></div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
+                    <span><i class="bi bi-person-badge text-primary"></i> On Duty Staff: <strong>{{ $currentUser->name }}</strong> ({{ ucfirst($currentUser->role) }})</span>
+                    @if($currentUser->department)
+                        <span><i class="bi bi-building text-secondary"></i> {{ $currentUser->department }}</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-5 text-lg-end">
+                <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
+                    <a href="{{ route('visits.create') }}" class="btn btn-primary btn-sm px-3 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-person-plus-fill me-1"></i> Register New Visitor
+                    </a>
+                    <a href="{{ route('mobile.app') }}" target="_blank" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold">
+                        <i class="bi bi-tablet me-1"></i> Tablet App <i class="bi bi-box-arrow-up-right fs-xs ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Visitors: Pending vs Completed Operations Board -->
+<div class="card-modern mb-4">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <div class="card-title">
+                <i class="bi bi-calendar2-day-fill text-primary"></i>
+                <span>Today's Plant Visitors & Feedback Queue</span>
+            </div>
+            <div class="text-muted small mt-1">Track visitor feedback status for today's shift and submit evaluations on behalf of visitors</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                    <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
+                </button>
+            </form>
+            <a href="{{ route('visits.create') }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus-circle me-1"></i> Add Visitor
+            </a>
+            <a href="{{ route('visits.index', ['today' => 1]) }}" class="btn btn-sm btn-link text-decoration-none">
+                <span>View Full Log</span> <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs Header: Pending vs Completed vs All -->
+    <div class="filter-tabs-header bg-light border-bottom px-3 pt-2">
+        <div class="filter-tabs-nav">
+            <a href="{{ route('dashboard', ['today_tab' => 'pending']) }}" 
+               class="filter-tab-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}"
+               style="{{ ($todayTab ?? 'pending') === 'pending' ? 'border-bottom: 3px solid #f59e0b; color: #b45309; font-weight: 700;' : '' }}">
+                <i class="bi bi-clock-history text-warning"></i>
+                <span>Awaiting Feedback (Pending பாக்கி)</span>
+                <span class="badge {{ $todayCounts['pending'] > 0 ? 'bg-warning text-dark' : 'bg-secondary text-white' }} rounded-pill ms-1">
+                    {{ $todayCounts['pending'] }}
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard', ['today_tab' => 'completed']) }}" 
+               class="filter-tab-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}"
+               style="{{ ($todayTab ?? '') === 'completed' ? 'border-bottom: 3px solid #10b981; color: #047857; font-weight: 700;' : '' }}">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>Feedback Completed</span>
+                <span class="badge bg-success rounded-pill ms-1">
+                    {{ $todayCounts['completed'] }}
+                </span>
+            </a>
+
+            <a href="{{ route('dashboard', ['today_tab' => 'all']) }}" 
+               class="filter-tab-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
+                <i class="bi bi-people-fill text-primary"></i>
+                <span>All Today's Visitors</span>
+                <span class="badge bg-secondary rounded-pill ms-1">
+                    {{ $todayCounts['all'] }}
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th>Visitor Information</th>
+                    <th>Duty Shift</th>
+                    <th>Assigned Staff</th>
+                    <th>Purpose of Visit</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            @forelse($todayVisits as $v)
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>
+                            @if($v->visitor_code)
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0" style="font-size: 0.72rem;">
+                                    <i class="bi bi-qr-code me-1"></i> {{ $v->visitor_code }}
+                                </span>
+                            @endif
+                        </div>
+                        @if($v->visitor_designation)
+                            <div class="small text-secondary fw-semibold">{{ $v->visitor_designation }}</div>
+                        @endif
+                        <div class="small text-muted d-flex align-items-center gap-2 mt-1">
+                            @if($v->visitor_company)
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-building me-1"></i> {{ $v->visitor_company }}
+                                </span>
+                            @endif
+                            @if($v->visitor_mobile)
+                                <span><i class="bi bi-telephone text-muted"></i> {{ $v->visitor_mobile }}</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        @if($v->shift)
+                            @php
+                                $shiftBadgeColor = match($v->shift->code) {
+                                    'SHIFT-A' => 'badge-indigo',
+                                    'SHIFT-B' => 'badge-amber',
+                                    'SHIFT-C' => 'badge-purple',
+                                    default => 'badge-slate'
+                                };
+                            @endphp
+                            <span class="badge-modern {{ $shiftBadgeColor }}">
+                                <i class="bi bi-clock"></i> {{ $v->shift->name }}
+                            </span>
+                            <div class="text-muted small mt-1" style="font-size: 0.72rem;">{{ $v->shift->formatted_24h_range }}</div>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="user-avatar-chip" style="width: 28px; height: 28px; font-size: 0.72rem;">
+                                {{ strtoupper(substr($v->organizer->name ?? 'S', 0, 2)) }}
+                            </span>
+                            <div>
+                                <span class="fw-semibold text-dark">{{ $v->organizer->name ?? 'Unassigned' }}</span>
+                                @if($v->organizer?->department)
+                                    <div class="small text-muted" style="font-size: 0.72rem;">{{ $v->organizer?->department }}</div>
+                                @endif
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-modern badge-slate">{{ $v->purpose ?: 'Plant Tour' }}</span>
+                    </td>
+                    <td>
+                        @if($v->feedback)
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                <i class="bi bi-check-circle-fill"></i> Completed ({{ $v->feedback->overall_rating }} ★)
+                            </span>
+                        @else
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1">
+                                <i class="bi bi-hourglass-split text-warning"></i> Pending (பாக்கி)
+                            </span>
+                        @endif
+                    </td>
+                    <td class="text-end text-nowrap">
+                        @if($v->feedback)
+                            <a href="{{ route('feedbacks.show', $v->feedback) }}" class="btn btn-sm btn-outline-secondary py-1 px-3">
+                                <i class="bi bi-eye"></i> View Feedback
+                            </a>
+                        @else
+                            <a href="{{ route('visits.feedback.create', $v) }}" class="btn btn-sm btn-warning text-dark fw-bold py-1 px-3 shadow-sm" title="Fill feedback evaluation along with visitor">
+                                <i class="bi bi-pencil-square me-1"></i> Submit on Behalf (அவருக்காக பதிவு செய்க)
+                            </a>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success opacity-75"></i>
+                        @if(($todayTab ?? 'pending') === 'pending')
+                            <div class="fw-bold text-dark fs-6">No Pending Feedback for Today!</div>
+                            <div class="small">All registered visitors for today's shifts have submitted their evaluation.</div>
+                        @else
+                            <div class="fw-bold text-dark fs-6">No visitors recorded yet for today.</div>
+                            <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary mt-2">
+                                <i class="bi bi-person-plus-fill me-1"></i> Register Today's First Visitor
+                            </a>
+                        @endif
+                    </td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <!-- Key Performance Metric Cards -->
 <div class="row g-3 mb-4">
     <!-- Total Visits -->
@@ -474,7 +716,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
-        });
+        // Live Duty Shift Clock
+        function updateLiveClock() {
+            const el = document.getElementById('liveClockDisplay');
+            if (el) {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                el.innerHTML = '<i class="bi bi-clock me-1"></i> ' + timeStr + ' IST';
+            }
+        }
+        setInterval(updateLiveClock, 1000);
     }
 });
 </script>

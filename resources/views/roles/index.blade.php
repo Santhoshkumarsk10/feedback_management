@@ -8,6 +8,10 @@
         <i class="bi bi-shield-plus"></i>
         <span>Create New Role</span>
     </a>
+    <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
+        <i class="bi bi-key-fill text-primary"></i>
+        <span>Permission Master</span>
+    </a>
 @endsection
 
 @section('content')
@@ -86,6 +90,7 @@
                 <tr>
                     <th>Role Title</th>
                     <th>Identifier (Slug)</th>
+                    <th>Permissions & Capabilities</th>
                     <th>Scope & Description</th>
                     <th>Classification</th>
                     <th class="text-center">Assigned Users</th>
@@ -101,14 +106,27 @@
                             <span class="stat-icon-bubble {{ $r->is_system ? 'shibaura' : 'amber' }}" style="width: 32px; height: 32px; font-size: 0.95rem;">
                                 <i class="bi {{ $r->is_system ? 'bi-shield-check' : 'bi-person-badge' }}"></i>
                             </span>
-                            <span class="fw-bold text-dark fs-6">{{ $r->name }}</span>
+                            <span class="fw-bold text-dark fs-6">{{ $r->display_name ?: $r->name }}</span>
                         </div>
                     </td>
                     <td>
-                        <code>{{ $r->slug }}</code>
+                        <code class="text-primary fw-semibold">{{ $r->name }}</code>
                     </td>
                     <td>
-                        <div class="small text-muted line-clamp-1" style="max-width: 360px;">
+                        @if($r->name === 'superadmin')
+                            <span class="badge-modern badge-emerald fw-bold">
+                                <i class="bi bi-check-all"></i> All System Permissions
+                            </span>
+                        @else
+                            <div class="d-flex align-items-center gap-1 flex-wrap" style="max-width: 280px;">
+                                <span class="badge-modern badge-indigo py-1">
+                                    <i class="bi bi-key-fill text-indigo-400"></i> {{ $r->permissions_count }} Permissions
+                                </span>
+                            </div>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="small text-muted line-clamp-1" style="max-width: 320px;">
                             {{ $r->description ?: 'No additional description provided.' }}
                         </div>
                     </td>
@@ -124,8 +142,8 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <a href="{{ route('users.index', ['role' => $r->slug]) }}" class="badge-modern badge-slate text-decoration-none" title="Filter users with this role">
-                            <i class="bi bi-people me-1"></i> {{ $r->users_count }} Members
+                        <a href="{{ route('users.index', ['role' => $r->name]) }}" class="badge-modern badge-slate text-decoration-none" title="Filter users with this role">
+                            <i class="bi bi-people me-1"></i> {{ $r->assigned_users_count ?? $r->users_count }} Members
                         </a>
                     </td>
                     <td>
@@ -141,33 +159,35 @@
                     </td>
                     <td class="text-end text-nowrap">
                         <div class="d-inline-flex gap-1">
-                            <a href="{{ route('roles.edit', $r) }}" class="btn-action-icon edit" title="Edit role">
+                            <a href="{{ route('roles.edit', $r) }}" class="btn-action-icon edit" title="Edit role & permissions">
                                 <i class="bi bi-pencil-fill"></i>
                             </a>
-                            @if($r->slug !== 'superadmin')
+                            @if(!$r->is_system)
                                 <form method="POST" action="{{ route('roles.toggle', $r) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button class="btn-action-icon" type="submit" title="{{ $r->is_active ? 'Deactivate role' : 'Activate role' }}">
                                         <i class="bi {{ $r->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
                                     </button>
                                 </form>
-                            @endif
-                            @if(!$r->is_system)
                                 <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
-                                      onsubmit="return confirm('Are you sure you want to delete role {{ $r->name }}?')">
+                                      onsubmit="return confirm('Are you sure you want to delete role {{ $r->display_name ?: $r->name }}?')">
                                     @csrf @method('DELETE')
-                                    <button class="btn-action-icon delete" type="submit" title="Delete role" @disabled($r->users_count > 0)>
+                                    <button class="btn-action-icon delete" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
                                         <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </form>
+                            @else
+                                <span class="d-inline-block px-2 text-muted" title="Core system roles are locked from deletion">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
                             @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
-                        <i class="bi bi-shield-x fs-2 d-block mb-2 text-slate-300"></i>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <i class="bi bi-shield fs-2 d-block mb-2 text-slate-300"></i>
                         No roles match the selected filter.
                     </td>
                 </tr>
