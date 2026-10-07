@@ -169,15 +169,33 @@ class MobileAppController extends Controller
 
         $user = User::where($field, $request->login)
             ->where('is_active', true)
-            ->whereIn('role', ['organizer', 'admin', 'superadmin'])
             ->with(['plant', 'roleModel'])
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials or inactive organizer account.',
+                'message' => 'Invalid credentials or inactive account.',
             ], 401);
+        }
+
+        // Check mobile authorization: staff (organizer), admin, superadmin
+        $isMobileAllowed = false;
+        try {
+            if ($user->hasAnyRole(['staff', 'organizer', 'admin', 'superadmin']) || $user->can('access-mobile-app')) {
+                $isMobileAllowed = true;
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$isMobileAllowed && in_array($user->role, ['staff', 'organizer', 'admin', 'superadmin'], true)) {
+            $isMobileAllowed = true;
+        }
+
+        if (!$isMobileAllowed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is not authorized for mobile application login.',
+            ], 403);
         }
 
         Auth::login($user);
@@ -225,6 +243,121 @@ class MobileAppController extends Controller
         return response()->json([
             'success' => true,
             'visits' => $visits,
+        ]);
+    }
+
+    /**
+     * Today's visitors queue for on-duty staff (Pending vs Completed).
+     */
+    public function organizerTodayVisitors(Request $request)
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $tab = $request->input('tab', 'all');
+
+        $base = Visit::whereDate('visit_date', today())
+            ->with(['shift', 'feedback']);
+
+        $counts = [
+            'all' => (clone $base)->count(),
+            'pending' => (clone $base)->doesntHave('feedback')->count(),
+            'completed' => (clone $base)->has('feedback')->count(),
+        ];
+
+        $visitors = (clone $base)
+            ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'))
+            ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
+            ->latest('id')
+            ->get()
+            ->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'name' => $v->visitor_name,
+                    'company' => $v->visitor_company,
+                    'designation' => $v->visitor_designation,
+                    'mobile' => $v->visitor_mobile,
+                    'purpose' => $v->purpose,
+                    'shift_name' => $v->shift?->name,
+                    'shift_range' => $v->shift?->formatted_24h_range,
+                    'is_completed' => ! is_null($v->feedback),
+                    'rating' => $v->feedback?->overall_rating,
+                ];
+            });
+
+        $currentShift = \App\Models\Shift::current();
+
+        return response()->json([
+            'success' => true,
+            'counts' => $counts,
+            'current_shift' => $currentShift ? [
+                'name' => $currentShift->name,
+                'range' => $currentShift->formatted_24h_range,
+                'progress' => $currentShift->shift_progress,
+            ] : null,
+            'visitors' => $visitors,
+        ]);
+    }
+
+    /**
+     * Submit feedback on behalf of a pending visitor from mobile app.
+     */
+    public function submitFeedbackOnBehalf(Request $request, Visit $visit)
+    {
+        if (! Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if ($visit->feedback) {
+            return response()->json(['success' => false, 'message' => 'Feedback already submitted for this visitor.'], 422);
+        }
+
+        $validated = $request->validate([
+            'overall_rating' => 'required|integer|between:1,5',
+            'comments' => 'nullable|string|max:2000',
+            'answers' => 'required|array|min:1',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.answer' => 'nullable',
+        ]);
+
+        $user = Auth::user();
+
+        $feedback = DB::transaction(function () use ($validated, $visit, $user) {
+            $feedback = Feedback::create([
+                'visit_id' => $visit->id,
+                'organizer_id' => $user->id,
+                'overall_rating' => $validated['overall_rating'],
+                'comments' => $validated['comments'] ?? null,
+                'submitted_at' => now(),
+            ]);
+
+            foreach ($validated['answers'] as $ans) {
+                $answerValue = is_array($ans['answer'] ?? null)
+                    ? implode(', ', $ans['answer'])
+                    : ($ans['answer'] ?? null);
+
+                $feedback->answers()->create([
+                    'question_id' => $ans['question_id'],
+                    'answer' => $answerValue,
+                ]);
+            }
+
+            AuditLog::record(
+                'create',
+                'feedbacks',
+                "Staff {$user->name} submitted evaluation on behalf of visitor {$visit->visitor_name} via mobile app",
+                ['visit_id' => $visit->id, 'rating' => $feedback->overall_rating],
+                $user
+            );
+
+            return $feedback;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "Feedback successfully submitted on behalf of {$visit->visitor_name}!",
+            'feedback_id' => $feedback->id,
         ]);
     }
 

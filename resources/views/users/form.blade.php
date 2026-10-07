@@ -62,7 +62,7 @@
                                         required>
                                     @foreach($roles as $r)
                                         <option value="{{ $r->id }}" @selected(old('role_id', $user->role_id) == $r->id || (empty($user->role_id) && $user->role === $r->slug))>
-                                             {{ $r->name }} ({{ $r->slug }})
+                                             {{ $r->display_name ?? $r->name }} ({{ $r->slug }})
                                         </option>
                                     @endforeach
                                 </select>

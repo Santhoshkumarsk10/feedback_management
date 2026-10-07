@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         return auth()->user()->role === 'superadmin'
             ? Role::pluck('slug')->all()
-            : ['organizer'];
+            : ['supervisor', 'staff', 'organizer'];
     }
 
     private function authorizeTarget(User $user): void
@@ -215,7 +215,9 @@ class UserController extends Controller
         ]);
 
         $roleObj = Role::find($data['role_id']);
-        $data['role'] = in_array($roleObj?->slug, ['superadmin', 'admin', 'organizer'], true) ? $roleObj->slug : 'organizer';
+        $data['role'] = in_array($roleObj?->slug, ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'], true) 
+            ? $roleObj->slug 
+            : ($roleObj?->name ?? 'staff');
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

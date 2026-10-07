@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Plant Visitors Log')
 @section('page_title', 'Plant Visitor Directory')
-@section('page_subtitle', 'Browse all plant visitors, assigned organizers, and feedback statuses')
+@section('page_subtitle', 'Browse all plant visitors, assigned shift operations, and feedback statuses')
 
 @section('content')
 <!-- Filter Tabs & Controls Card -->
@@ -51,10 +51,21 @@
             />
 
             <x-custom-select 
+                name="shift_id" 
+                :value="request('shift_id')" 
+                placeholder="All Shifts" 
+                search-placeholder="Search shift..." 
+                icon="bi-clock-history" 
+                min-width="170px" 
+                :options="collect([['value' => '', 'label' => 'All Shifts']])->concat($shifts->map(fn($s) => ['value' => $s->id, 'label' => $s->name . ' (' . $s->start_time_short . '–' . $s->end_time_short . ')']))" 
+                auto-submit
+            />
+
+            <x-custom-select 
                 name="organizer_id" 
                 :value="request('organizer_id')" 
-                placeholder="All Organizers" 
-                search-placeholder="Search organizers..." 
+                placeholder="All Staff" 
+                search-placeholder="Search staff..." 
                 icon="bi-person-badge" 
                 min-width="180px" 
                 :options="$organizers->map(fn($o) => ['value' => $o->id, 'label' => $o->name])" 
@@ -75,7 +86,7 @@
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['q', 'organizer_id', 'from', 'to', 'tab']))
+            @if(request()->hasAny(['q', 'shift_id', 'organizer_id', 'from', 'to', 'tab']))
                 <a href="{{ route('visits.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Reset Filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -86,12 +97,26 @@
 
 <!-- Visitors Table Card -->
 <div class="card-modern">
-    <div class="card-header">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="card-title">
             <i class="bi bi-person-badge-fill text-primary"></i>
             <span>Recorded Plant Visits</span>
+            @if(!empty($isTodayFilter))
+                <span class="badge bg-primary text-white ms-2 fs-xs">Today's Visits</span>
+            @endif
         </div>
-        <span class="badge-modern badge-slate">{{ $visits->total() }} Visits Total</span>
+        <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                    <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
+                </button>
+            </form>
+            <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-person-plus-fill me-1"></i> Register Visitor
+            </a>
+            <span class="badge-modern badge-slate">{{ $visits->total() }} Visits Total</span>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -99,8 +124,9 @@
             <thead>
                 <tr>
                     <th>Visit Date</th>
-                    <th>Visitor Information</th>
-                    <th>Assigned Organizer</th>
+                    <th>Shift</th>
+                    <th>Visitor Information & ID</th>
+                    <th>Assigned Staff</th>
                     <th>Purpose of Visit</th>
                     <th class="text-end">Feedback Status</th>
                 </tr>
@@ -118,7 +144,32 @@
                         </div>
                     </td>
                     <td>
-                        <div class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</div>
+                        @if($v->shift)
+                            @php
+                                $shiftBadgeColor = match($v->shift->code) {
+                                    'SHIFT-A' => 'badge-indigo',
+                                    'SHIFT-B' => 'badge-amber',
+                                    'SHIFT-C' => 'badge-purple',
+                                    default => 'badge-slate'
+                                };
+                            @endphp
+                            <span class="badge-modern {{ $shiftBadgeColor }}">
+                                <i class="bi bi-clock"></i> {{ $v->shift->name }}
+                            </span>
+                            <div class="text-muted small mt-1" style="font-size: 0.72rem;">{{ $v->shift->formatted_24h_range }}</div>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>
+                            @if($v->visitor_code)
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0" style="font-size: 0.72rem;">
+                                    <i class="bi bi-qr-code me-1"></i> {{ $v->visitor_code }}
+                                </span>
+                            @endif
+                        </div>
                         @if($v->visitor_designation)
                             <div class="small text-secondary fw-semibold">{{ $v->visitor_designation }}</div>
                         @endif
@@ -134,17 +185,23 @@
                         </div>
                     </td>
                     <td>
-                        <div class="d-flex align-items-center">
-                            <span class="user-avatar-chip" style="width: 28px; height: 28px; font-size: 0.72rem;">
-                                {{ strtoupper(substr($v->organizer->name, 0, 2)) }}
-                            </span>
-                            <div>
-                                <span class="fw-semibold text-dark">{{ $v->organizer->name }}</span>
-                                @if($v->organizer->department)
-                                    <div class="small text-muted" style="font-size: 0.72rem;">{{ $v->organizer->department }}</div>
-                                @endif
+                        @if($v->organizer)
+                            <div class="d-flex align-items-center">
+                                <span class="user-avatar-chip" style="width: 28px; height: 28px; font-size: 0.72rem;">
+                                    {{ strtoupper(substr($v->organizer->name, 0, 2)) }}
+                                </span>
+                                <div>
+                                    <span class="fw-semibold text-dark">{{ $v->organizer->name }}</span>
+                                    @if($v->organizer->department)
+                                        <div class="small text-muted" style="font-size: 0.72rem;">{{ $v->organizer->department }}</div>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            <span class="badge bg-light text-muted border">
+                                <i class="bi bi-person-dash"></i> Unassigned
+                            </span>
+                        @endif
                     </td>
                     <td>
                         @if($v->purpose)
@@ -162,15 +219,20 @@
                                 </a>
                             </div>
                         @else
-                            <span class="badge-modern badge-slate text-muted">
-                                <i class="bi bi-hourglass-split"></i> Awaiting Feedback
-                            </span>
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle" style="font-size: 0.72rem;">
+                                    <i class="bi bi-hourglass-split text-warning"></i> Pending
+                                </span>
+                                <a href="{{ route('visits.feedback.create', $v) }}" class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2" style="font-size: 0.75rem;" title="Submit feedback on behalf of visitor">
+                                    <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
+                                </a>
+                            </div>
                         @endif
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-calendar-x fs-2 d-block mb-2 text-slate-300"></i>
                         No visit records match the selected filter.
                     </td>

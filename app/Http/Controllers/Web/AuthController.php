@@ -42,28 +42,32 @@ class AuthController extends Controller
 
         if (Auth::attempt([$field => $data['login'], 'password' => $data['password'], 'is_active' => true], $request->boolean('remember'))) {
             $user = Auth::user();
-            if (in_array($user->role, ['superadmin', 'admin'], true)) {
+
+            $isWebAuthorized = false;
+            try {
+                if ($user->hasAnyRole(['superadmin', 'admin', 'supervisor', 'staff', 'organizer']) || $user->can('access-web-panel')) {
+                    $isWebAuthorized = true;
+                }
+            } catch (\Throwable $e) {}
+
+            if (!$isWebAuthorized && in_array($user->role, ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'], true)) {
+                $isWebAuthorized = true;
+            }
+
+            if ($isWebAuthorized) {
                 $request->session()->regenerate();
-                AuditLog::record('login', 'auth', 'Administrator successfully logged into operations panel.', [
+                AuditLog::record('login', 'auth', "User {$user->name} ({$user->role}) logged into operations web panel.", [
                     'login_field' => $field,
+                    'role' => $user->role,
                     'ip' => $request->ip(),
                 ]);
 
                 return redirect()->intended(route('dashboard'));
             }
 
-            if ($user->role === 'organizer') {
-                $request->session()->regenerate();
-                AuditLog::record('login', 'auth', "Organizer {$user->name} logged into organizer portal.", [
-                    'login_field' => $field,
-                    'ip' => $request->ip(),
-                ]);
-
-                return redirect()->intended(route('mobile.app'));
-            }
-
-            AuditLog::record('denied', 'auth', 'Login attempt denied: account not authorized.', [
+            AuditLog::record('denied', 'auth', 'Login attempt denied: account not authorized for web panel.', [
                 'user' => $user->email,
+                'role' => $user->role,
             ]);
             Auth::logout();
         }

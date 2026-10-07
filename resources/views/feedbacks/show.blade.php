@@ -81,6 +81,13 @@
                             <div class="small text-muted mt-1">
                                 <strong>Purpose:</strong> {{ $feedback->visit->purpose ?? 'General Plant Tour' }}
                             </div>
+                            @if($feedback->visit->shift)
+                                <div class="mt-2">
+                                    <span class="badge-modern badge-indigo">
+                                        <i class="bi bi-clock"></i> {{ $feedback->visit->shift->name }} ({{ $feedback->visit->shift->formatted_24h_range }})
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -1016,11 +1016,54 @@
                     </div>
                 </div>
 
+                <!-- Live Duty Shift Tracker Banner -->
+                <div class="p-2 mb-3 rounded-3 bg-light border d-flex align-items-center justify-content-between" id="mobileShiftTrackerBanner">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.68rem;">
+                            <i class="bi bi-record-fill text-success"></i> LIVE SHIFT
+                        </span>
+                        <div>
+                            <div class="fw-bold text-dark small" id="txtMobileShiftName">Loading Shift...</div>
+                            <div class="text-muted" style="font-size: 0.7rem;" id="txtMobileShiftProgress">Plant Shift Tracker</div>
+                        </div>
+                    </div>
+                    <div class="text-end text-muted small" style="font-size: 0.7rem;" id="txtMobileClock">
+                        Plant IST
+                    </div>
+                </div>
+
                 <!-- Big Action: Launch Visitor Mode for Customer -->
                 <button type="button" class="btn-shibaura" style="background: linear-gradient(90deg, #06539d, #0284c7);" onclick="launchSurveyForCustomer()">
                     <i class="bi bi-tablet-fill"></i>
                     <span>Hand Tablet to Visitor (Start Survey)</span>
                 </button>
+            </div>
+
+            <!-- Today's Visitors: Pending vs Completed Operations Board -->
+            <div class="mobile-card mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-calendar2-day text-primary me-1"></i> Today's Visitors
+                    </h6>
+                    <div class="d-flex gap-1" id="mobileVisitorTabs">
+                        <button type="button" class="btn btn-xs btn-outline-warning active px-2 py-1" onclick="switchMobileTodayTab('pending')" id="tabMobilePending" style="font-size: 0.72rem;">
+                            Pending <span class="badge bg-warning text-dark ms-1" id="badgeMobilePending">0</span>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline-success px-2 py-1" onclick="switchMobileTodayTab('completed')" id="tabMobileCompleted" style="font-size: 0.72rem;">
+                            Done <span class="badge bg-success text-white ms-1" id="badgeMobileCompleted">0</span>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary px-2 py-1" onclick="switchMobileTodayTab('all')" id="tabMobileAll" style="font-size: 0.72rem;">
+                            All <span class="badge bg-secondary text-white ms-1" id="badgeMobileAll">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="containerMobileTodayVisitors" class="d-flex flex-column gap-2 mt-2">
+                    <div class="text-center text-muted py-3 small">
+                        <i class="bi bi-hourglass-split d-block fs-4 mb-1"></i>
+                        Loading today's visitors...
+                    </div>
+                </div>
             </div>
 
             <!-- Recent Customer Feedback Section -->
@@ -1723,6 +1766,96 @@
             document.getElementById('txtModeLabel').innerText = 'Organizer Console';
 
             loadOrganizerVisits();
+            loadMobileTodayVisitors();
+        }
+
+        let activeMobileTodayTab = 'pending';
+
+        function switchMobileTodayTab(tab) {
+            activeMobileTodayTab = tab;
+            ['tabMobilePending', 'tabMobileCompleted', 'tabMobileAll'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(tab === 'pending' ? 'tabMobilePending' : (tab === 'completed' ? 'tabMobileCompleted' : 'tabMobileAll'));
+            if (activeBtn) activeBtn.classList.add('active');
+            loadMobileTodayVisitors();
+        }
+
+        async function loadMobileTodayVisitors() {
+            const listEl = document.getElementById('containerMobileTodayVisitors');
+            if (!listEl) return;
+
+            try {
+                const res = await fetch("{{ route('mobile.organizer.today_visitors') }}?tab=" + activeMobileTodayTab);
+                const data = await res.json();
+                if (data.success) {
+                    if (data.current_shift) {
+                        const shiftNameEl = document.getElementById('txtMobileShiftName');
+                        const shiftProgEl = document.getElementById('txtMobileShiftProgress');
+                        if (shiftNameEl) shiftNameEl.innerText = data.current_shift.name + ' (' + data.current_shift.range + ')';
+                        if (shiftProgEl && data.current_shift.progress) {
+                            shiftProgEl.innerText = data.current_shift.progress.remaining_formatted;
+                        }
+                    }
+
+                    if (data.counts) {
+                        document.getElementById('badgeMobilePending').innerText = data.counts.pending;
+                        document.getElementById('badgeMobileCompleted').innerText = data.counts.completed;
+                        document.getElementById('badgeMobileAll').innerText = data.counts.all;
+                    }
+
+                    if (!data.visitors || data.visitors.length === 0) {
+                        listEl.innerHTML = `
+                            <div class="text-center text-muted py-3 small bg-light rounded-3 border">
+                                <i class="bi bi-check-circle text-success fs-5 d-block mb-1"></i>
+                                ${activeMobileTodayTab === 'pending' ? 'No pending visitors! All visitors submitted feedback.' : 'No visitors found for this category.'}
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    listEl.innerHTML = data.visitors.map(v => `
+                        <div class="p-3 bg-white rounded-3 border shadow-sm">
+                            <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                                <div>
+                                    <div class="fw-bold text-dark small">${v.name}</div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">${v.company || 'Corporate Guest'} • ${v.mobile || '—'}</div>
+                                    <div class="text-secondary mt-1" style="font-size: 0.7rem;"><i class="bi bi-tag me-1"></i>${v.purpose || 'Plant Tour'}</div>
+                                </div>
+                                <div class="text-end">
+                                    ${v.is_completed ? `
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle small px-2 py-1">
+                                            ★ ${v.rating} Done
+                                        </span>
+                                    ` : `
+                                        <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-2 py-1 shadow-sm" style="font-size: 0.72rem;" onclick="startSurveyForPendingVisitor(${JSON.stringify(v).replace(/"/g, '&quot;')})">
+                                            <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function startSurveyForPendingVisitor(v) {
+            document.getElementById('inpVisitorName').value = v.name;
+            document.getElementById('inpVisitorCompany').value = v.company || '';
+            document.getElementById('inpVisitorMobile').value = v.mobile || '';
+            document.getElementById('inpVisitorDesignation').value = v.designation || '';
+            document.getElementById('inpPurpose').value = v.purpose || 'Plant Tour';
+
+            if (activeOrganizer) {
+                const selOrg = document.getElementById('selOrganizer');
+                if (selOrg) selOrg.value = activeOrganizer.id;
+            }
+
+            showScreen('screenSurveySections');
         }
 
         async function loadOrganizerVisits() {

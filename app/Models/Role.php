@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Role extends Model
+class Role extends SpatieRole
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
+        'display_name',
+        'guard_name',
         'slug',
         'description',
         'is_system',
@@ -23,8 +25,19 @@ class Role extends Model
         'is_active' => 'boolean',
     ];
 
-    public function users(): HasMany
+    /**
+     * Display label for UI representation.
+     */
+    public function getTitleAttribute(): string
     {
-        return $this->hasMany(User::class);
+        return $this->display_name ?: ucfirst($this->name);
+    }
+
+    /**
+     * Users assigned via role_id column directly.
+     */
+    public function assignedUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'role_id');
     }
 }

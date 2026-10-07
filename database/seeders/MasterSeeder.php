@@ -138,5 +138,12 @@ class MasterSeeder extends Seeder
             'role_id' => $roleOrganizer?->id,
             'plant_id' => $p1?->id,
         ]);
+
+        // 4. Shifts Master
+        $this->call(ShiftSeeder::class);
+
+        // 5. Spatie Roles & Permissions
+        $this->call(RoleAndPermissionSeeder::class);
     }
 }
+
