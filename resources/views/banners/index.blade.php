@@ -87,9 +87,10 @@
                         ['value' => 'tablet', 'label' => 'Tablet Only'],
                         ['value' => 'web', 'label' => 'Web Only'],
                     ]"
-                    :selected="request('target', 'all')"
+                    :value="request('target', 'all')"
                     placeholder="Device Target"
                     icon="bi-display"
+                    auto-submit
                 />
             </div>
 

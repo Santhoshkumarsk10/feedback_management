@@ -15,21 +15,24 @@
 @endsection
 
 @section('content')
-<div class="row g-4">
+<div class="row g-4 align-items-start">
     <!-- Left Column: Form -->
-    <div class="col-12 col-xl-7">
-        <div class="card-modern">
-            <div class="card-modern-header">
+    <div class="col-12 col-lg-7">
+        <div class="card-modern" style="border-left: 4px solid var(--shibaura-blue);">
+            <div class="card-header bg-white">
                 <div>
-                    <h3 class="card-modern-title">
+                    <div class="card-title">
                         <i class="bi bi-image-fill text-primary"></i>
                         <span>{{ $isEdit ? 'Update Banner Details' : 'Banner Information & Creative Asset' }}</span>
-                    </h3>
-                    <p class="card-modern-subtitle">Configure banner target audience, order priority, and image file</p>
+                    </div>
+                    <p class="text-muted small mb-0 mt-1">Configure banner target audience, order priority, and image file</p>
                 </div>
+                @if($isEdit)
+                    <span class="badge-modern badge-shibaura">ID: #{{ $banner->id }}</span>
+                @endif
             </div>
 
-            <div class="card-modern-body p-4">
+            <div class="card-body p-4">
                 <form action="{{ $isEdit ? route('banners.update', $banner) : route('banners.store') }}" 
                       method="POST" 
                       enctype="multipart/form-data" 
@@ -42,7 +45,7 @@
 
                     <!-- Headline & Subtitle -->
                     <div class="mb-3">
-                        <label class="form-label-modern required" for="title">Banner Title / Headline</label>
+                        <label class="form-label-modern required" for="bannerTitleInput">Banner Title / Headline</label>
                         <input type="text" 
                                class="form-control-modern @error('title') is-invalid @enderror" 
                                id="bannerTitleInput" 
@@ -52,6 +55,7 @@
                                minlength="2"
                                maxlength="200"
                                required>
+                        <small class="text-muted d-block mt-1">Primary headline displayed over the banner</small>
                         @error('title')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -59,15 +63,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label-modern" for="subtitle">Subtitle / Supporting Text</label>
+                        <label class="form-label-modern" for="bannerSubtitleInput">Subtitle / Supporting Text</label>
                         <input type="text" 
                                class="form-control-modern @error('subtitle') is-invalid @enderror" 
                                id="bannerSubtitleInput" 
                                name="subtitle" 
                                value="{{ old('subtitle', $banner->subtitle) }}" 
-                               placeholder="e.g. Empowering Indian Manufacturing with Japanese Engineering Excellence"
+                               placeholder="e.g. Empowering Indian Manufacturing with Japanese Engineering Excellence" 
                                minlength="2"
                                maxlength="500">
+                        <small class="text-muted d-block mt-1">Secondary caption or tagline displayed below headline</small>
                         @error('subtitle')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -75,21 +80,26 @@
                     </div>
 
                     <!-- Target Device & Sort Order -->
-                    <div class="row g-3 mb-3">
+                    <div class="row g-3 mb-3 align-items-start">
                         <div class="col-12 col-md-6">
-                            <label class="form-label-modern required">Target Display Device</label>
-                            <x-custom-select
-                                name="target"
-                                :options="[
-                                    ['value' => 'all', 'label' => 'All Platforms (Mobile, Tablet, Web)'],
-                                    ['value' => 'mobile', 'label' => 'Mobile App Only'],
-                                    ['value' => 'tablet', 'label' => 'Tablet Kiosk App Only'],
-                                    ['value' => 'web', 'label' => 'Web Management Only'],
-                                ]"
-                                :selected="old('target', $banner->target ?? 'all')"
-                                placeholder="Select Target Device"
-                                icon="bi-display"
-                            />
+                            <label class="form-label-modern required" for="target">Target Display Device</label>
+                            <div class="banner-custom-select-wrap">
+                                <x-custom-select
+                                    name="target"
+                                    :options="[
+                                        ['value' => 'all', 'label' => 'All Platforms (Mobile, Tablet, Web)'],
+                                        ['value' => 'mobile', 'label' => 'Mobile App Only'],
+                                        ['value' => 'tablet', 'label' => 'Tablet Kiosk App Only'],
+                                        ['value' => 'web', 'label' => 'Web Management Only'],
+                                    ]"
+                                    :value="old('target', $banner->target ?? 'all')"
+                                    placeholder="Select Target Device"
+                                    icon="bi-display"
+                                    :auto-submit="false"
+                                    :allow-empty="false"
+                                />
+                            </div>
+                            <small class="text-muted d-block mt-1">Platform where this banner will appear</small>
                             @error('target')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -114,8 +124,8 @@
                     </div>
 
                     <!-- Image File Upload Dropzone -->
-                    <div class="mb-4">
-                        <label class="form-label-modern {{ $isEdit ? '' : 'required' }}" for="image">Banner Graphic Asset</label>
+                    <div class="mb-3">
+                        <label class="form-label-modern {{ $isEdit ? '' : 'required' }}" for="bannerImageInput">Banner Graphic Asset</label>
                         <div class="modern-upload-dropzone" id="bannerDropzone">
                             <input type="file" 
                                    id="bannerImageInput" 
@@ -123,24 +133,24 @@
                                    accept="image/*" 
                                    onchange="previewBannerFile(this)"
                                    {{ $isEdit ? '' : 'required' }}>
-                            <div class="upload-dropzone-content">
-                                <div class="upload-logo-current-preview" style="width: 100px; height: 56px;">
+                            <div class="upload-dropzone-content d-flex align-items-center gap-3">
+                                <div class="upload-logo-current-preview flex-shrink-0" style="width: 110px; height: 62px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1.5px solid #e2e8f0;">
                                     <img id="formBannerThumbnail" 
                                          src="{{ $isEdit ? $banner->image_url : asset('images/shibaura-logo-cropped.webp') }}" 
                                          alt="Banner Thumbnail"
-                                         style="object-fit: cover; width: 100%; height: 100%; border-radius: 6px;"
+                                         style="object-fit: cover; width: 100%; height: 100%;"
                                          onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'">
                                 </div>
-                                <div class="flex-grow-1">
-                                    <div class="upload-instructions-title d-flex align-items-center gap-2">
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="upload-instructions-title d-flex align-items-center gap-2 mb-1">
                                         <i class="bi bi-cloud-arrow-up text-primary fs-5"></i>
-                                        <span id="bannerFileNameText">{{ $isEdit ? 'Upload Replacement Image or Drag & Drop' : 'Upload Banner Image or Drag & Drop' }}</span>
+                                        <span class="fw-semibold text-dark text-truncate" id="bannerFileNameText">{{ $isEdit ? 'Upload Replacement Image or Drag & Drop' : 'Upload Banner Image or Drag & Drop' }}</span>
                                     </div>
-                                    <p class="upload-instructions-desc">
+                                    <p class="upload-instructions-desc mb-0 text-muted small">
                                         JPG, PNG, WebP, GIF • 16:9 Landscape recommended • Max 5MB
                                     </p>
                                 </div>
-                                <button type="button" class="btn-modern-secondary btn-sm px-3" style="pointer-events: none;">
+                                <button type="button" class="btn-modern-secondary btn-sm px-3 flex-shrink-0" style="pointer-events: none;">
                                     Browse
                                 </button>
                             </div>
@@ -152,37 +162,46 @@
                     </div>
 
                     <!-- Link URL -->
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label-modern" for="link_url">Click Destination URL (Optional)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-link-45deg"></i></span>
+                            <span class="input-group-text bg-light text-muted border-end-0" style="border: 1.5px solid #e2e8f0; border-right: none; border-radius: 10px 0 0 10px;"><i class="bi bi-link-45deg fs-5"></i></span>
                             <input type="url" 
-                                   class="form-control-modern @error('link_url') is-invalid @enderror border-start-0" 
+                                   class="form-control-modern @error('link_url') is-invalid @enderror" 
+                                   style="border-top-left-radius: 0; border-bottom-left-radius: 0;"
                                    id="link_url" 
                                    name="link_url" 
                                    value="{{ old('link_url', $banner->link_url) }}" 
                                    placeholder="https://www.shibaura-machine.co.in/machines"
                                    maxlength="500">
                         </div>
+                        <small class="text-muted d-block mt-1">Optional destination URL opened when banner is tapped</small>
                         @error('link_url')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                         <div class="invalid-feedback d-none custom-live-err" id="live_err_link_url"></div>
                     </div>
 
-                    <!-- Is Active Switch -->
-                    <div class="form-check form-switch p-0 d-flex align-items-center gap-3 mb-4">
-                        <input class="form-check-input ms-0 mt-0" 
-                               type="checkbox" 
-                               role="switch" 
-                               id="is_active" 
-                               name="is_active" 
-                               value="1" 
-                               style="width: 2.75rem; height: 1.45rem; cursor: pointer;"
-                               {{ old('is_active', $banner->is_active ?? true) ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold text-dark cursor-pointer" for="is_active">
-                            Publish & Make Immediately Active in Mobile/Tablet App
-                        </label>
+                    <!-- Active Status Switch in Clean Container -->
+                    <div class="p-3 mb-4 rounded-3 bg-light border border-slate-200">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <label class="form-check-label fw-bold text-dark d-block cursor-pointer mb-1" for="is_active">
+                                    Publish & Active Status
+                                </label>
+                                <small class="text-muted">Display immediately in visitor welcome carousel and mobile slider</small>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input ms-0 mt-0" 
+                                       type="checkbox" 
+                                       role="switch" 
+                                       id="is_active" 
+                                       name="is_active" 
+                                       value="1" 
+                                       style="width: 2.75rem; height: 1.45rem; cursor: pointer;"
+                                       {{ old('is_active', $banner->is_active ?? true) ? 'checked' : '' }}>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Actions -->
@@ -190,7 +209,7 @@
                         <a href="{{ route('banners.index') }}" class="btn-modern-secondary px-4">
                             Cancel
                         </a>
-                        <button type="submit" class="btn-modern-primary px-4">
+                        <button type="submit" class="btn-modern-primary px-4" id="btnSubmitBanner">
                             <i class="bi {{ $isEdit ? 'bi-check2' : 'bi-cloud-arrow-up-fill' }}"></i>
                             <span>{{ $isEdit ? 'Update Banner' : 'Create & Publish Banner' }}</span>
                         </button>
@@ -201,24 +220,40 @@
     </div>
 
     <!-- Right Column: Interactive App Simulator Preview -->
-    <div class="col-12 col-xl-5">
-        <div class="card-modern sticky-top" style="top: 85px;">
-            <div class="card-modern-header">
-                <h4 class="card-modern-title fs-6">
-                    <i class="bi bi-phone text-primary"></i>
-                    <span>App Screen Simulation</span>
-                </h4>
-                <span class="badge-modern badge-sky">Live Visual</span>
+    <div class="col-12 col-lg-5">
+        <div class="card-modern sticky-top" style="top: 85px; border-left: 4px solid var(--shibaura-blue);">
+            <div class="card-header bg-white">
+                <div>
+                    <div class="card-title">
+                        <i class="bi bi-phone-fill text-primary"></i>
+                        <span>App Screen Simulation</span>
+                    </div>
+                    <p class="text-muted small mb-0 mt-1">Live preview in visitor kiosk & mobile slider</p>
+                </div>
+                <span class="badge-modern badge-sky d-inline-flex align-items-center gap-1">
+                    <span class="status-dot green" style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                    Live Visual
+                </span>
             </div>
 
-            <div class="card-modern-body p-4">
+            <div class="card-body p-4">
                 <p class="text-muted small mb-3">
                     Here is how this promotional banner will look inside the visitor welcome carousel and mobile slider:
                 </p>
 
-                <!-- Mobile Mockup Container -->
+                <!-- Phone Mockup Device Frame -->
                 <div class="mobile-mockup-wrapper mx-auto">
-                    <!-- Banner Slide Item -->
+                    <!-- Status Bar / Speaker Notch -->
+                    <div class="d-flex align-items-center justify-content-between px-2 mb-2 text-white-50" style="font-size: 0.7rem;">
+                        <span class="fw-semibold">09:41</span>
+                        <div class="mockup-speaker"></div>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="bi bi-wifi" style="font-size: 0.75rem;"></i>
+                            <i class="bi bi-battery-full" style="font-size: 0.85rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Banner Slide Card -->
                     <div class="sim-banner-card">
                         <div class="sim-banner-image-wrap">
                             <img id="simBannerImg" 
@@ -231,7 +266,7 @@
 
                         <div class="sim-banner-content">
                             <span class="sim-badge" id="simTargetBadge">
-                                {{ strtoupper($banner->target ?? 'ALL DEVICES') }}
+                                {{ strtoupper($banner->target ?? 'ALL PLATFORMS') }}
                             </span>
                             <h4 class="sim-title" id="simBannerTitle">
                                 {{ $banner->title ?: 'Precision Engineering Excellence' }}
@@ -242,7 +277,7 @@
                         </div>
                     </div>
 
-                    <!-- Slide Dots Simulation -->
+                    <!-- Slide Indicator Dots -->
                     <div class="d-flex justify-content-center gap-1 mt-3">
                         <span class="dot active"></span>
                         <span class="dot"></span>
@@ -250,15 +285,40 @@
                     </div>
                 </div>
 
-                <div class="bg-light-subtle rounded-3 p-3 border mt-4">
+                <!-- Live Quick Specs Strip -->
+                <div class="row g-2 mt-3 text-center">
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light border border-slate-200">
+                            <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">ASPECT RATIO</div>
+                            <div class="fw-bold text-dark small">16:9</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light border border-slate-200">
+                            <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">MAX FILE SIZE</div>
+                            <div class="fw-bold text-dark small">5 MB</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light border border-slate-200">
+                            <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">DEVICE TARGET</div>
+                            <div class="fw-bold text-primary small text-truncate" id="simTargetPill">
+                                {{ strtoupper($banner->target ?? 'ALL') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optimization Box -->
+                <div class="bg-light-subtle rounded-3 p-3 border mt-3">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="bi bi-info-circle-fill text-primary"></i>
                         <span class="fw-bold small text-dark">Optimization Recommendation</span>
                     </div>
-                    <ul class="mb-0 small text-secondary ps-3">
+                    <ul class="mb-0 small text-secondary ps-3" style="line-height: 1.55;">
                         <li>Maintain clean contrast if placing text directly in the banner creative.</li>
                         <li>Recommended aspect ratio: <strong>16:9</strong> (Landscape) for tablet & kiosk displays.</li>
-                        <li>Maximum upload size is <strong>5 MB</strong>.</li>
+                        <li>Supported file formats: <strong>JPG, PNG, WebP, GIF, SVG</strong>.</li>
                     </ul>
                 </div>
             </div>
@@ -267,19 +327,45 @@
 </div>
 
 <style>
+.banner-custom-select-wrap .custom-select-wrapper {
+    width: 100% !important;
+    display: block !important;
+}
+.banner-custom-select-wrap .custom-select-trigger {
+    min-height: 43px;
+    height: 43px;
+    padding: 0.65rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    color: var(--slate-800);
+    background: #ffffff;
+    box-sizing: border-box;
+}
+.banner-custom-select-wrap .custom-select-dropdown {
+    width: 100% !important;
+}
+
 .mobile-mockup-wrapper {
-    max-width: 360px;
+    max-width: 380px;
     background: #0f172a;
-    border-radius: 20px;
-    padding: 14px;
+    border-radius: 24px;
+    padding: 14px 14px 16px;
     box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.35);
+    border: 3px solid #1e293b;
+}
+.mockup-speaker {
+    width: 48px;
+    height: 4px;
+    border-radius: 4px;
+    background: #334155;
 }
 .sim-banner-card {
     position: relative;
     border-radius: 14px;
     overflow: hidden;
     background: #1e293b;
-    height: 190px;
+    height: 195px;
 }
 .sim-banner-image-wrap {
     position: absolute;
@@ -292,7 +378,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 .sim-banner-gradient-overlay {
     position: absolute;
@@ -300,7 +386,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.85) 100%);
+    background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);
 }
 .sim-banner-content {
     position: absolute;
@@ -311,7 +397,7 @@
     z-index: 2;
 }
 .sim-badge {
-    background: rgba(2, 132, 199, 0.85);
+    background: rgba(2, 132, 199, 0.9);
     color: #fff;
     font-size: 0.65rem;
     font-weight: 700;
@@ -510,6 +596,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!this.value.trim() || /^https?:\/\//i.test(this.value.trim())) {
                 clearBannerLiveErr('link_url');
             }
+        });
+    }
+
+    const targetInp = form ? form.querySelector('input[name="target"]') : null;
+    const simBadge = document.getElementById('simTargetBadge');
+    const simPill = document.getElementById('simTargetPill');
+    if (targetInp && (simBadge || simPill)) {
+        const targetLabels = {
+            'all': 'ALL PLATFORMS',
+            'mobile': 'MOBILE APP',
+            'tablet': 'TABLET KIOSK',
+            'web': 'WEB ONLY'
+        };
+        const shortLabels = {
+            'all': 'ALL',
+            'mobile': 'MOBILE',
+            'tablet': 'TABLET',
+            'web': 'WEB'
+        };
+        targetInp.addEventListener('change', function() {
+            const v = this.value || 'all';
+            if (simBadge) simBadge.textContent = targetLabels[v] || v.toUpperCase();
+            if (simPill) simPill.textContent = shortLabels[v] || v.toUpperCase();
         });
     }
 
