@@ -1,10 +1,12 @@
 @props([
     'name',
     'value' => null,
+    'selected' => null,
     'options' => [],
     'placeholder' => 'Select an option',
     'searchPlaceholder' => 'Search options...',
-    'autoSubmit' => true,
+    'autoSubmit' => false,
+    'allowEmpty' => true,
     'icon' => null,
     'id' => null,
     'minWidth' => '170px',
@@ -12,7 +14,8 @@
 
 @php
     $inputId = $id ?? ('custom_select_' . $name . '_' . \Illuminate\Support\Str::random(6));
-    $currentVal = (string) ($value ?? request($name, ''));
+    $currentVal = (string) ($value ?? $selected ?? request($name, ''));
+
 
     // Normalize options
     $parsedOptions = collect($options)->map(function ($opt, $key) {
@@ -118,6 +121,7 @@
 
         <!-- Options List -->
         <ul class="custom-select-options-list" role="listbox">
+            @if($allowEmpty)
             <!-- Reset / All Option -->
             <li class="custom-select-option {{ $currentVal === '' ? 'is-selected' : '' }}" 
                 role="option" 
@@ -134,6 +138,7 @@
                 </div>
                 <i class="bi bi-check-lg custom-select-option-check"></i>
             </li>
+            @endif
 
             <!-- Options -->
             @foreach($parsedOptions as $opt)
@@ -271,6 +276,8 @@
 
             // Update hidden input
             hiddenInput.value = val;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
 
             // Update visual active state
             options.forEach(el => el.classList.remove('is-selected'));
