@@ -184,9 +184,11 @@ class VisitController extends Controller
         $feedback = DB::transaction(function () use ($request, $visit, $staffUser) {
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
-                'organizer_id' => $staffUser->id ?: $visit->organizer_id,
+                'organizer_id' => $visit->organizer_id ?: $staffUser->id,
                 'overall_rating' => $request->overall_rating,
                 'comments' => $request->comments,
+                'submitted_mode' => 'staff_assisted',
+                'submitted_by_staff_id' => $staffUser->id,
                 'submitted_at' => now(),
             ]);
 

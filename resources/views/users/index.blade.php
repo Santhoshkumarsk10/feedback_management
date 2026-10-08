@@ -157,12 +157,18 @@
                         @else
                             <span class="badge-modern badge-slate">HQ / General</span>
                         @endif
-                    </td>
                     <td>
                         @if($u->department)
                             <span class="badge-modern badge-slate">{{ $u->department }}</span>
                         @else
                             <span class="text-muted small">—</span>
+                        @endif
+                        @if($u->assignedShift)
+                            <div class="mt-1">
+                                <span class="badge bg-light text-primary border small" style="font-size: 0.70rem;">
+                                    <i class="bi bi-clock"></i> {{ $u->assignedShift->name }}
+                                </span>
+                            </div>
                         @endif
                     </td>
                     <td>

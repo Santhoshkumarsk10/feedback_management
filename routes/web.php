@@ -11,25 +11,13 @@ use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\ShiftController;
-use App\Http\Controllers\Web\MobileAppController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
 use App\Http\Controllers\Web\AuditLogController;
 use Illuminate\Support\Facades\Route;
 
-// Mobile Tablet & APK Application (Unified Visitor & Organizer)
-Route::get('/app', [MobileAppController::class, 'index'])->name('mobile.app');
-Route::get('/mobile', fn () => redirect()->route('mobile.app'));
-Route::post('/app/feedback', [MobileAppController::class, 'submitFeedback'])->name('mobile.feedback');
-Route::post('/app/organizer/login', [MobileAppController::class, 'organizerLogin'])->name('mobile.organizer.login');
-Route::get('/app/organizer/visits', [MobileAppController::class, 'organizerVisits'])->name('mobile.organizer.visits');
-Route::get('/app/organizer/today-visitors', [MobileAppController::class, 'organizerTodayVisitors'])->name('mobile.organizer.today_visitors');
-Route::post('/app/organizer/visits/{visit}/feedback', [MobileAppController::class, 'submitFeedbackOnBehalf'])->name('mobile.organizer.submit_on_behalf');
-Route::post('/app/organizer/logout', [MobileAppController::class, 'organizerLogout'])->name('mobile.organizer.logout');
-Route::post('/app/organizer/forgot-password', [MobileAppController::class, 'organizerForgotPassword'])->name('mobile.organizer.forgot_password');
-Route::post('/app/organizer/change-password', [MobileAppController::class, 'organizerChangePassword'])->name('mobile.organizer.change_password');
-
-Route::redirect('/', '/app');
+// Root redirect
+Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -46,6 +34,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // Operations web panel: superadmin, admin, supervisor, staff
 Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,staff,organizer'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard/live-feed', [DashboardController::class, 'liveFeed'])->name('dashboard.live_feed');
+    Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 
     // Account Security: Change Password
     Route::get('change-password', [AuthController::class, 'showChangePassword'])->name('password.change');

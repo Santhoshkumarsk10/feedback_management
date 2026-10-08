@@ -61,7 +61,7 @@ class FeedbackController extends Controller
 
     public function show(Feedback $feedback)
     {
-        $feedback->load(['visit.shift', 'organizer', 'answers.question']);
+        $feedback->load(['visit.shift', 'organizer', 'submittedBy', 'answers.question']);
 
         return view('feedbacks.show', compact('feedback'));
     }

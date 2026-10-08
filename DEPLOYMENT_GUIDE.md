@@ -84,10 +84,10 @@ Run in MySQL prompt:
 ```sql
 CREATE DATABASE IF NOT EXISTS plant_feedback CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- devteam user ஏற்கனவே இருந்தால் access வழங்க:
+-- If devteam user already exists, grant access:
 GRANT ALL PRIVILEGES ON plant_feedback.* TO 'devteam'@'localhost';
 
--- ஒருவேளை devteam user புதிதாக உருவாக்க வேண்டுமெனில்:
+-- If devteam user needs to be created anew:
 -- CREATE USER IF NOT EXISTS 'devteam'@'localhost' IDENTIFIED BY 'StrongSecretPass@2026';
 -- GRANT ALL PRIVILEGES ON plant_feedback.* TO 'devteam'@'localhost';
 

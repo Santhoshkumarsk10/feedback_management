@@ -155,12 +155,18 @@ class OrganizerController extends Controller
 
         $organizer = auth('api')->user();
 
+        if (!$organizer->isOnDuty()) {
+            abort(403, 'Not in current shift. You cannot submit assisted feedback while off duty.');
+        }
+
         $feedback = DB::transaction(function () use ($data, $visit, $organizer) {
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
-                'organizer_id' => $organizer->id,
+                'organizer_id' => $visit->organizer_id ?: $organizer->id,
                 'overall_rating' => $data['overall_rating'],
                 'comments' => $data['comments'] ?? null,
+                'submitted_mode' => 'staff_assisted',
+                'submitted_by_staff_id' => $organizer->id,
                 'submitted_at' => now(),
             ]);
 

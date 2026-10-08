@@ -10,9 +10,19 @@ class Feedback extends Model
 {
     protected $table = 'feedbacks';
 
-    protected $fillable = ['visit_id', 'organizer_id', 'overall_rating', 'comments', 'submitted_at'];
+    protected $fillable = [
+        'visit_id',
+        'organizer_id',
+        'overall_rating',
+        'comments',
+        'submitted_mode',
+        'submitted_by_staff_id',
+        'submitted_at',
+    ];
 
-    protected $casts = ['submitted_at' => 'datetime'];
+    protected $casts = [
+        'submitted_at' => 'datetime',
+    ];
 
     public function visit(): BelongsTo
     {
@@ -22,6 +32,16 @@ class Feedback extends Model
     public function organizer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'organizer_id');
+    }
+
+    public function submittedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'submitted_by_staff_id');
+    }
+
+    public function getIsStaffAssistedAttribute(): bool
+    {
+        return $this->submitted_mode === 'staff_assisted';
     }
 
     public function answers(): HasMany

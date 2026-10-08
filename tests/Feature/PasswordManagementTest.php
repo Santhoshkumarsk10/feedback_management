@@ -163,14 +163,15 @@ class PasswordManagementTest extends TestCase
             'password' => Hash::make('OldOrgPass123!'),
         ]);
 
-        // Mobile forgot password
-        $forgotRes = $this->postJson('/app/organizer/forgot-password', [
+        // API forgot password
+        $forgotRes = $this->postJson('/api/forgot-password', [
             'login' => 'mobileorg@plant.test',
         ]);
         $forgotRes->assertStatus(200)->assertJson(['success' => true]);
 
-        // Mobile change password
-        $changeRes = $this->actingAs($organizer)->postJson('/app/organizer/change-password', [
+        // API change password using JWT
+        $jwtToken = auth('api')->login($organizer);
+        $changeRes = $this->withHeader('Authorization', "Bearer {$jwtToken}")->postJson('/api/change-password', [
             'current_password' => 'OldOrgPass123!',
             'password' => 'NewOrgPass456!',
             'password_confirmation' => 'NewOrgPass456!',

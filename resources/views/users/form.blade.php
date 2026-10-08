@@ -156,6 +156,27 @@
                         </div>
 
                         <div class="col-md-6">
+                            <label class="form-modern-label" for="user_shift">Assigned Plant Shift (Roster Duty)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-clock-history"></i></span>
+                                <select name="shift_id" 
+                                        id="user_shift"
+                                        class="form-select form-select-modern border-start-0 @error('shift_id') is-invalid @enderror">
+                                    <option value="">— Unassigned (Available for All Shifts) —</option>
+                                    @foreach($shifts as $s)
+                                        <option value="{{ $s->id }}" @selected(old('shift_id', $user->shift_id) == $s->id)>
+                                            {{ $s->name }} ({{ $s->formatted_24h_range }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @error('shift_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <div class="small text-muted mt-1">Operational duty shift for assisted feedback & availability (Section 6.6)</div>
+                        </div>
+
+                        <div class="col-md-6">
                             <label class="form-modern-label" for="user_password">
                                 Password 
                                 @if($user->exists)
