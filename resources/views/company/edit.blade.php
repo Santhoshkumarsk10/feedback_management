@@ -4,10 +4,6 @@
 @section('page_subtitle', 'Configure global company attributes, contact channels, and visual branding synced across web, mobile, and APIs')
 
 @section('topbar_actions')
-    <a href="{{ route('mobile.app') }}" target="_blank" class="btn-modern-primary btn-sm">
-        <i class="bi bi-phone"></i>
-        <span>Preview in App</span>
-    </a>
 @endsection
 
 @section('content')
@@ -453,9 +449,9 @@
                                     <span class="status-dot active"></span>
                                     <span>Visitor Mobile / Tablet App</span>
                                 </span>
-                                <a href="{{ route('mobile.app') }}" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.76rem;">
-                                    View <i class="bi bi-box-arrow-up-right"></i>
-                                </a>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.72rem;">
+                                    Live on Native App & APIs
+                                </span>
                             </div>
 
                             <div class="d-flex align-items-center justify-content-between p-2 rounded bg-light">

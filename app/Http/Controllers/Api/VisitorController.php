@@ -34,6 +34,8 @@ class VisitorController extends Controller
     public function submitFeedback(Request $request)
     {
         $data = $request->validate([
+            'visit_id' => 'nullable|integer|exists:visits,id',
+            'visitor_code' => 'nullable|string|max:100',
             'organizer_id' => 'required|integer',
             'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
             'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -67,29 +69,56 @@ class VisitorController extends Controller
             throw ValidationException::withMessages(['answers' => ['Please answer all required questions.']]);
         }
 
-        // basic double-submit guard: same mobile + same organizer + same day
-        if (! empty($data['visitor_mobile']) && Visit::where('visitor_mobile', $data['visitor_mobile'])
-            ->where('organizer_id', $organizer->id)->whereDate('visit_date', today())->exists()) {
-            abort(422, 'Feedback already submitted today for this organizer.');
+        // Duplicate Feedback Prevention (BRS Section 6.2 Requirement 4)
+        $existingVisit = null;
+        if (!empty($data['visit_id'])) {
+            $existingVisit = Visit::with('feedback')->find($data['visit_id']);
+        } elseif (!empty($data['visitor_code'])) {
+            $existingVisit = Visit::with('feedback')->where('visitor_code', $data['visitor_code'])->whereDate('visit_date', today())->first();
         }
 
-        $feedback = DB::transaction(function () use ($data, $organizer) {
-            $visit = Visit::create([
-                'organizer_id' => $organizer->id,
-                'visitor_name' => $data['visitor_name'],
-                'visitor_designation' => $data['visitor_designation'] ?? null,
-                'visitor_mobile' => $data['visitor_mobile'] ?? null,
-                'visitor_company' => $data['visitor_company'] ?? null,
-                'visitor_email' => $data['visitor_email'] ?? null,
-                'visit_date' => today(),
-                'purpose' => $data['purpose'] ?? null,
-            ]);
+        if ($existingVisit && $existingVisit->feedback) {
+            abort(422, 'Thank you! Your feedback has already been received for this visit.');
+        }
+
+        // basic double-submit guard: same mobile + same organizer + same day with existing feedback
+        if (! empty($data['visitor_mobile']) && Visit::where('visitor_mobile', $data['visitor_mobile'])
+            ->where('organizer_id', $organizer->id)->whereDate('visit_date', today())->has('feedback')->exists()) {
+            abort(422, 'Thank you! Your feedback has already been received for this visit.');
+        }
+
+        $feedback = DB::transaction(function () use ($data, $organizer, $existingVisit) {
+            if ($existingVisit) {
+                $visit = $existingVisit;
+                $visit->update(array_filter([
+                    'visitor_designation' => $data['visitor_designation'] ?? $visit->visitor_designation,
+                    'visitor_mobile' => $data['visitor_mobile'] ?? $visit->visitor_mobile,
+                    'visitor_company' => $data['visitor_company'] ?? $visit->visitor_company,
+                    'visitor_email' => $data['visitor_email'] ?? $visit->visitor_email,
+                    'purpose' => $data['purpose'] ?? $visit->purpose,
+                ]));
+            } else {
+                $currentShift = \App\Models\Shift::current();
+                $visit = Visit::create([
+                    'organizer_id' => $organizer->id,
+                    'visitor_name' => $data['visitor_name'],
+                    'visitor_designation' => $data['visitor_designation'] ?? null,
+                    'visitor_mobile' => $data['visitor_mobile'] ?? null,
+                    'visitor_company' => $data['visitor_company'] ?? null,
+                    'visitor_email' => $data['visitor_email'] ?? null,
+                    'visit_date' => today(),
+                    'shift_id' => $currentShift?->id,
+                    'purpose' => $data['purpose'] ?? null,
+                ]);
+            }
 
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
                 'organizer_id' => $organizer->id,
                 'overall_rating' => $data['overall_rating'] ?? null,
                 'comments' => $data['comments'] ?? null,
+                'submitted_mode' => 'direct',
+                'submitted_by_staff_id' => null,
                 'submitted_at' => now(),
             ]);
 

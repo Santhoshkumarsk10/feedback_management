@@ -213,21 +213,21 @@ class ValidationAndPhoneRuleTest extends TestCase
             'answers' => $answers,
         ];
 
-        $res = $this->postJson(route('mobile.feedback'), $validPayload);
-        $res->assertStatus(200);
-        $res->assertJson(['success' => true]);
+        $res = $this->postJson('/api/visitor/feedback', $validPayload);
+        $res->assertStatus(201);
+        $res->assertJsonStructure(['feedback_id']);
 
         // Invalid visitor phone starting with 3
         $invalidPhone = $validPayload;
         $invalidPhone['visitor_mobile'] = '3841234567';
-        $res = $this->postJson(route('mobile.feedback'), $invalidPhone);
+        $res = $this->postJson('/api/visitor/feedback', $invalidPhone);
         $res->assertStatus(422);
         $res->assertJsonValidationErrors('visitor_mobile');
 
         // Invalid visitor name containing disallowed symbols
         $invalidName = $validPayload;
         $invalidName['visitor_name'] = 'Sundar <CEO> & Team';
-        $res = $this->postJson(route('mobile.feedback'), $invalidName);
+        $res = $this->postJson('/api/visitor/feedback', $invalidName);
         $res->assertStatus(422);
         $res->assertJsonValidationErrors('visitor_name');
     }
@@ -365,7 +365,7 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res->assertSessionHasErrors('email');
 
         // 5. Visitor submission email validation
-        $res = $this->postJson(route('mobile.feedback'), [
+        $res = $this->postJson('/api/visitor/feedback', [
             'organizer_id' => $this->organizer->id,
             'visitor_name' => 'Corporate Visitor',
             'visitor_company' => 'Honda Cars',

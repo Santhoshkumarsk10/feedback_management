@@ -41,7 +41,20 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['login' => ['Invalid credentials.']]);
         }
 
-        return $this->respond($token, $this->guard()->user());
+        $user = $this->guard()->user();
+
+        // Section 6.6 Requirement 4:
+        // "Only available (current shift) staff can log in to take assisted feedback; others get a message 'Not in current shift' (Admin/Manager exempt)."
+        if (!$user->isOnDuty()) {
+            $this->guard()->logout();
+            $myShift = $user->getCurrentRosteredShift();
+            $shiftName = $myShift ? $myShift->name : 'another shift';
+            throw ValidationException::withMessages([
+                'login' => ["Not in current shift. You are scheduled for {$shiftName}."],
+            ]);
+        }
+
+        return $this->respond($token, $user);
     }
 
     public function me()
@@ -200,7 +213,16 @@ class AuthController extends Controller
 
     private function userPayload(User $user): array
     {
-        return $user->only('id', 'name', 'email', 'mobile', 'role', 'department');
+        $payload = $user->only('id', 'name', 'email', 'mobile', 'role', 'department');
+        $shift = $user->getCurrentRosteredShift();
+        $payload['shift'] = $shift ? [
+            'id' => $shift->id,
+            'name' => $shift->name,
+            'code' => $shift->code,
+            'range' => $shift->formatted_24h_range,
+        ] : null;
+        $payload['is_on_duty'] = $user->isOnDuty();
+        return $payload;
     }
 
     /**

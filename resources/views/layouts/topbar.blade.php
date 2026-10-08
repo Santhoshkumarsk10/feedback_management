@@ -19,10 +19,6 @@
             <i class="bi bi-android2 text-success"></i>
             <span class="d-none d-lg-inline">Tablet APK</span>
         </a>
-        <a href="{{ route('mobile.app') }}" target="_blank" class="btn-modern-secondary btn-sm" title="Launch Visitor & Organizer Mobile View">
-            <i class="bi bi-phone-fill text-primary"></i>
-            <span class="d-none d-lg-inline">Mobile App</span>
-        </a>
         @yield('topbar_actions')
     </div>
 </header>

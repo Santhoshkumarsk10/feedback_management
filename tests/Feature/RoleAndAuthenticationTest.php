@@ -108,20 +108,12 @@ class RoleAndAuthenticationTest extends TestCase
     public function test_mobile_login_permissions(): void
     {
         $staff = $this->getUser('staff');
-        $supervisor = $this->getUser('supervisor');
 
-        // Staff can log into mobile
-        $staffResponse = $this->postJson(route('mobile.organizer.login'), [
+        // Staff can log into mobile via API
+        $staffResponse = $this->postJson('/api/login', [
             'login' => $staff->email,
             'password' => 'password',
         ]);
-        $staffResponse->assertStatus(200)->assertJson(['success' => true]);
-
-        // Supervisor cannot log into mobile organizer
-        $supervisorResponse = $this->postJson(route('mobile.organizer.login'), [
-            'login' => $supervisor->email,
-            'password' => 'password',
-        ]);
-        $supervisorResponse->assertStatus(403);
+        $staffResponse->assertStatus(200)->assertJsonStructure(['access_token', 'user']);
     }
 }

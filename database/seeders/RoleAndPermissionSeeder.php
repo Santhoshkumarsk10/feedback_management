@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use App\Models\Plant;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
@@ -38,8 +38,10 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $perm) {
-            Permission::findOrCreate($perm, 'web');
+            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // 2. Define Roles
         $roleDefinitions = [
@@ -113,16 +115,28 @@ class RoleAndPermissionSeeder extends Seeder
         ];
 
         foreach ($roleDefinitions as $roleKey => $meta) {
-            $role = Role::updateOrCreate(
-                ['name' => $roleKey, 'guard_name' => 'web'],
-                [
+            $role = Role::where('slug', $roleKey)->first() ?? Role::where('name', $roleKey)->first();
+            if (!$role) {
+                $role = Role::create([
+                    'name' => $roleKey,
                     'slug' => $roleKey,
+                    'guard_name' => 'web',
                     'display_name' => $meta['display_name'],
                     'description' => $meta['description'],
                     'is_system' => $meta['is_system'],
                     'is_active' => true,
-                ]
-            );
+                ]);
+            } else {
+                $role->update([
+                    'name' => $roleKey,
+                    'slug' => $roleKey,
+                    'guard_name' => 'web',
+                    'display_name' => $meta['display_name'],
+                    'description' => $meta['description'],
+                    'is_system' => $meta['is_system'],
+                    'is_active' => true,
+                ]);
+            }
 
             $role->syncPermissions($meta['permissions']);
         }

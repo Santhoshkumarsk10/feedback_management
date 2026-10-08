@@ -88,6 +88,21 @@
                                     </span>
                                 </div>
                             @endif
+
+                            <div class="mt-2">
+                                @if($feedback->is_staff_assisted)
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                        <i class="bi bi-person-check-fill me-1"></i> Staff-assisted
+                                        @if($feedback->submittedBy)
+                                            ({{ $feedback->submittedBy->name }})
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                        <i class="bi bi-person-fill me-1"></i> Direct Visitor Feedback
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

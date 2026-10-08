@@ -62,13 +62,6 @@
             <span>Plant Visitors</span>
         </a>
 
-        @if($isStaff)
-            <a class="nav-item-link" href="{{ route('mobile.app') }}" target="_blank">
-                <i class="bi bi-tablet-fill text-primary"></i>
-                <span>Tablet Feedback App <i class="bi bi-box-arrow-up-right fs-xs ms-1"></i></span>
-            </a>
-        @endif
-
         {{-- Brand & CMS: SuperAdmin & Admin Only --}}
         @if($isAdminOrSuper)
             <div class="menu-category">Brand & Content CMS</div>

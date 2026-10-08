@@ -48,7 +48,7 @@ class ExternalVisitorSyncAndIdTest extends TestCase
         $this->assertEquals('EXT-PASS-8812', $visitor->visitor_id);
 
         // Check visit created in visits table for today
-        $visit = Visit::where('visitor_id', $visitor->id)->first();
+        $visit = Visit::where('visitor_id', $visitor->id)->whereDate('visit_date', today())->first();
         $this->assertNotNull($visit);
         $this->assertEquals($visitor->visitor_id, $visit->visitor_code);
         $this->assertEquals(today()->toDateString(), $visit->visit_date->toDateString());

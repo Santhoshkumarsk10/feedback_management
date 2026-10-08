@@ -48,7 +48,7 @@ class StaffShiftOperationsTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('LIVE DUTY SHIFT TRACKER');
         $response->assertSee('Today\'s Plant Visitors', false);
-        $response->assertSee('Awaiting Feedback (Pending பாக்கி)', false);
+        $response->assertSee('Awaiting Feedback (Pending)', false);
         $response->assertSee('Feedback Completed');
     }
 

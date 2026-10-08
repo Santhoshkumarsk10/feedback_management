@@ -81,6 +81,26 @@ class ExternalVisitorSyncService
 
             // 2. Check if a visit already exists for this visitor on this date
             $visitDate = $item['visit_date'] ?? $targetDate;
+
+            // Parse in_time and out_time if supplied
+            $inTime = null;
+            $rawIn = $item['in_time'] ?? $item['entry_time'] ?? null;
+            if (!empty($rawIn)) {
+                try {
+                    $inTime = \Carbon\Carbon::parse($visitDate . ' ' . $rawIn);
+                } catch (\Throwable $e) {}
+            }
+
+            $outTime = null;
+            $rawOut = $item['out_time'] ?? $item['exit_time'] ?? null;
+            if (!empty($rawOut)) {
+                try {
+                    $outTime = \Carbon\Carbon::parse($visitDate . ' ' . $rawOut);
+                } catch (\Throwable $e) {}
+            }
+
+            $department = $item['department'] ?? $item['area_visited'] ?? null;
+
             $visit = Visit::where(function ($q) use ($visitor) {
                 $q->where('visitor_id', $visitor->id)
                   ->orWhere('visitor_code', $visitor->visitor_id);
@@ -96,7 +116,10 @@ class ExternalVisitorSyncService
                     'visitor_mobile' => $visitor->mobile,
                     'visitor_email' => $visitor->email,
                     'visit_date' => $visitDate,
+                    'in_time' => $inTime,
+                    'out_time' => $outTime,
                     'purpose' => $item['purpose'] ?? 'Plant & Facility Tour',
+                    'department' => $department,
                     'shift_id' => $currentShift?->id,
                     'organizer_id' => $organizerId ?: ($item['organizer_id'] ?? null),
                 ]);
@@ -110,6 +133,9 @@ class ExternalVisitorSyncService
                     'visitor_designation' => $visitor->designation ?: $visit->visitor_designation,
                     'visitor_mobile' => $visitor->mobile ?: $visit->visitor_mobile,
                     'visitor_email' => $visitor->email ?: $visit->visitor_email,
+                    'in_time' => $inTime ?: $visit->in_time,
+                    'out_time' => $outTime ?: $visit->out_time,
+                    'department' => $department ?: $visit->department,
                 ]);
             }
 
@@ -119,6 +145,7 @@ class ExternalVisitorSyncService
                 'company' => $visitor->company,
                 'visit_id' => $visit->id,
                 'is_new_visit' => !$visit->wasRecentlyCreated ? false : true,
+                'is_checked_out' => !is_null($visit->out_time),
             ];
         }
 
@@ -160,9 +187,11 @@ class ExternalVisitorSyncService
                 'mobile' => '9840123456',
                 'email' => 'aravind.s@lucastvs.com',
                 'purpose' => 'High Speed Injection Moulding Trial',
+                'department' => 'Injection Moulding Shop',
                 'visit_date' => $date,
                 'gate_pass_no' => 'GP-2026-904',
-                'entry_time' => '10:15 AM',
+                'entry_time' => '09:30 AM',
+                'exit_time' => '12:15 PM', // Exited > 2 hrs ago -> flagged in red for pending review!
             ],
             [
                 'visitor_id' => 'EXT-PASS-8813',
@@ -172,9 +201,11 @@ class ExternalVisitorSyncService
                 'mobile' => '9840765432',
                 'email' => 'meenakshi.s@motherson.com',
                 'purpose' => 'Die Casting Machinery Audit',
+                'department' => 'Die Casting Facility',
                 'visit_date' => $date,
                 'gate_pass_no' => 'GP-2026-905',
                 'entry_time' => '11:30 AM',
+                'exit_time' => '03:45 PM', // Exited recently
             ],
             [
                 'visitor_id' => 'EXT-PASS-8814',
@@ -184,9 +215,11 @@ class ExternalVisitorSyncService
                 'mobile' => '9840998877',
                 'email' => 'rajeshwar@pricol.co.in',
                 'purpose' => 'Robotics & Factory Automation Review',
+                'department' => 'Automation & Robotics Centre',
                 'visit_date' => $date,
                 'gate_pass_no' => 'GP-2026-906',
                 'entry_time' => '02:45 PM',
+                'exit_time' => null, // Still inside plant!
             ],
         ];
     }

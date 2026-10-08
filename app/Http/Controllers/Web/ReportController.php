@@ -21,8 +21,10 @@ class ReportController extends Controller
             'from' => 'nullable|date',
             'to' => 'nullable|date',
             'shift_id' => 'nullable|integer|exists:shifts,id',
+            'report_tab' => 'nullable|string|in:staff,low_rating,pending',
         ]);
 
+        $reportTab = $request->input('report_tab', 'staff');
         $shifts = Shift::active()->orderBy('start_time')->get();
         $selectedShift = $request->shift_id ? $shifts->firstWhere('id', (int) $request->shift_id) : null;
 
@@ -53,12 +55,33 @@ class ReportController extends Controller
             ];
         });
 
+        // Section 6.8: Low-Rating Report (Ratings <= 2 for management follow-up)
+        $lowRatingsQuery = Feedback::with(['visit.shift', 'organizer', 'submittedBy'])
+            ->where('overall_rating', '<=', 2);
+        $this->dates($lowRatingsQuery, 'submitted_at', $request);
+        if ($request->shift_id) {
+            $lowRatingsQuery->whereHas('visit', fn ($v) => $v->where('shift_id', $request->shift_id));
+        }
+        $lowRatings = $lowRatingsQuery->latest('submitted_at')->get();
+
+        // Section 6.8: Pending Feedback Report (Visitors with no feedback in date range)
+        $pendingVisitsQuery = Visit::with(['shift', 'organizer'])
+            ->doesntHave('feedback');
+        $this->dates($pendingVisitsQuery, 'visit_date', $request);
+        if ($request->shift_id) {
+            $pendingVisitsQuery->where('shift_id', $request->shift_id);
+        }
+        $pendingVisits = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
+
         return view('reports.index', [
             'rows' => $this->organizerRows($request),
             'questionStats' => $this->questionStats($request),
             'shifts' => $shifts,
             'selectedShift' => $selectedShift,
             'shiftStats' => $shiftStats,
+            'lowRatings' => $lowRatings,
+            'pendingVisits' => $pendingVisits,
+            'reportTab' => $reportTab,
         ]);
     }
 
@@ -68,11 +91,75 @@ class ReportController extends Controller
             'from' => 'nullable|date',
             'to' => 'nullable|date',
             'shift_id' => 'nullable|integer|exists:shifts,id',
+            'type' => 'nullable|string|in:staff,low_rating,pending',
         ]);
-        $rows = $this->organizerRows($request);
+
+        $type = $request->input('type', 'staff');
         $selectedShift = $request->shift_id ? Shift::find($request->shift_id) : null;
         $shiftLabel = $selectedShift ? ($selectedShift->name . ' (' . $selectedShift->formatted_24h_range . ')') : 'All Shifts';
 
+        if ($type === 'low_rating') {
+            $lowRatingsQuery = Feedback::with(['visit.shift', 'organizer', 'submittedBy'])
+                ->where('overall_rating', '<=', 2);
+            $this->dates($lowRatingsQuery, 'submitted_at', $request);
+            if ($request->shift_id) {
+                $lowRatingsQuery->whereHas('visit', fn ($v) => $v->where('shift_id', $request->shift_id));
+            }
+            $items = $lowRatingsQuery->latest('submitted_at')->get();
+
+            $filename = 'low-rating-incidents-' . now()->format('Ymd') . '.csv';
+
+            return response()->streamDownload(function () use ($items, $shiftLabel) {
+                $out = fopen('php://output', 'w');
+                fputcsv($out, ['Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Submitted Mode', 'Submitted By', 'Visitor Comments']);
+                foreach ($items as $f) {
+                    fputcsv($out, [
+                        $f->submitted_at->format('Y-m-d H:i:s'),
+                        $f->overall_rating . ' Stars',
+                        $f->visit?->visitor_name ?? '—',
+                        $f->visit?->visitor_company ?? '—',
+                        $f->organizer?->name ?? 'Unassigned',
+                        $f->is_staff_assisted ? 'Staff-assisted' : 'Direct Visitor',
+                        $f->submittedBy?->name ?? '—',
+                        $f->comments ?: 'No comments provided',
+                    ]);
+                }
+                fclose($out);
+            }, $filename, ['Content-Type' => 'text/csv']);
+        }
+
+        if ($type === 'pending') {
+            $pendingVisitsQuery = Visit::with(['shift', 'organizer'])->doesntHave('feedback');
+            $this->dates($pendingVisitsQuery, 'visit_date', $request);
+            if ($request->shift_id) {
+                $pendingVisitsQuery->where('shift_id', $request->shift_id);
+            }
+            $items = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
+
+            $filename = 'pending-feedback-report-' . now()->format('Ymd') . '.csv';
+
+            return response()->streamDownload(function () use ($items) {
+                $out = fopen('php://output', 'w');
+                fputcsv($out, ['Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit']);
+                foreach ($items as $v) {
+                    fputcsv($out, [
+                        $v->visit_date->format('Y-m-d'),
+                        $v->visitor_code ?: 'VIS-' . $v->id,
+                        $v->visitor_name,
+                        $v->visitor_company ?: '—',
+                        $v->visitor_mobile ?: '—',
+                        $v->shift?->name ?: '—',
+                        $v->organizer?->name ?: 'Unassigned',
+                        $v->out_time ? 'Checked Out' : 'Inside Plant',
+                        $v->time_since_exit ?? '—',
+                    ]);
+                }
+                fclose($out);
+            }, $filename, ['Content-Type' => 'text/csv']);
+        }
+
+        // Default: Staff Performance Report
+        $rows = $this->organizerRows($request);
         $filename = ($selectedShift ? Str::slug($selectedShift->name) . '-' : '') . 'performance-report-' . now()->format('Ymd') . '.csv';
 
         return response()->streamDownload(function () use ($rows, $shiftLabel) {
