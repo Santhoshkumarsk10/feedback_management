@@ -72,7 +72,7 @@ class StaffShiftOperationsTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Testing Pending Visitor');
-        $response->assertSee('Submit on Behalf (அவருக்காக பதிவு செய்க)');
+        $response->assertSee('Submit on Behalf');
     }
 
     public function test_staff_can_access_submit_feedback_on_behalf_page(): void

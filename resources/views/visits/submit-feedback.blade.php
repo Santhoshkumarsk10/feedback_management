@@ -203,7 +203,7 @@
                     </a>
                     <button type="submit" class="btn btn-primary px-4 py-2 fw-bold d-flex align-items-center gap-2">
                         <i class="bi bi-check2-circle fs-5"></i>
-                        <span>Submit Feedback on Behalf (அவருக்காக பதிவு செய்க)</span>
+                        <span>Submit Feedback on Behalf</span>
                     </button>
                 </div>
             </form>
