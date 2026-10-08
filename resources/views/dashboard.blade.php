@@ -256,7 +256,7 @@
                                     <a href="{{ route('visits.feedback.create', $v) }}"
                                         class="btn btn-sm btn-warning text-dark fw-bold py-1 px-3 shadow-sm"
                                         title="Fill feedback evaluation along with visitor">
-                                        <i class="bi bi-pencil-square me-1"></i> Submit on Behalf (அவருக்காக பதிவு செய்க)
+                                        <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
                                     </a>
                                 @endif
                             </td>
