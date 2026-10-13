@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 
 use App\Models\Company;
+use App\Models\Shift;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +36,16 @@ class AppServiceProvider extends ServiceProvider
                 }
             } catch (\Throwable $e) {
                 // Ignore during migrations / early setup
+            }
+        });
+
+        View::composer(['layouts.topbar', 'layouts.app'], function ($view) {
+            try {
+                if (auth()->check() && Schema::hasTable('shifts') && Schema::hasTable('visits')) {
+                    $view->with('topbarShiftAlerts', Shift::getFeedbackCloseAlerts(30));
+                }
+            } catch (\Throwable $e) {
+                // Ignore during early setup
             }
         });
     }

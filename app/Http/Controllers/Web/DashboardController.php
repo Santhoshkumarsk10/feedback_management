@@ -53,9 +53,56 @@ class DashboardController extends Controller
             ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
         $distribution = collect(range(1, 5))->map(fn ($i) => (int) ($dist[$i] ?? 0))->all();
 
-        $months = Visit::where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as c")
-            ->groupBy('ym')->orderBy('ym')->pluck('c', 'ym');
+        $allVisits = Visit::where('visit_date', '>=', now()->subMonths(6)->startOfMonth())
+            ->pluck('visit_date')
+            ->map(fn ($d) => \Carbon\Carbon::parse($d)->toDateString());
+
+        // 1. Daily: Last 14 days
+        $daily = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $dStr = $date->toDateString();
+            $daily[$date->format('d M')] = $allVisits->filter(fn ($v) => $v === $dStr)->count();
+        }
+
+        // 2. Weekly: Last 8 weeks
+        $weekly = [];
+        for ($i = 7; $i >= 0; $i--) {
+            $start = now()->subWeeks($i)->startOfWeek();
+            $end = (clone $start)->endOfWeek();
+            $sStr = $start->toDateString();
+            $eStr = $end->toDateString();
+            $label = $start->format('d M') . ' - ' . $end->format('d M');
+            $weekly[$label] = $allVisits->filter(fn ($v) => $v >= $sStr && $v <= $eStr)->count();
+        }
+
+        // 3. Monthly: Last 6 months
+        $monthly = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $start = now()->subMonths($i)->startOfMonth();
+            $end = (clone $start)->endOfMonth();
+            $sStr = $start->toDateString();
+            $eStr = $end->toDateString();
+            $label = $start->format('M Y');
+            $monthly[$label] = $allVisits->filter(fn ($v) => $v >= $sStr && $v <= $eStr)->count();
+        }
+
+        $timeline = [
+            'daily' => [
+                'labels' => array_keys($daily),
+                'values' => array_values($daily),
+            ],
+            'weekly' => [
+                'labels' => array_keys($weekly),
+                'values' => array_values($weekly),
+            ],
+            'monthly' => [
+                'labels' => array_keys($monthly),
+                'values' => array_values($monthly),
+            ],
+        ];
+
+        $months = collect($monthly);
 
         $leaders = User::whereIn('role', ['organizer', 'staff'])
             ->withCount(['visitsAsOrganizer as visits_count', 'feedbacksReceived as feedbacks_count'])
@@ -66,9 +113,11 @@ class DashboardController extends Controller
         $low = Feedback::with(['visit', 'organizer', 'submittedBy'])->where('overall_rating', '<=', 2)
             ->latest('submitted_at')->limit(5)->get();
 
+        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
+
         return view('dashboard', compact(
-            'stats', 'distribution', 'months', 'leaders', 'recent', 'low',
-            'currentShift', 'currentUser', 'todayCounts'
+            'stats', 'distribution', 'months', 'timeline', 'leaders', 'recent', 'low',
+            'currentShift', 'currentUser', 'todayCounts', 'shiftAlerts'
         ));
     }
 
@@ -168,9 +217,11 @@ class DashboardController extends Controller
             'last_sync_at' => $lastSyncAt,
         ];
 
+        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
+
         return view('shift_queue', compact(
             'stats', 'currentShift', 'todayVisits', 'todayCounts', 'todayTab',
-            'currentUser', 'shifts', 'scope', 'shiftFilter', 'search'
+            'currentUser', 'shifts', 'scope', 'shiftFilter', 'search', 'shiftAlerts'
         ));
     }
 
@@ -196,6 +247,7 @@ class DashboardController extends Controller
 
         $todayAvgRating = Feedback::whereHas('visit', fn ($v) => $v->whereDate('visit_date', today()))->avg('overall_rating');
         $lastSyncAt = AuditLog::where('module', 'visitors')->where('action', 'sync')->latest('created_at')->value('created_at');
+        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
 
         return response()->json([
             'success' => true,
@@ -207,6 +259,7 @@ class DashboardController extends Controller
                 'range' => $currentShift->formatted_24h_range,
                 'progress' => $currentShift->shift_progress,
             ] : null,
+            'shift_alerts' => $shiftAlerts,
         ]);
     }
 

@@ -75,10 +75,28 @@ class VisitorController extends Controller
             $existingVisit = Visit::with('feedback')->find($data['visit_id']);
         } elseif (!empty($data['visitor_code'])) {
             $existingVisit = Visit::with('feedback')->where('visitor_code', $data['visitor_code'])->whereDate('visit_date', today())->first();
+
+            // Check if visitor has a past uncompleted visit that has expired
+            if (! $existingVisit) {
+                $pastUncompletedVisit = Visit::with('feedback')
+                    ->where('visitor_code', $data['visitor_code'])
+                    ->whereDate('visit_date', '<', today())
+                    ->doesntHave('feedback')
+                    ->latest('visit_date')
+                    ->first();
+
+                if ($pastUncompletedVisit && $pastUncompletedVisit->is_feedback_expired) {
+                    abort(422, 'Feedback submission has expired for this visit. Feedback must be submitted on the day of the visit.');
+                }
+            }
         }
 
         if ($existingVisit && $existingVisit->feedback) {
             abort(422, 'Thank you! Your feedback has already been received for this visit.');
+        }
+
+        if ($existingVisit && $existingVisit->is_feedback_expired) {
+            abort(422, 'Feedback submission has expired for this visit. Feedback must be submitted on the day of the visit.');
         }
 
         // basic double-submit guard: same mobile + same organizer + same day with existing feedback

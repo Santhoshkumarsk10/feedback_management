@@ -13,7 +13,7 @@
 <div class="row g-4">
     <!-- Left Column: Form Configuration -->
     <div class="col-lg-8">
-        <div class="card-modern" style="border-left: 4px solid var(--shibaura-blue);">
+        <div class="card-modern overflow-visible" style="border-left: 4px solid var(--shibaura-blue);">
             <div class="card-header bg-white">
                 <div class="card-title">
                     <i class="bi bi-patch-question-fill text-primary"></i>
@@ -65,11 +65,22 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-modern-label">Response Type <span class="text-danger">*</span></label>
-                            <select name="type" id="questionTypeSelect" class="form-select form-select-modern @error('type') is-invalid @enderror">
-                                @foreach(['rating' => '⭐ Rating Scale (1 to 5 Stars)', 'mcq' => '🔘 Multiple Choice (Options)', 'text' => '📝 Free Text (Open comments)'] as $k => $l)
-                                    <option value="{{ $k }}" @selected(old('type', $question->type) === $k)>{{ $l }}</option>
-                                @endforeach
-                            </select>
+                            <x-custom-select 
+                                name="type" 
+                                id="questionTypeSelect" 
+                                :options="[
+                                    ['value' => 'rating', 'label' => '⭐ Rating Scale (1 to 5 Stars)'],
+                                    ['value' => 'mcq', 'label' => '🔘 Multiple Choice (Options)'],
+                                    ['value' => 'text', 'label' => '📝 Free Text (Open comments)'],
+                                ]"
+                                :value="old('type', $question->type ?? 'rating')"
+                                placeholder="Select Response Type"
+                                search-placeholder="Search question response type..."
+                                icon="bi-input-cursor-text"
+                                :auto-submit="false"
+                                :allow-empty="false"
+                                min-width="100%"
+                            />
                             @error('type')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

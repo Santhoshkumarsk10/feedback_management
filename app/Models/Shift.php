@@ -212,4 +212,112 @@ class Shift extends Model
             ];
         }
     }
+
+    /**
+     * Check if the shift is currently active and closing within given minutes (default: 30 minutes).
+     */
+    public function isClosingSoon(int $thresholdMinutes = 30): bool
+    {
+        if (! $this->is_currently_active) {
+            return false;
+        }
+
+        $prog = $this->shift_progress;
+        $rem = $prog['remaining_minutes'] ?? null;
+
+        return !is_null($rem) && $rem <= $thresholdMinutes && $rem >= 0;
+    }
+
+    /**
+     * Check if the shift has already ended today in plant timezone.
+     */
+    public function hasEndedToday(): bool
+    {
+        $tz = config('app.plant_timezone', 'Asia/Kolkata');
+        $now = now($tz)->format('H:i');
+        $start = $this->start_time_short;
+        $end = $this->end_time_short;
+
+        if ($start <= $end) {
+            // Standard daytime shift (e.g. 06:00 to 14:00)
+            return $now >= $end;
+        }
+
+        // Overnight shift (e.g. 22:00 to 06:00)
+        return $now >= $end && $now < $start;
+    }
+
+    /**
+     * Count visits in this shift today that have not submitted feedback.
+     */
+    public function getTodayPendingFeedbackCountAttribute(): int
+    {
+        $tz = config('app.plant_timezone', 'Asia/Kolkata');
+        $today = now($tz)->format('Y-m-d');
+
+        return $this->visits()
+            ->whereDate('visit_date', $today)
+            ->doesntHave('feedback')
+            ->count();
+    }
+
+    /**
+     * Check if shift has pending feedback and is closing within 30 minutes (or ended today).
+     */
+    public function hasFeedbackCloseAlert(int $thresholdMinutes = 30): bool
+    {
+        return ($this->isClosingSoon($thresholdMinutes) || $this->hasEndedToday())
+            && $this->today_pending_feedback_count > 0;
+    }
+
+    /**
+     * Get alert details for shifts closing within 30 minutes (or ended today) with unsubmitted feedback.
+     */
+    public static function getFeedbackCloseAlerts(int $thresholdMinutes = 30): array
+    {
+        $tz = config('app.plant_timezone', 'Asia/Kolkata');
+        $today = now($tz)->format('Y-m-d');
+        $alerts = [];
+
+        // Check active shifts closing soon or ended today
+        $shifts = self::active()->orderBy('start_time')->get();
+
+        foreach ($shifts as $shift) {
+            $isClosingSoon = $shift->isClosingSoon($thresholdMinutes);
+            $hasEnded = $shift->hasEndedToday();
+
+            if (! $isClosingSoon && ! $hasEnded) {
+                continue;
+            }
+
+            $pendingCount = Visit::whereDate('visit_date', $today)
+                ->where('shift_id', $shift->id)
+                ->doesntHave('feedback')
+                ->count();
+
+            if ($pendingCount > 0) {
+                $remMinutes = $isClosingSoon ? ($shift->shift_progress['remaining_minutes'] ?? 0) : 0;
+                $statusType = $isClosingSoon ? 'closing_soon' : 'ended';
+                $remainingText = $isClosingSoon
+                    ? ($remMinutes <= 1 ? 'Closing in <1 min' : "Closing in {$remMinutes} mins")
+                    : 'Shift closed (Overdue)';
+
+                $alerts[] = [
+                    'shift_id' => $shift->id,
+                    'shift_code' => $shift->code,
+                    'shift_name' => $shift->name,
+                    'start_time_12h' => $shift->start_time_12h,
+                    'end_time_12h' => $shift->end_time_12h,
+                    'pending_count' => $pendingCount,
+                    'remaining_minutes' => $remMinutes,
+                    'remaining_text' => $remainingText,
+                    'status_type' => $statusType,
+                    'is_closing_soon' => $isClosingSoon,
+                    'has_ended' => $hasEnded,
+                ];
+            }
+        }
+
+        return $alerts;
+    }
 }

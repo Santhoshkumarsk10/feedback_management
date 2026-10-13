@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', "Today's Plant Visitors & Shift Queue")
-@section('page_title', "Today's Shift Feedback Queue")
-@section('page_subtitle', "Live duty shift tracker, plant visitor queue, and feedback collection for today's shifts")
+@section('title', "Live Shift Queue")
+@section('page_title', "Live Shift Queue")
+@section('page_subtitle', "Real-time visitor queue & feedback status")
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
@@ -17,6 +17,45 @@
 @endsection
 
 @section('content')
+    <!-- Shift Feedback Deadline Alert Notification for Staff (30m Before Shift Close) -->
+    <div id="shiftCloseAlertWrapper">
+        @if(!empty($shiftAlerts))
+            @foreach($shiftAlerts as $alert)
+                <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
+                     style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
+                     role="alert">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="alert-icon-pulse bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 44px; height: 44px;">
+                            <i class="bi bi-alarm-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h6 class="fw-bold text-danger mb-0 fs-6">
+                                    ⚠️ Staff Alert: {{ $alert['shift_name'] }} Feedback Due
+                                </h6>
+                                <span class="badge bg-danger text-white fw-bold px-2 py-1">
+                                    <i class="bi bi-clock-history me-1"></i> {{ $alert['remaining_text'] }}
+                                </span>
+                                <span class="badge bg-light text-danger border border-danger-subtle fw-semibold">
+                                    Shift Closes: {{ $alert['end_time_12h'] }}
+                                </span>
+                            </div>
+                            <div class="text-dark small mt-1">
+                                <strong>{{ $alert['pending_count'] }} visitor(s)</strong> in {{ $alert['shift_name'] }} have not filled feedback within the shift time limit. Please collect feedback before shift handover!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $alert['shift_id']]) }}" 
+                           class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
+                            <i class="bi bi-person-exclamation me-1"></i> View {{ $alert['shift_name'] }} Pending ({{ $alert['pending_count'] }})
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        @endif
+    </div>
+
     <!-- Live Duty Shift Tracker & Active Shift Monitor -->
     <div class="card-modern mb-4"
         style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
@@ -401,6 +440,12 @@
                                                 <i class="bi bi-exclamation-triangle-fill"></i> >2h Post-Exit Alert
                                             </span>
                                         @endif
+
+                                        @if ($v->is_shift_closing_soon_alert)
+                                            <span class="badge bg-danger text-white px-2 py-0 ms-1 fw-bold shadow-xs animate-pulse-subtle" style="font-size: 0.70rem;" title="Shift closing within 30m without feedback! {{ $v->shift_close_alert_text }}">
+                                                <i class="bi bi-alarm-fill"></i> {{ $v->shift_close_alert_text }}
+                                            </span>
+                                        @endif
                                     </div>
 
                                     <div class="small text-muted" style="font-size: 0.75rem;">
@@ -470,6 +515,10 @@
                                             <i class="bi bi-person-check-fill text-primary"></i> Staff-assisted
                                         </div>
                                     @endif
+                                @elseif ($v->is_feedback_expired)
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" title="Feedback collection expired because visit day has ended">
+                                        <i class="bi bi-clock-history text-secondary"></i> Expired (Day Ended)
+                                    </span>
                                 @else
                                     <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1">
                                         <i class="bi bi-hourglass-split text-warning"></i> Pending
@@ -482,6 +531,10 @@
                                         class="btn btn-sm btn-outline-secondary py-1 px-3">
                                         <i class="bi bi-eye"></i> View Feedback
                                     </a>
+                                @elseif ($v->is_feedback_expired)
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 disabled" disabled title="Feedback collection has expired for past visits">
+                                        <i class="bi bi-lock-fill me-1"></i> Closed
+                                    </button>
                                 @else
                                     <a href="{{ route('visits.feedback.create', $v) }}"
                                         class="btn btn-sm {{ $v->is_exceeded_exit_threshold ? 'btn-danger text-white' : 'btn-warning text-dark' }} fw-bold py-1 px-3 shadow-sm"
@@ -560,6 +613,50 @@
                         if (badgeComp) badgeComp.innerText = data.counts.completed;
                         if (badgeAll) badgeAll.innerText = data.counts.all;
                         if (syncEl && data.last_sync_formatted) syncEl.innerText = data.last_sync_formatted;
+
+                        // Dynamically update Shift Deadline Alerts if returned
+                        if (data.shift_alerts) {
+                            const alertWrap = document.getElementById('shiftCloseAlertWrapper');
+                            if (alertWrap) {
+                                if (data.shift_alerts.length > 0) {
+                                    alertWrap.innerHTML = data.shift_alerts.map(alert => `
+                                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
+                                             style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
+                                             role="alert">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="alert-icon-pulse bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 44px; height: 44px;">
+                                                    <i class="bi bi-alarm-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                        <h6 class="fw-bold text-danger mb-0 fs-6">
+                                                            ⚠️ Staff Alert: \${alert.shift_name} Feedback Due
+                                                        </h6>
+                                                        <span class="badge bg-danger text-white fw-bold px-2 py-1">
+                                                            <i class="bi bi-clock-history me-1"></i> \${alert.remaining_text}
+                                                        </span>
+                                                        <span class="badge bg-light text-danger border border-danger-subtle fw-semibold">
+                                                            Shift Closes: \${alert.end_time_12h}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-dark small mt-1">
+                                                        <strong>\${alert.pending_count} visitor(s)</strong> in \${alert.shift_name} have not filled feedback within the shift time limit. Please collect feedback before shift handover!
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <a href="{{ route('shift_queue') }}?today_tab=pending&shift_id=\${alert.shift_id}" 
+                                                   class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
+                                                    <i class="bi bi-person-exclamation me-1"></i> View \${alert.shift_name} Pending (\${alert.pending_count})
+                                                </a>
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                } else {
+                                    alertWrap.innerHTML = '';
+                                }
+                            }
+                        }
                     }
                 })
                 .catch(() => {});

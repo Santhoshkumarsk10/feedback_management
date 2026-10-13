@@ -355,13 +355,13 @@
                 <div class="executive-brand-card mb-4" id="executiveCard">
                     <!-- Topbar with Seal -->
                     <div class="brand-card-topbar">
-                        <div class="brand-card-chip">
+                        <!-- <div class="brand-card-chip">
                             <i class="bi bi-shield-fill-check text-info"></i>
                             <span>Enterprise Verified</span>
                         </div>
                         <div class="brand-card-seal">
                             <i class="bi bi-award-fill"></i> Master Profile
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- Logo Emblem & Name -->

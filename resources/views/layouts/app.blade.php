@@ -46,7 +46,23 @@
                 </div>
             @endif
 
-            @if($errors->any())
+            @if(session('error'))
+                <div class="alert-modern danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-x-circle-fill fs-5"></i>
+                    <div class="flex-grow-1 font-medium">{{ session('error') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div class="alert-modern info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <div class="flex-grow-1 font-medium">{{ session('info') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if($errors->any() && !View::hasSection('hide_top_errors'))
                 <div class="alert-modern danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-triangle-fill fs-5"></i>
                     <div class="flex-grow-1">
