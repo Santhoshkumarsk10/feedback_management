@@ -17,22 +17,110 @@ class DashboardController extends Controller
         $currentShift = Shift::current();
         $currentUser = auth()->user();
 
+        // Today Summary Metrics for executive status banner
+        $todayTotalVisitors = Visit::whereDate('visit_date', today())->count();
+        $todayGivenCount = Visit::whereDate('visit_date', today())->has('feedback')->count();
+        $todayPendingCount = Visit::whereDate('visit_date', today())->doesntHave('feedback')->count();
+        $todayGivenPercent = $todayTotalVisitors > 0 ? round(($todayGivenCount / $todayTotalVisitors) * 100) : 0;
+        $todayPendingPercent = $todayTotalVisitors > 0 ? round(($todayPendingCount / $todayTotalVisitors) * 100) : 0;
+        $todayAvgRating = Feedback::whereHas('visit', fn ($v) => $v->whereDate('visit_date', today()))->avg('overall_rating');
+        $lastSyncAt = AuditLog::where('module', 'visitors')->where('action', 'sync')->latest('created_at')->value('created_at');
+
+        // Overall Analytics & Historical Metrics
+        $stats = [
+            'organizers' => User::whereIn('role', ['organizer', 'staff'])->count(),
+            'visitors' => (int) Visit::selectRaw('COUNT(DISTINCT COALESCE(visitor_mobile, visitor_name)) as c')->value('c'),
+            'visits' => Visit::count(),
+            'feedbacks' => Feedback::count(),
+            'avg' => round((float) Feedback::avg('overall_rating'), 2),
+            'low' => Feedback::where('overall_rating', '<=', 2)->count(),
+            'today_total' => $todayTotalVisitors,
+            'today_given' => $todayGivenCount,
+            'today_given_pct' => $todayGivenPercent,
+            'today_pending' => $todayPendingCount,
+            'today_pending_pct' => $todayPendingPercent,
+            'today_avg' => $todayAvgRating ? round((float) $todayAvgRating, 1) : null,
+            'last_sync_at' => $lastSyncAt,
+        ];
+
+        $todayCounts = [
+            'all' => $todayTotalVisitors,
+            'pending' => $todayPendingCount,
+            'completed' => $todayGivenCount,
+        ];
+
+        $dist = Feedback::whereNotNull('overall_rating')
+            ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
+        $distribution = collect(range(1, 5))->map(fn ($i) => (int) ($dist[$i] ?? 0))->all();
+
+        $months = Visit::where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
+            ->selectRaw("DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as c")
+            ->groupBy('ym')->orderBy('ym')->pluck('c', 'ym');
+
+        $leaders = User::whereIn('role', ['organizer', 'staff'])
+            ->withCount(['visitsAsOrganizer as visits_count', 'feedbacksReceived as feedbacks_count'])
+            ->withAvg('feedbacksReceived as avg_rating', 'overall_rating')
+            ->orderByDesc('avg_rating')->get();
+
+        $recent = Feedback::with(['visit', 'organizer', 'submittedBy'])->latest('submitted_at')->limit(8)->get();
+        $low = Feedback::with(['visit', 'organizer', 'submittedBy'])->where('overall_rating', '<=', 2)
+            ->latest('submitted_at')->limit(5)->get();
+
+        return view('dashboard', compact(
+            'stats', 'distribution', 'months', 'leaders', 'recent', 'low',
+            'currentShift', 'currentUser', 'todayCounts'
+        ));
+    }
+
+    /**
+     * Dedicated Operations Page: Today's Plant Visitors & Shift Feedback Queue
+     */
+    public function shiftQueue(Request $request)
+    {
+        $currentShift = Shift::current();
+        $currentUser = auth()->user();
+
         // Today's Operations Queue & Shift Filter
         $todayTab = $request->input('today_tab', 'pending');
         $shiftFilter = $request->input('shift_id');
         $scope = $request->input('scope', 'all'); // 'all' or 'my'
+        $search = $request->input('search');
 
         $todayBase = Visit::with(['organizer', 'feedback', 'shift'])
             ->whereDate('visit_date', today())
             ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
-            ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id));
+            ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
+            ->when($search, function ($q, $term) {
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('visitor_name', 'like', "%{$term}%")
+                        ->orWhere('visitor_company', 'like', "%{$term}%")
+                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
+                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                });
+            });
 
         $allScopeBase = Visit::whereDate('visit_date', today())
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s));
+            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
+            ->when($search, function ($q, $term) {
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('visitor_name', 'like', "%{$term}%")
+                        ->orWhere('visitor_company', 'like', "%{$term}%")
+                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
+                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                });
+            });
 
         $myScopeBase = Visit::whereDate('visit_date', today())
             ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
-            ->when($currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id));
+            ->when($currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
+            ->when($search, function ($q, $term) {
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('visitor_name', 'like', "%{$term}%")
+                        ->orWhere('visitor_company', 'like', "%{$term}%")
+                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
+                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                });
+            });
 
         $todayCounts = [
             'all' => (clone $todayBase)->count(),
@@ -70,14 +158,7 @@ class DashboardController extends Controller
         $todayAvgRating = Feedback::whereHas('visit', fn ($v) => $v->whereDate('visit_date', today()))->avg('overall_rating');
         $lastSyncAt = AuditLog::where('module', 'visitors')->where('action', 'sync')->latest('created_at')->value('created_at');
 
-        // Overall Analytics & Historical Metrics
         $stats = [
-            'organizers' => User::whereIn('role', ['organizer', 'staff'])->count(),
-            'visitors' => (int) Visit::selectRaw('COUNT(DISTINCT COALESCE(visitor_mobile, visitor_name)) as c')->value('c'),
-            'visits' => Visit::count(),
-            'feedbacks' => Feedback::count(),
-            'avg' => round((float) Feedback::avg('overall_rating'), 2),
-            'low' => Feedback::where('overall_rating', '<=', 2)->count(),
             'today_total' => $todayTotalVisitors,
             'today_given' => $todayGivenCount,
             'today_given_pct' => $todayGivenPercent,
@@ -87,26 +168,9 @@ class DashboardController extends Controller
             'last_sync_at' => $lastSyncAt,
         ];
 
-        $dist = Feedback::whereNotNull('overall_rating')
-            ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
-        $distribution = collect(range(1, 5))->map(fn ($i) => (int) ($dist[$i] ?? 0))->all();
-
-        $months = Visit::where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as c")
-            ->groupBy('ym')->orderBy('ym')->pluck('c', 'ym');
-
-        $leaders = User::whereIn('role', ['organizer', 'staff'])
-            ->withCount(['visitsAsOrganizer as visits_count', 'feedbacksReceived as feedbacks_count'])
-            ->withAvg('feedbacksReceived as avg_rating', 'overall_rating')
-            ->orderByDesc('avg_rating')->get();
-
-        $recent = Feedback::with(['visit', 'organizer', 'submittedBy'])->latest('submitted_at')->limit(8)->get();
-        $low = Feedback::with(['visit', 'organizer', 'submittedBy'])->where('overall_rating', '<=', 2)
-            ->latest('submitted_at')->limit(5)->get();
-
-        return view('dashboard', compact(
-            'stats', 'distribution', 'months', 'leaders', 'recent', 'low',
-            'currentShift', 'todayVisits', 'todayCounts', 'todayTab', 'currentUser', 'shifts', 'scope'
+        return view('shift_queue', compact(
+            'stats', 'currentShift', 'todayVisits', 'todayCounts', 'todayTab',
+            'currentUser', 'shifts', 'scope', 'shiftFilter', 'search'
         ));
     }
 
