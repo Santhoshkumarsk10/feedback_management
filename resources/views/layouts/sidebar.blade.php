@@ -57,6 +57,10 @@
 
         {{-- Operations: All Authenticated Roles --}}
         <div class="menu-category">Operations & Visits</div>
+        <a class="nav-item-link {{ request()->routeIs('shift_queue*') ? 'active' : '' }}" href="{{ route('shift_queue') }}">
+            <i class="bi bi-calendar2-day-fill"></i>
+            <span>Today's Shift Queue</span>
+        </a>
         <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}" href="{{ route('visits.index') }}">
             <i class="bi bi-person-badge-fill"></i>
             <span>Plant Visitors</span>

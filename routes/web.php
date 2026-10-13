@@ -34,6 +34,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // Operations web panel: superadmin, admin, supervisor, staff
 Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,staff,organizer'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('shift-queue', [DashboardController::class, 'shiftQueue'])->name('shift_queue');
+    Route::get('shift-queue/export-pending', [DashboardController::class, 'exportPending'])->name('shift_queue.export_pending');
     Route::get('dashboard/live-feed', [DashboardController::class, 'liveFeed'])->name('dashboard.live_feed');
     Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 

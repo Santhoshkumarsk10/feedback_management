@@ -43,8 +43,13 @@ class StaffShiftOperationsTest extends TestCase
     {
         $staff = $this->getStaff();
 
-        $response = $this->actingAs($staff)->get(route('dashboard'));
+        // Test Dashboard has link to shift queue
+        $dashResponse = $this->actingAs($staff)->get(route('dashboard'));
+        $dashResponse->assertStatus(200);
+        $dashResponse->assertSee(route('shift_queue'));
 
+        // Test dedicated shift queue page
+        $response = $this->actingAs($staff)->get(route('shift_queue'));
         $response->assertStatus(200);
         $response->assertSee('LIVE DUTY SHIFT TRACKER');
         $response->assertSee('Today\'s Plant Visitors', false);
@@ -68,7 +73,7 @@ class StaffShiftOperationsTest extends TestCase
             'purpose' => 'Machine Inspection',
         ]);
 
-        $response = $this->actingAs($staff)->get(route('dashboard', ['today_tab' => 'pending']));
+        $response = $this->actingAs($staff)->get(route('shift_queue', ['today_tab' => 'pending']));
 
         $response->assertStatus(200);
         $response->assertSee('Testing Pending Visitor');

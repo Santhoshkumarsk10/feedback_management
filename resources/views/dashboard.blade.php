@@ -5,19 +5,26 @@
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
+        <a href="{{ route('shift_queue') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-clock-history"></i>
+            <span>Today's Shift Queue</span>
+            @if(($todayCounts['pending'] ?? 0) > 0)
+                <span class="badge bg-warning text-dark ms-1 rounded-pill">{{ $todayCounts['pending'] }}</span>
+            @endif
+        </a>
         <a href="{{ route('reports.index') }}" class="btn-modern-secondary btn-sm">
             <i class="bi bi-file-earmark-bar-graph"></i>
             <span class="d-none d-sm-inline">Reports</span>
         </a>
-        <a href="{{ route('feedbacks.index') }}" class="btn-modern-primary btn-sm">
+        <a href="{{ route('feedbacks.index') }}" class="btn-modern-secondary btn-sm">
             <i class="bi bi-chat-text-fill"></i>
-            <span>View All Feedback</span>
+            <span class="d-none d-sm-inline">All Feedback</span>
         </a>
     </div>
 @endsection
 
 @section('content')
-    <!-- Live Duty Shift Tracker & Active Shift Monitor -->
+    <!-- Live Duty Shift Tracker & Active Shift Monitor with Direct Shift Queue Access -->
     <div class="card-modern mb-4"
         style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
         <div class="card-body p-3 p-md-4">
@@ -78,355 +85,33 @@
                 </div>
 
                 <div class="col-12 col-lg-5 text-lg-end">
-                    <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
-                        <a href="{{ route('visits.create') }}"
-                            class="btn btn-primary btn-sm px-3 py-2 fw-semibold shadow-sm">
-                            <i class="bi bi-person-plus-fill me-1"></i> Register New Visitor
-                        </a>
+                    <div class="p-3 bg-white rounded-3 border shadow-xs d-inline-block text-start w-100" style="max-width: 420px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-dark small text-uppercase tracking-wider">
+                                <i class="bi bi-calendar2-day-fill text-primary me-1"></i> Today's Shift Status
+                            </span>
+                            <span class="badge {{ ($todayCounts['pending'] ?? 0) > 0 ? 'bg-warning text-dark' : 'bg-success text-white' }} px-2 py-1">
+                                {{ $todayCounts['pending'] ?? 0 }} Awaiting Feedback
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between text-muted small mb-3">
+                            <div><strong>{{ $stats['today_total'] }}</strong> Arrivals</div>
+                            <div>•</div>
+                            <div><strong>{{ $stats['today_given'] }}</strong> Completed</div>
+                            <div>•</div>
+                            <div><strong>{{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) . ' ★' : '—' }}</strong> Avg Rating</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('shift_queue') }}" class="btn btn-primary btn-sm flex-grow-1 fw-semibold shadow-sm">
+                                <i class="bi bi-clock-history me-1"></i> Open Live Shift Queue
+                            </a>
+                            <a href="{{ route('visits.create') }}" class="btn btn-outline-primary btn-sm" title="Register visitor">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Section 6.5 Core: Today's Shift Feedback Metrics -->
-    <div class="row g-3 mb-4">
-        <!-- Total Visitors Today -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget cyan h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Visitors Today</span>
-                    <div class="stat-icon-bubble cyan">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-calendar2-day"></i> Plant Arrivals
-                </span>
-            </div>
-        </div>
-
-        <!-- Feedback Given (count and %) -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget emerald h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Feedback Given</span>
-                    <div class="stat-icon-bubble emerald">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
-                <span class="stat-pill-trend up" id="cardTodayGivenPct">
-                    <i class="bi bi-pie-chart-fill"></i> {{ $stats['today_given_pct'] }}% Completed
-                </span>
-            </div>
-        </div>
-
-        <!-- Feedback Pending (count and %) -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget amber h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Feedback Pending</span>
-                    <div class="stat-icon-bubble amber">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
-                <span class="stat-pill-trend {{ $stats['today_pending'] > 0 ? 'down' : 'up' }}" id="cardTodayPendingPct">
-                    <i class="bi bi-clock-history"></i> {{ $stats['today_pending_pct'] }}% Pending
-                </span>
-            </div>
-        </div>
-
-        <!-- Average Rating Today -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget indigo h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Today's Avg Rating</span>
-                    <div class="stat-icon-bubble indigo">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number" id="cardTodayAvg">
-                    {{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) : '—' }}
-                    @if($stats['today_avg'])<span class="fs-5 text-muted fw-normal">/5</span>@endif
-                </div>
-                <span class="stat-pill-trend {{ ($stats['today_avg'] ?? 0) >= 4 ? 'up' : 'neutral' }}">
-                    <i class="bi bi-award"></i> Shift Sentiment
-                </span>
-            </div>
-        </div>
-
-        <!-- Last Visitors API Sync time -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget slate h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">API Sync Time</span>
-                    <div class="stat-icon-bubble slate">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
-                    {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
-                </div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-hdd-network"></i> Gate Pass Feed
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Today's Visitors: Pending vs Completed Operations Board -->
-    <div class="card-modern mb-4">
-        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div>
-                <div class="card-title">
-                    <i class="bi bi-calendar2-day-fill text-primary"></i>
-                    <span>Today's Plant Visitors & Feedback Queue</span>
-                </div>
-                <div class="text-muted small mt-1">Track visitor feedback status for today's shift and submit evaluations on behalf of visitors</div>
-            </div>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <!-- Scope toggle: All Visitors vs My Visitors -->
-                <div class="btn-group btn-group-sm" role="group">
-                    <a href="{{ route('dashboard', array_merge(request()->query(), ['scope' => 'all'])) }}"
-                        class="btn {{ ($scope ?? 'all') === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        All Visitors ({{ $todayCounts['scope_all'] }})
-                    </a>
-                    <a href="{{ route('dashboard', array_merge(request()->query(), ['scope' => 'my'])) }}"
-                        class="btn {{ ($scope ?? '') === 'my' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        My Visitors ({{ $todayCounts['scope_my'] }})
-                    </a>
-                </div>
-
-                <a href="{{ route('dashboard.export_pending', request()->query()) }}" class="btn btn-sm btn-outline-secondary" title="Export today pending list to CSV">
-                    <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export Pending
-                </a>
-
-                <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-success"
-                        title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                        <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
-                    </button>
-                </form>
-                <a href="{{ route('visits.create') }}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Add Visitor
-                </a>
-                <a href="{{ route('visits.index', ['today' => 1]) }}" class="btn btn-sm btn-link text-decoration-none">
-                    <span>Full Log</span> <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Filter Tabs Header: Pending vs Completed vs All -->
-        <div class="filter-tabs-header bg-light border-bottom px-3 pt-2">
-            <div class="filter-tabs-nav">
-                <a href="{{ route('dashboard', array_merge(request()->query(), ['today_tab' => 'pending'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}"
-                    style="{{ ($todayTab ?? 'pending') === 'pending' ? 'border-bottom: 3px solid #f59e0b; color: #b45309; font-weight: 700;' : '' }}">
-                    <i class="bi bi-clock-history text-warning"></i>
-                    <span>Awaiting Feedback (Pending)</span>
-                    <span
-                        class="badge {{ $todayCounts['pending'] > 0 ? 'bg-warning text-dark' : 'bg-secondary text-white' }} rounded-pill ms-1" id="badgePendingCount">
-                        {{ $todayCounts['pending'] }}
-                    </span>
-                </a>
-
-                <a href="{{ route('dashboard', array_merge(request()->query(), ['today_tab' => 'completed'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}"
-                    style="{{ ($todayTab ?? '') === 'completed' ? 'border-bottom: 3px solid #10b981; color: #047857; font-weight: 700;' : '' }}">
-                    <i class="bi bi-check-circle-fill text-success"></i>
-                    <span>Feedback Completed</span>
-                    <span class="badge bg-success rounded-pill ms-1" id="badgeCompletedCount">
-                        {{ $todayCounts['completed'] }}
-                    </span>
-                </a>
-
-                <a href="{{ route('dashboard', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
-                    <i class="bi bi-people-fill text-primary"></i>
-                    <span>All Today's Visitors</span>
-                    <span class="badge bg-secondary rounded-pill ms-1" id="badgeAllCount">
-                        {{ $todayCounts['all'] }}
-                    </span>
-                </a>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table-modern">
-                <thead>
-                    <tr>
-                        <th>Visitor Information</th>
-                        <th>In / Out Time & Gate Status</th>
-                        <th>Duty Shift & Dept</th>
-                        <th>Assigned Staff</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($todayVisits as $v)
-                        <tr style="{{ $v->is_exceeded_exit_threshold ? 'background-color: #fff1f2; border-left: 4px solid #ef4444;' : ($v->is_checked_out && !$v->feedback ? 'background-color: #f8fafc; border-left: 4px solid #f59e0b;' : '') }}">
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>
-                                    @if ($v->visitor_code)
-                                        <span
-                                            class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0"
-                                            style="font-size: 0.72rem;">
-                                            <i class="bi bi-qr-code me-1"></i> {{ $v->visitor_code }}
-                                        </span>
-                                    @endif
-                                </div>
-                                @if ($v->visitor_designation)
-                                    <div class="small text-secondary fw-semibold">{{ $v->visitor_designation }}</div>
-                                @endif
-                                <div class="small text-muted d-flex align-items-center gap-2 mt-1">
-                                    @if ($v->visitor_company)
-                                        <span class="badge bg-light text-dark border">
-                                            <i class="bi bi-building me-1"></i> {{ $v->visitor_company }}
-                                        </span>
-                                    @endif
-                                    @if ($v->visitor_mobile)
-                                        <span><i class="bi bi-telephone text-muted"></i> {{ $v->visitor_mobile }}</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-1">
-                                    <!-- Status Badge: Priority for Checked Out -->
-                                    <div>
-                                        @if ($v->out_time)
-                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0" style="font-size: 0.72rem;">
-                                                <i class="bi bi-box-arrow-right me-1"></i> Checked Out
-                                            </span>
-                                        @elseif ($v->in_time)
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.72rem;">
-                                                <i class="bi bi-geo-alt-fill me-1"></i> Inside Plant
-                                            </span>
-                                        @else
-                                            <span class="badge bg-light text-muted border px-2 py-0" style="font-size: 0.72rem;">
-                                                Registered
-                                            </span>
-                                        @endif
-
-                                        @if ($v->is_exceeded_exit_threshold)
-                                            <span class="badge bg-danger text-white px-2 py-0 ms-1 fw-bold" style="font-size: 0.70rem;" title="Checked out >2 hours ago without feedback!">
-                                                <i class="bi bi-exclamation-triangle-fill"></i> >2h Post-Exit Alert
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    <div class="small text-muted" style="font-size: 0.75rem;">
-                                        @if ($v->formatted_in_time)
-                                            <span><strong>In:</strong> {{ $v->formatted_in_time }}</span>
-                                        @endif
-                                        @if ($v->formatted_out_time)
-                                            <span class="ms-2"><strong>Out:</strong> {{ $v->formatted_out_time }}</span>
-                                        @endif
-                                        @if ($v->time_since_exit)
-                                            <div class="text-secondary fw-semibold mt-0">
-                                                <i class="bi bi-hourglass-split"></i> Exited {{ $v->time_since_exit }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                @if ($v->shift)
-                                    @php
-                                        $shiftBadgeColor = match ($v->shift->code) {
-                                            'SHIFT-A' => 'badge-indigo',
-                                            'SHIFT-B' => 'badge-amber',
-                                            'SHIFT-C' => 'badge-purple',
-                                            default => 'badge-slate',
-                                        };
-                                    @endphp
-                                    <span class="badge-modern {{ $shiftBadgeColor }}">
-                                        <i class="bi bi-clock"></i> {{ $v->shift->name }}
-                                    </span>
-                                    <div class="text-muted small mt-1" style="font-size: 0.72rem;">
-                                        {{ $v->shift->formatted_24h_range }}
-                                    </div>
-                                @else
-                                    <span class="text-muted small">—</span>
-                                @endif
-                                @if ($v->department || $v->purpose)
-                                    <div class="small text-secondary mt-1" style="font-size: 0.72rem;">
-                                        <i class="bi bi-compass"></i> {{ $v->department ?: $v->purpose }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <span class="user-avatar-chip" style="width: 28px; height: 28px; font-size: 0.72rem;">
-                                        {{ strtoupper(substr($v->organizer->name ?? 'S', 0, 2)) }}
-                                    </span>
-                                    <div>
-                                        <span
-                                            class="fw-semibold text-dark">{{ $v->organizer->name ?? 'Unassigned' }}</span>
-                                        @if ($v->organizer?->department)
-                                            <div class="small text-muted" style="font-size: 0.72rem;">
-                                                {{ $v->organizer?->department }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                @if ($v->feedback)
-                                    <span
-                                        class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                        <i class="bi bi-check-circle-fill"></i> Completed
-                                        ({{ $v->feedback->overall_rating }} ★)
-                                    </span>
-                                    @if ($v->feedback->is_staff_assisted)
-                                        <div class="small text-muted mt-1" style="font-size: 0.70rem;">
-                                            <i class="bi bi-person-check-fill text-primary"></i> Staff-assisted
-                                        </div>
-                                    @endif
-                                @else
-                                    <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1">
-                                        <i class="bi bi-hourglass-split text-warning"></i> Pending
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-end text-nowrap">
-                                @if ($v->feedback)
-                                    <a href="{{ route('feedbacks.show', $v->feedback) }}"
-                                        class="btn btn-sm btn-outline-secondary py-1 px-3">
-                                        <i class="bi bi-eye"></i> View Feedback
-                                    </a>
-                                @else
-                                    <a href="{{ route('visits.feedback.create', $v) }}"
-                                        class="btn btn-sm {{ $v->is_exceeded_exit_threshold ? 'btn-danger text-white' : 'btn-warning text-dark' }} fw-bold py-1 px-3 shadow-sm"
-                                        title="Fill feedback evaluation along with visitor">
-                                        <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
-                                    </a>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success opacity-75"></i>
-                                @if (($todayTab ?? 'pending') === 'pending')
-                                    <div class="fw-bold text-dark fs-6">No Pending Feedback for Today!</div>
-                                    <div class="small">All registered visitors for today's shifts have submitted their
-                                        evaluation.</div>
-                                @else
-                                    <div class="fw-bold text-dark fs-6">No visitors recorded yet for today.</div>
-                                    <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary mt-2">
-                                        <i class="bi bi-person-plus-fill me-1"></i> Register Today's First Visitor
-                                    </a>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -948,35 +633,6 @@
                         updateLiveClock();
                         setInterval(updateLiveClock, 1000);
 
-                        // Section 6.5 Requirement 1: Live Polling (every 45s) for real-time count updates
-                        function pollLiveDashboard() {
-                            const params = new URLSearchParams(window.location.search);
-                            fetch('{{ route('dashboard.live_feed') }}?' + params.toString(), {
-                                headers: { 'Accept': 'application/json' }
-                            })
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data && data.success && data.counts) {
-                                    const totalEl = document.getElementById('cardTodayTotal');
-                                    const givenEl = document.getElementById('cardTodayGiven');
-                                    const pendingEl = document.getElementById('cardTodayPending');
-                                    const badgePend = document.getElementById('badgePendingCount');
-                                    const badgeComp = document.getElementById('badgeCompletedCount');
-                                    const badgeAll = document.getElementById('badgeAllCount');
-                                    const syncEl = document.getElementById('cardLastSync');
-
-                                    if (totalEl) totalEl.innerText = data.counts.all.toLocaleString();
-                                    if (givenEl) givenEl.innerText = data.counts.completed.toLocaleString();
-                                    if (pendingEl) pendingEl.innerText = data.counts.pending.toLocaleString();
-                                    if (badgePend) badgePend.innerText = data.counts.pending;
-                                    if (badgeComp) badgeComp.innerText = data.counts.completed;
-                                    if (badgeAll) badgeAll.innerText = data.counts.all;
-                                    if (syncEl && data.last_sync_formatted) syncEl.innerText = data.last_sync_formatted;
-                                }
-                            })
-                            .catch(() => {});
-                        }
-                        setInterval(pollLiveDashboard, 45000);
-                    });
+                });
     </script>
 @endpush
