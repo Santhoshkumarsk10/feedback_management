@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -190,9 +191,22 @@ class AuthController extends Controller
     {
         $request->validate([
             'current_password' => 'required|string|max:100',
-            'password' => 'required|string|min:8|max:100|confirmed|different:current_password',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:16',
+                'confirmed',
+                'different:current_password',
+                'regex:/[A-Z]/',
+                'regex:/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]/',
+                'regex:/(?:.*\d){3}/',
+            ],
         ], [
+            'password.min' => 'The new password must be at least 8 characters.',
+            'password.max' => 'The new password must not exceed 16 characters.',
             'password.different' => 'The new password must be different from your current password.',
+            'password.regex' => 'The password must contain at least 1 uppercase letter, 1 special character, and at least 3 digits.',
         ]);
 
         /** @var User $user */
@@ -210,6 +224,60 @@ class AuthController extends Controller
         AuditLog::record('update', 'auth', "Password changed by administrator: {$user->name} ({$user->email}).");
 
         return back()->with('success', 'Your password has been changed successfully!');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'email' => [
+                'nullable',
+                'email:rfc',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'max:100',
+                'required_without:mobile',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'mobile' => [
+                'nullable',
+                'regex:/^[6-9][0-9]{9}$/',
+                'required_without:email',
+                Rule::unique('users', 'mobile')->ignore($user->id),
+            ],
+            'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+        ], [
+            'name.required' => 'Full Name is required.',
+            'name.min' => 'Full Name must be at least :min characters.',
+            'name.max' => 'Full Name cannot exceed :max characters.',
+            'name.regex' => 'Full Name may only contain letters, spaces, hyphens, and dots.',
+            'email.email' => 'Please provide a valid official email address.',
+            'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',
+            'email.required_without' => 'Either Email Address or Mobile Number is required.',
+            'email.unique' => 'This email address is already in use by another user account.',
+            'mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'mobile.required_without' => 'Either Mobile Number or Email Address is required.',
+            'mobile.unique' => 'This mobile number is already in use by another user account.',
+            'department.regex' => 'Department may only contain letters, numbers, spaces, and allowed symbols (&, -, /, .).',
+            'department.min' => 'Department must be at least :min characters.',
+            'department.max' => 'Department cannot exceed :max characters.',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'] ?? null,
+            'mobile' => $validated['mobile'] ?? null,
+            'department' => $validated['department'] ?? null,
+        ]);
+
+        AuditLog::record('update', 'auth', "Updated personal profile details: {$user->name} ({$user->email})", [
+            'user_id' => $user->id,
+            'changes' => $user->getChanges(),
+        ]);
+
+        return back()->with('profile_success', 'Your profile details have been updated successfully!');
     }
 }
 

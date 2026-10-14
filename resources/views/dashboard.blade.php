@@ -24,6 +24,43 @@
 @endsection
 
 @section('content')
+    <!-- Shift Feedback Deadline Alert Notification for Staff -->
+    @if(!empty($shiftAlerts))
+        @foreach($shiftAlerts as $alert)
+            <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
+                 style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
+                 role="alert">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="alert-icon-pulse bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 44px; height: 44px;">
+                        <i class="bi bi-alarm-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h6 class="fw-bold text-danger mb-0 fs-6">
+                                ⚠️ Shift Feedback Alert: {{ $alert['shift_name'] }}
+                            </h6>
+                            <span class="badge bg-danger text-white fw-bold px-2 py-1">
+                                <i class="bi bi-clock-history me-1"></i> {{ $alert['remaining_text'] }}
+                            </span>
+                            <span class="badge bg-light text-danger border border-danger-subtle fw-semibold">
+                                Shift Closes: {{ $alert['end_time_12h'] }}
+                            </span>
+                        </div>
+                        <div class="text-dark small mt-1">
+                            <strong>{{ $alert['pending_count'] }} visitor(s)</strong> have not submitted feedback within the shift time limit. Please review and collect pending feedback before the shift handover closes!
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $alert['shift_id']]) }}" 
+                       class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
+                        <i class="bi bi-person-exclamation me-1"></i> View Pending Visitors ({{ $alert['pending_count'] }})
+                    </a>
+                </div>
+            </div>
+        @endforeach
+    @endif
+
     <!-- Live Duty Shift Tracker & Active Shift Monitor with Direct Shift Queue Access -->
     <div class="card-modern mb-4"
         style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
@@ -85,28 +122,75 @@
                 </div>
 
                 <div class="col-12 col-lg-5 text-lg-end">
-                    <div class="p-3 bg-white rounded-3 border shadow-xs d-inline-block text-start w-100" style="max-width: 420px;">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-bold text-dark small text-uppercase tracking-wider">
-                                <i class="bi bi-calendar2-day-fill text-primary me-1"></i> Today's Shift Status
-                            </span>
-                            <span class="badge {{ ($todayCounts['pending'] ?? 0) > 0 ? 'bg-warning text-dark' : 'bg-success text-white' }} px-2 py-1">
-                                {{ $todayCounts['pending'] ?? 0 }} Awaiting Feedback
-                            </span>
+                    <div class="shift-status-card p-3 p-md-3 d-inline-block text-start w-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="shift-status-icon-badge">
+                                    <i class="bi bi-calendar2-week-fill"></i>
+                                </span>
+                                <div>
+                                    <h6 class="shift-status-title">Today's Shift Status</h6>
+                                </div>
+                            </div>
+                            @php
+                                $pendingCount = $todayCounts['pending'] ?? 0;
+                            @endphp
+                            @if ($pendingCount > 0)
+                                <span class="shift-badge-pill status-pending" title="Action required: collect feedback before shift ends">
+                                    <span class="status-pulse-dot warning"></span>
+                                    <span>{{ $pendingCount }} Awaiting</span>
+                                </span>
+                            @else
+                                <span class="shift-badge-pill status-cleared" title="All visitors for today have submitted feedback">
+                                    <span class="status-pulse-dot success"></span>
+                                    <span>All Cleared</span>
+                                </span>
+                            @endif
                         </div>
-                        <div class="d-flex align-items-center justify-content-between text-muted small mb-3">
-                            <div><strong>{{ $stats['today_total'] }}</strong> Arrivals</div>
-                            <div>•</div>
-                            <div><strong>{{ $stats['today_given'] }}</strong> Completed</div>
-                            <div>•</div>
-                            <div><strong>{{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) . ' ★' : '—' }}</strong> Avg Rating</div>
+
+                        <!-- Micro Metrics Tiles -->
+                        <div class="shift-metrics-grid">
+                            <div class="shift-metric-tile">
+                                <div class="shift-metric-label">
+                                    <i class="bi bi-people-fill text-primary"></i> Arrivals
+                                </div>
+                                <div class="shift-metric-value">
+                                    {{ $stats['today_total'] }}
+                                </div>
+                                <div class="shift-metric-sub">Logged</div>
+                            </div>
+                            <div class="shift-metric-tile">
+                                <div class="shift-metric-label">
+                                    <i class="bi bi-check-circle-fill text-success"></i> Done
+                                </div>
+                                <div class="shift-metric-value {{ $stats['today_given'] > 0 ? 'highlight-emerald' : '' }}">
+                                    {{ $stats['today_given'] }}
+                                </div>
+                                <div class="shift-metric-sub">Completed</div>
+                            </div>
+                            <div class="shift-metric-tile">
+                                <div class="shift-metric-label">
+                                    <i class="bi bi-star-fill text-warning"></i> Avg Score
+                                </div>
+                                <div class="shift-metric-value {{ $stats['today_avg'] ? 'highlight-amber' : '' }}">
+                                    {{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) : '—' }}
+                                    @if($stats['today_avg'])
+                                        <small class="fs-7 text-warning">★</small>
+                                    @endif
+                                </div>
+                                <div class="shift-metric-sub">Rating</div>
+                            </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('shift_queue') }}" class="btn btn-primary btn-sm flex-grow-1 fw-semibold shadow-sm">
-                                <i class="bi bi-clock-history me-1"></i> Open Live Shift Queue
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('shift_queue') }}" class="btn-shift-queue-primary flex-grow-1">
+                                <i class="bi bi-clock-history me-2"></i>
+                                <span>Open Live Shift Queue</span>
+                                <i class="bi bi-chevron-right ms-auto opacity-75 small"></i>
                             </a>
-                            <a href="{{ route('visits.create') }}" class="btn btn-outline-primary btn-sm" title="Register visitor">
-                                <i class="bi bi-person-plus-fill"></i>
+                            <a href="{{ route('visits.create') }}" class="btn-shift-queue-secondary" title="Register New Visitor" data-bs-toggle="tooltip">
+                                <i class="bi bi-person-plus-fill fs-6"></i>
                             </a>
                         </div>
                     </div>
@@ -117,11 +201,43 @@
 
     <!-- Key Performance Metric Cards -->
     <div class="row g-3 mb-4">
-        <!-- Total Visits -->
+        <!-- 1. Organizers -->
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card-widget indigo">
+                <div class="stat-widget-header">
+                    <span class="stat-label-text">Organizers</span>
+                    <div class="stat-icon-bubble indigo">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-metric-number">{{ number_format($stats['organizers']) }}</div>
+                <span class="stat-pill-trend neutral">
+                    <i class="bi bi-shield-check"></i> Staff Members
+                </span>
+            </div>
+        </div>
+
+        <!-- 2. Visitors -->
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="stat-card-widget slate">
+                <div class="stat-widget-header">
+                    <span class="stat-label-text">Visitors</span>
+                    <div class="stat-icon-bubble slate">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-metric-number">{{ number_format($stats['visitors']) }}</div>
+                <span class="stat-pill-trend neutral">
+                    <i class="bi bi-building"></i> Unique Guests
+                </span>
+            </div>
+        </div>
+
+        <!-- 3. Total Visitors -->
         <div class="col-6 col-md-4 col-xl-2">
             <div class="stat-card-widget cyan">
                 <div class="stat-widget-header">
-                    <span class="stat-label-text">Total Visits</span>
+                    <span class="stat-label-text">Total Visitors</span>
                     <div class="stat-icon-bubble cyan">
                         <i class="bi bi-calendar2-check-fill"></i>
                     </div>
@@ -133,7 +249,7 @@
             </div>
         </div>
 
-        <!-- Feedbacks -->
+        <!-- 4. Feedback -->
         <div class="col-6 col-md-4 col-xl-2">
             <div class="stat-card-widget emerald">
                 <div class="stat-widget-header">
@@ -150,7 +266,7 @@
             </div>
         </div>
 
-        <!-- Avg Rating -->
+        <!-- 5. Avg Rating -->
         <div class="col-6 col-md-4 col-xl-2">
             <div class="stat-card-widget amber">
                 <div class="stat-widget-header">
@@ -167,43 +283,11 @@
             </div>
         </div>
 
-        <!-- Plant Organizers -->
-        <div class="col-6 col-md-4 col-xl-2">
-            <div class="stat-card-widget indigo">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Organizers</span>
-                    <div class="stat-icon-bubble indigo">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number">{{ number_format($stats['organizers']) }}</div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-shield-check"></i> Staff Members
-                </span>
-            </div>
-        </div>
-
-        <!-- Unique Visitors -->
-        <div class="col-6 col-md-4 col-xl-2">
-            <div class="stat-card-widget slate">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">Visitors</span>
-                    <div class="stat-icon-bubble slate">
-                        <i class="bi bi-person-badge-fill"></i>
-                    </div>
-                </div>
-                <div class="stat-metric-number">{{ number_format($stats['visitors']) }}</div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-building"></i> Unique Guests
-                </span>
-            </div>
-        </div>
-
-        <!-- Low Ratings -->
+        <!-- 6. Lowest Rating -->
         <div class="col-6 col-md-4 col-xl-2">
             <div class="stat-card-widget rose">
                 <div class="stat-widget-header">
-                    <span class="stat-label-text">Low (≤2 ★)</span>
+                    <span class="stat-label-text">Lowest Rating</span>
                     <div class="stat-icon-bubble rose">
                         <i class="bi bi-exclamation-octagon-fill"></i>
                     </div>
@@ -237,12 +321,22 @@
 
         <div class="col-lg-6">
             <div class="card-modern card-modern-hover h-100">
-                <div class="card-header">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div class="card-title">
                         <i class="bi bi-graph-up-arrow text-primary"></i>
-                        <span>Visits Timeline (Last 6 Months)</span>
+                        <span id="timelineTitle">Visits Timeline (Last 6 Months)</span>
                     </div>
-                    <span class="badge-modern badge-indigo">Trend Analysis</span>
+                    <div class="timeline-filter-group" role="group" aria-label="Visits Timeline Granularity">
+                        <button type="button" class="timeline-filter-btn" data-period="daily" onclick="switchTimeline('daily')">
+                            Daily
+                        </button>
+                        <button type="button" class="timeline-filter-btn" data-period="weekly" onclick="switchTimeline('weekly')">
+                            Weekly
+                        </button>
+                        <button type="button" class="timeline-filter-btn active" data-period="monthly" onclick="switchTimeline('monthly')">
+                            Monthly
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <canvas id="monthChart" height="210"></canvas>
@@ -544,77 +638,107 @@
                         });
                     }
 
-                    // Monthly Visits Trend Line Chart
+                    // Visits Timeline Line Chart with Daily, Weekly, and Monthly Switching
                     const monthCtx = document.getElementById('monthChart');
+                    const timelineDatasets = {!! json_encode($timeline ?? []) !!};
+
+                    let visitsChart = null;
                     if (monthCtx) {
                         const gradient = monthCtx.getContext('2d').createLinearGradient(0, 0, 0, 200);
                         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
                         gradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
 
-                        new Chart(monthCtx, {
-                                type: 'line',
-                                data: {
-                                    labels: @json($months->keys()),
-                                    datasets: [{
-                                        label: 'Visits',
-                                        data: @json($months->values()),
-                                        tension: 0.38,
-                                        borderColor: '#6366f1',
-                                        borderWidth: 3,
-                                        pointBackgroundColor: '#ffffff',
-                                        pointBorderColor: '#6366f1',
-                                        pointBorderWidth: 2,
-                                        pointRadius: 5,
-                                        pointHoverRadius: 7,
-                                        fill: true,
-                                        backgroundColor: gradient
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        },
-                                        tooltip: {
-                                            backgroundColor: '#0f172a',
-                                            padding: 10,
-                                            cornerRadius: 8
-                                        }
+                        visitsChart = new Chart(monthCtx, {
+                            type: 'line',
+                            data: {
+                                labels: (timelineDatasets.monthly && timelineDatasets.monthly.labels) ? timelineDatasets.monthly.labels : [],
+                                datasets: [{
+                                    label: 'Visits',
+                                    data: (timelineDatasets.monthly && timelineDatasets.monthly.values) ? timelineDatasets.monthly.values : [],
+                                    tension: 0.38,
+                                    borderColor: '#6366f1',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#ffffff',
+                                    pointBorderColor: '#6366f1',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    fill: true,
+                                    backgroundColor: gradient
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     },
-                                    scales: {
-                                        x: {
-                                            grid: {
-                                                display: false
-                                            },
-                                            ticks: {
-                                                font: {
-                                                    family: 'Plus Jakarta Sans',
-                                                    size: 11,
-                                                    weight: '600'
-                                                },
-                                                color: '#64748b'
-                                            }
-                                        },
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: {
-                                                precision: 0,
-                                                font: {
-                                                    family: 'Plus Jakarta Sans',
-                                                    size: 11
-                                                },
-                                                color: '#94a3b8'
-                                            },
-                                            grid: {
-                                                color: '#f1f5f9'
+                                    tooltip: {
+                                        backgroundColor: '#0f172a',
+                                        padding: 10,
+                                        cornerRadius: 8,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return ' ' + context.parsed.y + ' Visit' + (context.parsed.y === 1 ? '' : 's');
                                             }
                                         }
                                     }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        },
+                                        ticks: {
+                                            font: {
+                                                family: 'Plus Jakarta Sans',
+                                                size: 11,
+                                                weight: '600'
+                                            },
+                                            color: '#64748b'
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            precision: 0,
+                                            font: {
+                                                family: 'Plus Jakarta Sans',
+                                                size: 11
+                                            },
+                                            color: '#94a3b8'
+                                        },
+                                        grid: {
+                                            color: '#f1f5f9'
+                                        }
+                                    }
                                 }
-                            });
+                            }
+                        });
+                    }
+
+                    window.switchTimeline = function(period) {
+                        if (!visitsChart || !timelineDatasets[period]) return;
+
+                        // Update Active button state
+                        document.querySelectorAll('.timeline-filter-btn').forEach(btn => {
+                            btn.classList.toggle('active', btn.getAttribute('data-period') === period);
+                        });
+
+                        // Update Title
+                        const titleEl = document.getElementById('timelineTitle');
+                        if (titleEl) {
+                            if (period === 'daily') titleEl.textContent = 'Visits Timeline (Daily — Last 14 Days)';
+                            else if (period === 'weekly') titleEl.textContent = 'Visits Timeline (Weekly — Last 8 Weeks)';
+                            else titleEl.textContent = 'Visits Timeline (Last 6 Months)';
                         }
+
+                        // Update Chart Data with smooth animation
+                        visitsChart.data.labels = timelineDatasets[period].labels;
+                        visitsChart.data.datasets[0].data = timelineDatasets[period].values;
+                        visitsChart.update();
+                    };
 
                         // Live Duty Shift Clock
                         function updateLiveClock() {

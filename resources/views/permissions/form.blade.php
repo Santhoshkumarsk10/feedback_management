@@ -67,7 +67,7 @@
                                        maxlength="60"
                                        {{ $permission->exists ? 'readonly' : '' }}>
                             </div>
-                            <div class="form-text text-muted small mt-1">Machine-readable key used in @can & middleware (e.g. manage-shifts)</div>
+                            <div class="form-text text-muted small mt-1">Machine-readable key used in <code>@@can</code> &amp; middleware (e.g. manage-shifts)</div>
                             @error('name')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

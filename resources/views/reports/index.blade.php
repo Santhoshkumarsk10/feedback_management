@@ -4,11 +4,47 @@
 @section('page_subtitle', 'Comprehensive aggregated feedback reports by tour organizer, shift, and survey criteria')
 
 @section('topbar_actions')
-@section('topbar_actions')
-    <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab])) }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-file-earmark-arrow-down-fill"></i>
-        <span>Export {{ match($reportTab) { 'low_rating' => 'Low-Rating (≤ 2★) CSV', 'pending' => 'Pending Queue CSV', default => 'Staff Performance CSV' } }}</span>
-    </a>
+    <div class="dropdown">
+        <button class="btn-modern-primary btn-sm dropdown-toggle d-flex align-items-center gap-1 shadow-xs" 
+                type="button" id="topbarExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download"></i>
+            <span>Export Report</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="topbarExportDropdown" style="min-width: 215px;">
+            <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Select Export Format</li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}">
+                    <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">Excel (.xlsx)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Printable executive report</div>
+                    </div>
+                </a>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}">
+                    <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">CSV File (.csv)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Raw table records</div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
 @endsection
 
 @section('content')
@@ -199,11 +235,46 @@
         </a>
     </div>
 
-    <div>
-        <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab])) }}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 rounded-pill px-3">
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-3 shadow-xs" 
+                type="button" id="tabExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-download"></i>
-            <span>Export CSV</span>
-        </a>
+            <span>Export Report</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="tabExportDropdown" style="min-width: 220px;">
+            <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Available Formats</li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}" id="btnExportExcel">
+                    <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">Excel (.xlsx)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet with styles</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank" id="btnExportPdf">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Printable executive format</div>
+                    </div>
+                </a>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}" id="btnExportCsv">
+                    <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">CSV (.csv)</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">Raw comma-separated data</div>
+                    </div>
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
 

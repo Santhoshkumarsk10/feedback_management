@@ -218,6 +218,15 @@
                                     <i class="bi bi-eye-fill"></i>
                                 </a>
                             </div>
+                        @elseif($v->is_feedback_expired)
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size: 0.72rem;" title="Feedback collection expired because visit day has ended">
+                                    <i class="bi bi-clock-history text-secondary"></i> Expired (Day Ended)
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 disabled" style="font-size: 0.75rem;" disabled title="Feedback collection has expired for past visits">
+                                    <i class="bi bi-lock-fill me-1"></i> Closed
+                                </button>
+                            </div>
                         @else
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="badge bg-warning-subtle text-dark border border-warning-subtle" style="font-size: 0.72rem;">

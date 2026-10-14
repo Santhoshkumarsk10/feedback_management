@@ -39,9 +39,10 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
     Route::get('dashboard/live-feed', [DashboardController::class, 'liveFeed'])->name('dashboard.live_feed');
     Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 
-    // Account Security: Change Password
+    // Account Security: Change Password & Profile Details
     Route::get('change-password', [AuthController::class, 'showChangePassword'])->name('password.change');
     Route::post('change-password', [AuthController::class, 'updatePassword'])->name('password.change.update');
+    Route::post('profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 
     // Operations (Visits & Feedbacks) - accessible to all authorized roles
     Route::get('visits', [VisitController::class, 'index'])->name('visits.index');
@@ -93,5 +94,10 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
         // CMS Banners Management
         Route::resource('banners', BannerController::class)->except('show');
         Route::patch('banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
+
+        // Database Maintenance & Table Data Cleanup
+        Route::get('database-cleanup', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'index'])->name('database_cleanup.index');
+        Route::post('database-cleanup/clear', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'clearTables'])->name('database_cleanup.clear');
+        Route::post('database-cleanup/reseed', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'reseed'])->name('database_cleanup.reseed');
     });
 });
