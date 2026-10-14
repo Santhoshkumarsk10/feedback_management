@@ -175,6 +175,12 @@
                         <td class="text-end">
                             @if($a->question->type === 'rating')
                                 @include('partials.rating', ['value' => $a->answer])
+                                @if(!empty($a->reason))
+                                    <div class="mt-1 small text-start p-2 bg-light rounded border border-warning" style="max-width: 320px; margin-left: auto;">
+                                        <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Low Rating Reason:</span>
+                                        <div class="text-dark fst-italic">"{{ $a->reason }}"</div>
+                                    </div>
+                                @endif
                             @elseif($a->answer)
                                 <span class="badge bg-light text-dark border px-3 py-2 fs-6 fw-semibold">
                                     {{ $a->answer }}

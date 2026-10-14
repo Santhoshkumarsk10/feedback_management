@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeedbackAnswer extends Model
 {
-    protected $fillable = ['feedback_id', 'question_id', 'answer'];
+    protected $fillable = ['feedback_id', 'question_id', 'answer', 'reason'];
 
     public function question(): BelongsTo
     {
