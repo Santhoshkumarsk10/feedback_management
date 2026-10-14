@@ -134,11 +134,11 @@
                                    onchange="previewBannerFile(this)"
                                    {{ $isEdit ? '' : 'required' }}>
                             <div class="upload-dropzone-content d-flex align-items-center gap-3">
-                                <div class="upload-logo-current-preview flex-shrink-0" style="width: 110px; height: 62px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1.5px solid #e2e8f0;">
+                                <div class="upload-logo-current-preview flex-shrink-0" style="width: 110px; height: 62px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1.5px solid #e2e8f0; display: flex; align-items: center; justify-content: center; padding: 4px;">
                                     <img id="formBannerThumbnail" 
                                          src="{{ $isEdit ? $banner->image_url : asset('images/shibaura-logo-cropped.webp') }}" 
                                          alt="Banner Thumbnail"
-                                         style="object-fit: cover; width: 100%; height: 100%;"
+                                         style="object-fit: contain; width: 100%; height: 100%;"
                                          onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'">
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
@@ -237,14 +237,26 @@
             </div>
 
             <div class="card-body p-4">
-                <p class="text-muted small mb-3">
-                    Here is how this promotional banner will look inside the visitor welcome carousel and mobile slider:
-                </p>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <p class="text-muted small mb-0">
+                        Multi-device preview of this promotional banner creative:
+                    </p>
+                    <button type="button" 
+                            class="btn btn-xs btn-outline-secondary py-1 px-2 rounded-pill d-inline-flex align-items-center gap-1" 
+                            id="btnToggleSimFit" 
+                            onclick="toggleSimulatorImageFit()" 
+                            title="Toggle Fit / Cover image framing"
+                            style="font-size: 0.72rem;">
+                        <i class="bi bi-arrows-angle-expand" id="simFitIcon"></i>
+                        <span id="simFitText">Fill Bleed</span>
+                    </button>
+                </div>
 
-                <!-- Phone Mockup Device Frame -->
-                <div class="mobile-mockup-wrapper mx-auto">
-                    <!-- Status Bar / Speaker Notch -->
-                    <div class="d-flex align-items-center justify-content-between px-2 mb-2 text-white-50" style="font-size: 0.7rem;">
+                <!-- Device Mockup Frame (Dynamically resizes via dots) -->
+                <div class="mobile-mockup-wrapper mx-auto sim-mode-tablet" id="simDeviceWrapper">
+                    
+                    <!-- Mobile Chrome Bar (Visible on mobile mode) -->
+                    <div class="sim-chrome-mobile d-none align-items-center justify-content-between px-2 mb-2 text-white-50" id="simChromeMobile" style="font-size: 0.7rem;">
                         <span class="fw-semibold">09:41</span>
                         <div class="mockup-speaker"></div>
                         <div class="d-flex align-items-center gap-1">
@@ -253,50 +265,102 @@
                         </div>
                     </div>
 
-                    <!-- Banner Slide Card -->
-                    <div class="sim-banner-card">
-                        <div class="sim-banner-image-wrap">
-                            <img id="simBannerImg" 
-                                 src="{{ $isEdit ? $banner->image_url : asset('images/shibaura-logo-cropped.webp') }}" 
-                                 alt="Banner Preview" 
-                                 class="sim-banner-img"
-                                 onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'">
-                            <div class="sim-banner-gradient-overlay"></div>
-                        </div>
-
-                        <div class="sim-banner-content">
-                            <span class="sim-badge" id="simTargetBadge">
-                                {{ strtoupper($banner->target ?? 'ALL PLATFORMS') }}
-                            </span>
-                            <h4 class="sim-title" id="simBannerTitle">
-                                {{ $banner->title ?: 'Precision Engineering Excellence' }}
-                            </h4>
-                            <p class="sim-sub" id="simBannerSubtitle">
-                                {{ $banner->subtitle ?: 'Japanese manufacturing technology for zero-defect production' }}
-                            </p>
+                    <!-- Tablet Kiosk Chrome Bar (Visible on tablet mode - Default) -->
+                    <div class="sim-chrome-tablet d-flex align-items-center justify-content-between px-2 mb-2 text-white-50" id="simChromeTablet" style="font-size: 0.7rem;">
+                        <span class="fw-semibold text-info d-flex align-items-center gap-1">
+                            <i class="bi bi-display"></i> Reception Kiosk 10.1"
+                        </span>
+                        <div class="mockup-camera-dot"></div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span>10:30 AM</span>
+                            <i class="bi bi-wifi" style="font-size: 0.75rem;"></i>
+                            <i class="bi bi-lock-fill" style="font-size: 0.7rem;" title="Kiosk Lockdown"></i>
                         </div>
                     </div>
 
-                    <!-- Slide Indicator Dots -->
-                    <div class="d-flex justify-content-center gap-1 mt-3">
-                        <span class="dot active"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
+                    <!-- Web Desktop Chrome Bar (Visible on web mode) -->
+                    <div class="sim-chrome-web d-none align-items-center justify-content-between px-2 mb-2" id="simChromeWeb" style="font-size: 0.7rem;">
+                        <div class="d-flex align-items-center gap-1">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                        </div>
+                        <div class="px-2 py-0 bg-slate-800 text-slate-300 rounded text-center small font-monospace" style="font-size: 0.65rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <i class="bi bi-lock-fill text-success me-1"></i>shibaura.portal/visitor-welcome
+                        </div>
+                        <div class="text-white-50">
+                            <i class="bi bi-dash"></i>
+                            <i class="bi bi-square ms-1" style="font-size: 0.6rem;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Banner Slide Card -->
+                    <div class="sim-banner-card" id="simBannerCard">
+                        <div class="sim-banner-image-wrap">
+                            <!-- Ambient blurred backdrop mirroring the image colors -->
+                            <div class="sim-banner-backdrop" id="simBannerBackdrop" style="background-image: url('{{ $isEdit ? $banner->image_url : asset('images/shibaura-logo-cropped.webp') }}');"></div>
+                            
+                            <!-- Foreground Banner Graphic (Exist Image displayed cleanly) -->
+                            <img id="simBannerImg" 
+                                 src="{{ $isEdit ? $banner->image_url : asset('images/shibaura-logo-cropped.webp') }}" 
+                                 alt="Banner Preview" 
+                                 class="sim-banner-img sim-fit-contain"
+                                 onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'; const bg=document.getElementById('simBannerBackdrop'); if(bg) bg.style.backgroundImage='url({{ asset('images/shibaura-logo-cropped.webp') }})';">
+                            
+                        </div>
+                    </div>
+
+                    <!-- Interactive Screen Size Dots -->
+                    <div class="d-flex flex-column align-items-center mt-3">
+                        <div class="sim-screen-dots-bar d-flex justify-content-center align-items-center gap-2" role="tablist" aria-label="Device Screen Simulator">
+                            <button type="button" 
+                                    class="sim-screen-dot" 
+                                    data-screen="mobile" 
+                                    title="Mobile Screen (Phone 360×640 px)" 
+                                    aria-label="Switch to Mobile screen size"
+                                    onclick="switchSimulatorScreen('mobile', this)">
+                                <span class="dot-indicator"></span>
+                            </button>
+                            <button type="button" 
+                                    class="sim-screen-dot active" 
+                                    data-screen="tablet" 
+                                    title="Tablet Kiosk Screen (16:9 Landscape)" 
+                                    aria-label="Switch to Tablet Kiosk screen size"
+                                    onclick="switchSimulatorScreen('tablet', this)">
+                                <span class="dot-indicator"></span>
+                            </button>
+                            <button type="button" 
+                                    class="sim-screen-dot" 
+                                    data-screen="web" 
+                                    title="Desktop Web Screen (1920×1080 px)" 
+                                    aria-label="Switch to Desktop Web screen size"
+                                    onclick="switchSimulatorScreen('web', this)">
+                                <span class="dot-indicator"></span>
+                            </button>
+                        </div>
+                        <div class="sim-screen-caption mt-2 text-center">
+                            <span class="badge bg-slate-800 text-info border border-slate-700 px-2 py-1" id="simScreenBadge" style="font-size: 0.75rem;">
+                                <i class="bi bi-tablet-landscape me-1"></i> Tablet Kiosk (16:9 Landscape)
+                            </span>
+                            <div class="text-white-50 mt-1" style="font-size: 0.68rem;">
+                                Click dots above to view the same image on Mobile, Tablet & Desktop
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Live Quick Specs Strip -->
-                <div class="row g-2 mt-3 text-center">
+                <div class="row g-2 mt-3 text-center" id="simSpecsStrip">
                     <div class="col-4">
                         <div class="p-2 rounded bg-light border border-slate-200">
                             <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">ASPECT RATIO</div>
-                            <div class="fw-bold text-dark small">16:9</div>
+                            <div class="fw-bold text-dark small" id="simSpecAspectRatio">16:9</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="p-2 rounded bg-light border border-slate-200">
-                            <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">MAX FILE SIZE</div>
-                            <div class="fw-bold text-dark small">5 MB</div>
+                            <div class="text-muted" style="font-size: 0.68rem; font-weight: 600;">SCREEN TYPE</div>
+                            <div class="fw-bold text-dark small" id="simSpecScreenType">Tablet 10.1"</div>
                         </div>
                     </div>
                     <div class="col-4">
@@ -347,55 +411,110 @@
 }
 
 .mobile-mockup-wrapper {
-    max-width: 380px;
+    max-width: 400px;
     background: #0f172a;
-    border-radius: 24px;
+    border-radius: 20px;
     padding: 14px 14px 16px;
-    box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.35);
+    box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.4);
     border: 3px solid #1e293b;
+    transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.35s ease;
 }
+
+.mobile-mockup-wrapper.sim-mode-mobile {
+    max-width: 310px;
+    border-radius: 28px;
+}
+.mobile-mockup-wrapper.sim-mode-tablet {
+    max-width: 400px;
+    border-radius: 18px;
+}
+.mobile-mockup-wrapper.sim-mode-web {
+    max-width: 470px;
+    border-radius: 12px;
+}
+
 .mockup-speaker {
-    width: 48px;
+    width: 44px;
     height: 4px;
     border-radius: 4px;
     background: #334155;
 }
+
+.mockup-camera-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 1.5px solid #334155;
+}
+
 .sim-banner-card {
     position: relative;
     border-radius: 14px;
     overflow: hidden;
-    background: #1e293b;
-    height: 195px;
+    background: #0b1120;
+    height: 215px;
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .sim-banner-image-wrap {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    background: #0b1120;
 }
+
+.sim-banner-backdrop {
+    position: absolute;
+    inset: -20px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.5);
+    opacity: 0.65;
+    transform: scale(1.15);
+    transition: background-image 0.25s ease;
+}
+
 .sim-banner-img {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    opacity: 0.9;
+    transition: all 0.25s ease;
 }
+
+.sim-banner-img.sim-fit-contain {
+    object-fit: contain;
+    padding: 10px;
+}
+
+.sim-banner-img.sim-fit-cover {
+    object-fit: cover;
+    object-position: center;
+    padding: 0;
+}
+
 .sim-banner-gradient-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);
+    background: linear-gradient(180deg, rgba(15,23,42,0.05) 0%, rgba(15,23,42,0.25) 45%, rgba(15,23,42,0.88) 100%);
+    pointer-events: none;
+    z-index: 2;
 }
+
 .sim-banner-content {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     padding: 12px 14px;
-    z-index: 2;
+    z-index: 3;
 }
+
 .sim-badge {
     background: rgba(2, 132, 199, 0.9);
     color: #fff;
@@ -407,6 +526,7 @@
     display: inline-block;
     margin-bottom: 5px;
 }
+
 .sim-title {
     color: #ffffff;
     font-size: 0.92rem;
@@ -415,6 +535,7 @@
     line-height: 1.25;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
+
 .sim-sub {
     color: #cbd5e1;
     font-size: 0.72rem;
@@ -425,16 +546,45 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #475569;
+
+/* Screen Size Switcher Dots */
+.sim-screen-dots-bar {
+    padding: 4px 8px;
+    background: rgba(30, 41, 59, 0.7);
+    border-radius: 20px;
+    border: 1px solid rgba(51, 65, 85, 0.6);
 }
-.dot.active {
-    width: 18px;
-    border-radius: 4px;
+
+.sim-screen-dot {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.sim-screen-dot .dot-indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64748b;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sim-screen-dot:hover .dot-indicator {
+    background: #cbd5e1;
+    transform: scale(1.15);
+}
+
+.sim-screen-dot.active .dot-indicator {
+    width: 22px;
+    border-radius: 6px;
     background: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
 }
 </style>
 
@@ -489,10 +639,117 @@ function previewBannerFile(input) {
         reader.onload = function(e) {
             const preview = document.getElementById('simBannerImg');
             const thumb = document.getElementById('formBannerThumbnail');
+            const backdrop = document.getElementById('simBannerBackdrop');
             if (preview) preview.src = e.target.result;
             if (thumb) thumb.src = e.target.result;
+            if (backdrop) backdrop.style.backgroundImage = `url("${e.target.result}")`;
         };
         reader.readAsDataURL(file);
+    }
+}
+
+const SIMULATOR_SCREENS = {
+    mobile: {
+        id: 'mobile',
+        name: 'Mobile App Screen',
+        badgeHtml: '<i class="bi bi-phone me-1"></i> Mobile App (360×640 px)',
+        aspectRatio: '9:16 / 4:3',
+        screenType: 'Phone 360px',
+        cardHeight: '185px',
+        wrapperClass: 'sim-mode-mobile'
+    },
+    tablet: {
+        id: 'tablet',
+        name: 'Tablet Kiosk Screen',
+        badgeHtml: '<i class="bi bi-tablet-landscape me-1"></i> Tablet Kiosk (16:9 Landscape)',
+        aspectRatio: '16:9 (Landscape)',
+        screenType: 'Tablet 10.1"',
+        cardHeight: '215px',
+        wrapperClass: 'sim-mode-tablet'
+    },
+    web: {
+        id: 'web',
+        name: 'Desktop Web Screen',
+        badgeHtml: '<i class="bi bi-display me-1"></i> Desktop Web (1920×1080 px)',
+        aspectRatio: '21:9 (Panoramic)',
+        screenType: 'Desktop 1920px',
+        cardHeight: '165px',
+        wrapperClass: 'sim-mode-web'
+    }
+};
+
+let currentSimScreen = 'tablet';
+
+function switchSimulatorScreen(screenKey, btnEl) {
+    const cfg = SIMULATOR_SCREENS[screenKey];
+    if (!cfg) return;
+    currentSimScreen = screenKey;
+
+    // Update active dot
+    document.querySelectorAll('.sim-screen-dot').forEach(dot => {
+        dot.classList.toggle('active', dot === btnEl || dot.getAttribute('data-screen') === screenKey);
+    });
+
+    // Update wrapper mode
+    const wrapper = document.getElementById('simDeviceWrapper');
+    if (wrapper) {
+        wrapper.classList.remove('sim-mode-mobile', 'sim-mode-tablet', 'sim-mode-web');
+        wrapper.classList.add(cfg.wrapperClass);
+    }
+
+    // Toggle chrome bars
+    const chromeMobile = document.getElementById('simChromeMobile');
+    const chromeTablet = document.getElementById('simChromeTablet');
+    const chromeWeb = document.getElementById('simChromeWeb');
+
+    if (chromeMobile) {
+        chromeMobile.classList.toggle('d-none', screenKey !== 'mobile');
+        chromeMobile.classList.toggle('d-flex', screenKey === 'mobile');
+    }
+    if (chromeTablet) {
+        chromeTablet.classList.toggle('d-none', screenKey !== 'tablet');
+        chromeTablet.classList.toggle('d-flex', screenKey === 'tablet');
+    }
+    if (chromeWeb) {
+        chromeWeb.classList.toggle('d-none', screenKey !== 'web');
+        chromeWeb.classList.toggle('d-flex', screenKey === 'web');
+    }
+
+    // Update card height
+    const card = document.getElementById('simBannerCard');
+    if (card) {
+        card.style.height = cfg.cardHeight;
+    }
+
+    // Update badge & label
+    const badge = document.getElementById('simScreenBadge');
+    if (badge) {
+        badge.innerHTML = cfg.badgeHtml;
+    }
+
+    // Update specs strip
+    const specAspect = document.getElementById('simSpecAspectRatio');
+    const specScreen = document.getElementById('simSpecScreenType');
+    if (specAspect) specAspect.textContent = cfg.aspectRatio;
+    if (specScreen) specScreen.textContent = cfg.screenType;
+}
+
+function toggleSimulatorImageFit() {
+    const img = document.getElementById('simBannerImg');
+    const fitText = document.getElementById('simFitText');
+    const fitIcon = document.getElementById('simFitIcon');
+    if (!img) return;
+
+    if (img.classList.contains('sim-fit-contain')) {
+        img.classList.remove('sim-fit-contain');
+        img.classList.add('sim-fit-cover');
+        if (fitText) fitText.textContent = 'Fit Full';
+        if (fitIcon) fitIcon.className = 'bi bi-arrows-angle-contract';
+    } else {
+        img.classList.remove('sim-fit-cover');
+        img.classList.add('sim-fit-contain');
+        if (fitText) fitText.textContent = 'Fill Bleed';
+        if (fitIcon) fitIcon.className = 'bi bi-arrows-angle-expand';
     }
 }
 
@@ -619,6 +876,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const v = this.value || 'all';
             if (simBadge) simBadge.textContent = targetLabels[v] || v.toUpperCase();
             if (simPill) simPill.textContent = shortLabels[v] || v.toUpperCase();
+            if (v === 'mobile' || v === 'tablet' || v === 'web') {
+                const targetDot = document.querySelector(`.sim-screen-dot[data-screen="${v}"]`);
+                if (targetDot) switchSimulatorScreen(v, targetDot);
+            }
         });
     }
 

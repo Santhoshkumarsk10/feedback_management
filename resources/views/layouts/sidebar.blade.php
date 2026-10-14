@@ -98,6 +98,10 @@
                 <i class="bi bi-clock-history"></i>
                 <span>Audit Logs</span>
             </a>
+            <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}" href="{{ route('database_cleanup.index') }}">
+                <i class="bi bi-database-dash-fill text-warning"></i>
+                <span>Table Data Cleanup</span>
+            </a>
         @endif
 
         <div class="menu-category">Account Security</div>

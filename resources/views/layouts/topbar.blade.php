@@ -11,14 +11,24 @@
     </div>
 
     <div class="topbar-right">
-        <a href="{{ route('password.change') }}" class="btn-modern-secondary btn-sm" title="Account Security & Change Password">
-            <i class="bi bi-shield-lock-fill text-info"></i>
-            <span class="d-none d-lg-inline">Security</span>
-        </a>
-        <a href="/apk/shibaura-plant-feedback.apk" class="btn-modern-secondary btn-sm" title="Download Android Tablet / Mobile APK">
-            <i class="bi bi-android2 text-success"></i>
-            <span class="d-none d-lg-inline">Tablet APK</span>
-        </a>
+        @if(!empty($topbarShiftAlerts))
+            @foreach($topbarShiftAlerts as $tbAlert)
+                <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $tbAlert['shift_id']]) }}" 
+                   class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 shadow-xs border-danger-subtle fw-bold animate-pulse-subtle" 
+                   title="URGENT: {{ $tbAlert['shift_name'] }} closing soon ({{ $tbAlert['remaining_text'] }}) with {{ $tbAlert['pending_count'] }} visitor feedback pending!">
+                    <i class="bi bi-alarm-fill text-danger"></i>
+                    <span class="d-none d-sm-inline">{{ $tbAlert['shift_name'] }} Alert:</span>
+                    <span class="badge bg-danger text-white rounded-pill px-2 py-0">{{ $tbAlert['pending_count'] }} Pending</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-none d-md-inline" style="font-size: 0.72rem;">{{ $tbAlert['remaining_text'] }}</span>
+                </a>
+            @endforeach
+        @endif
+        @if(!request()->routeIs('password.change'))
+            <a href="{{ route('password.change') }}" class="btn-modern-secondary btn-sm" title="User Profile & Settings">
+                <i class="bi bi-person-circle text-info"></i>
+                <span class="d-none d-lg-inline">Profile</span>
+            </a>
+        @endif
         @yield('topbar_actions')
     </div>
 </header>

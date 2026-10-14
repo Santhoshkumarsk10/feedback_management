@@ -232,6 +232,64 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res->assertJsonValidationErrors('visitor_name');
     }
 
+    public function test_visit_registration_form_enforces_strict_validation_and_phone_rules()
+    {
+        $shift = \App\Models\Shift::first() ?? \App\Models\Shift::factory()->create();
+
+        // 1. Missing required fields
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), []);
+        $res->assertSessionHasErrors(['visitor_name', 'visitor_company', 'shift_id']);
+
+        // 2. Valid submission
+        $validData = [
+            'visitor_name' => 'Dr. R. Ramanathan',
+            'visitor_company' => 'Tata Motors Ltd. (CVBU)',
+            'visitor_mobile' => '9840123456',
+            'visitor_email' => 'ramanathan@tatamotors.com',
+            'visitor_designation' => 'Principal Die Engineer',
+            'purpose' => 'High Precision Machinery Inspection',
+            'shift_id' => $shift->id,
+            'visit_date' => today()->toDateString(),
+        ];
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $validData);
+        $res->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('visits', [
+            'visitor_name' => 'Dr. R. Ramanathan',
+            'visitor_company' => 'Tata Motors Ltd. (CVBU)',
+            'visitor_mobile' => '9840123456',
+        ]);
+
+        // 3. Invalid phone starting with 4
+        $invalidPhone = $validData;
+        $invalidPhone['visitor_mobile'] = '4840123456';
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidPhone);
+        $res->assertSessionHasErrors('visitor_mobile');
+
+        // 4. Invalid phone wrong length (9 digits)
+        $shortPhone = $validData;
+        $shortPhone['visitor_mobile'] = '984012345';
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $shortPhone);
+        $res->assertSessionHasErrors('visitor_mobile');
+
+        // 5. Invalid email format
+        $invalidEmail = $validData;
+        $invalidEmail['visitor_email'] = 'not-an-email';
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidEmail);
+        $res->assertSessionHasErrors('visitor_email');
+
+        // 6. Invalid name with special characters
+        $invalidName = $validData;
+        $invalidName['visitor_name'] = 'Ramanathan <Engineer> & Co';
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidName);
+        $res->assertSessionHasErrors('visitor_name');
+
+        // 7. Invalid shift_id
+        $invalidShift = $validData;
+        $invalidShift['shift_id'] = 9999999;
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidShift);
+        $res->assertSessionHasErrors('shift_id');
+    }
+
     public function test_banner_validation_rules()
     {
         \Illuminate\Support\Facades\Storage::fake('public');
@@ -320,6 +378,23 @@ class ValidationAndPhoneRuleTest extends TestCase
             'password_confirmation' => 'password',
         ]);
         $res->assertSessionHasErrors('password');
+    }
+
+    public function test_user_can_update_profile_details()
+    {
+        $res = $this->actingAs($this->admin)->post(route('profile.update'), [
+            'name' => 'Updated Admin Name',
+            'email' => 'updated.admin@company.com',
+            'mobile' => '9840123777',
+            'department' => 'Operations Head',
+        ]);
+
+        $res->assertSessionHas('profile_success');
+        $this->admin->refresh();
+        $this->assertEquals('Updated Admin Name', $this->admin->name);
+        $this->assertEquals('updated.admin@company.com', $this->admin->email);
+        $this->assertEquals('9840123777', $this->admin->mobile);
+        $this->assertEquals('Operations Head', $this->admin->department);
     }
 
     public function test_strict_email_format_validation_across_models()

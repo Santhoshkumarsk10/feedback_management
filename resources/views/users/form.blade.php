@@ -13,7 +13,7 @@
 <div class="row g-4">
     <!-- Main User Form Column (Col-lg-8) -->
     <div class="col-lg-8">
-        <div class="card-modern" style="border-left: 4px solid var(--shibaura-blue);">
+        <div class="card-modern overflow-visible" style="border-left: 4px solid var(--shibaura-blue);">
             <div class="card-header bg-white">
                 <div class="card-title">
                     <i class="bi bi-person-gear text-primary"></i>
@@ -53,44 +53,47 @@
 
                         <div class="col-md-6">
                             <label class="form-modern-label" for="user_role">Access Role <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-shield-lock"></i></span>
-                                <select name="role_id" 
-                                        id="user_role"
-                                        class="form-select form-select-modern border-start-0 @error('role_id') is-invalid @enderror" 
-                                        @disabled($user->id === auth()->id()) 
-                                        required>
-                                    @foreach($roles as $r)
-                                        <option value="{{ $r->id }}" @selected(old('role_id', $user->role_id) == $r->id || (empty($user->role_id) && $user->role === $r->slug))>
-                                             {{ $r->display_name ?? $r->name }} ({{ $r->slug }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <x-custom-select 
+                                name="role_id"
+                                id="user_role"
+                                :options="$roles->map(fn($r) => [
+                                    'value' => (string)$r->id,
+                                    'label' => ($r->display_name ?? $r->name) . ' (' . $r->slug . ')',
+                                ])"
+                                :value="(string) old('role_id', $user->role_id ?? ($roles->firstWhere('slug', $user->role)?->id ?? ''))"
+                                placeholder="Select Access Role"
+                                search-placeholder="Search role name or slug..."
+                                icon="bi-shield-lock"
+                                :auto-submit="false"
+                                :allow-empty="false"
+                                min-width="100%"
+                                :disabled="$user->id === auth()->id()"
+                            />
                             @error('role_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             @if($user->id === auth()->id())
-                                <input type="hidden" name="role_id" value="{{ $user->role_id }}">
-                                <div class="small text-muted mt-1">You cannot modify your own role.</div>
+                                <div class="small text-muted mt-1"><i class="bi bi-lock-fill"></i> You cannot modify your own role.</div>
                             @endif
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-modern-label" for="user_plant">Assigned Manufacturing Plant</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-buildings"></i></span>
-                                <select name="plant_id" 
-                                        id="user_plant"
-                                        class="form-select form-select-modern border-start-0 @error('plant_id') is-invalid @enderror">
-                                    <option value="">— HQ / Corporate (All Plants) —</option>
-                                    @foreach($plants as $p)
-                                        <option value="{{ $p->id }}" @selected(old('plant_id', $user->plant_id) == $p->id)>
-                                            {{ $p->code }} — {{ $p->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <x-custom-select 
+                                name="plant_id"
+                                id="user_plant"
+                                :options="$plants->map(fn($p) => [
+                                    'value' => (string)$p->id,
+                                    'label' => $p->code . ' — ' . $p->name,
+                                ])"
+                                :value="(string) old('plant_id', $user->plant_id ?? '')"
+                                placeholder="— HQ / Corporate (All Plants) —"
+                                search-placeholder="Search plant code or name..."
+                                icon="bi-buildings"
+                                :auto-submit="false"
+                                :allow-empty="true"
+                                min-width="100%"
+                            />
                             @error('plant_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -157,19 +160,21 @@
 
                         <div class="col-md-6">
                             <label class="form-modern-label" for="user_shift">Assigned Plant Shift (Roster Duty)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-clock-history"></i></span>
-                                <select name="shift_id" 
-                                        id="user_shift"
-                                        class="form-select form-select-modern border-start-0 @error('shift_id') is-invalid @enderror">
-                                    <option value="">— Unassigned (Available for All Shifts) —</option>
-                                    @foreach($shifts as $s)
-                                        <option value="{{ $s->id }}" @selected(old('shift_id', $user->shift_id) == $s->id)>
-                                            {{ $s->name }} ({{ $s->formatted_24h_range }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <x-custom-select 
+                                name="shift_id"
+                                id="user_shift"
+                                :options="$shifts->map(fn($s) => [
+                                    'value' => (string)$s->id,
+                                    'label' => $s->name . ' (' . $s->formatted_24h_range . ')',
+                                ])"
+                                :value="(string) old('shift_id', $user->shift_id ?? '')"
+                                placeholder="— Unassigned (Available for All Shifts) —"
+                                search-placeholder="Search shift name or timings..."
+                                icon="bi-clock-history"
+                                :auto-submit="false"
+                                :allow-empty="true"
+                                min-width="100%"
+                            />
                             @error('shift_id')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

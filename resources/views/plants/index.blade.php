@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'Plant Master Management')
-@section('page_title', 'Manufacturing Plants & Facilities')
-@section('page_subtitle', 'Manage Shibaura Machine manufacturing plants, technical divisions, and customer demo centers')
+@section('title', 'Plant Master')
+@section('page_title', 'Plant Master')
+@section('page_subtitle', 'Manage Shibaura Machine manufacturing plant details, locations, and operational facilities')
 
 @section('topbar_actions')
     <a href="{{ route('plants.create') }}" class="btn-modern-primary btn-sm">

@@ -13,14 +13,30 @@
                 </a>
             </div>
 
+            @if ($visit->is_feedback_expired)
+                <div class="alert-modern danger mb-4 d-flex align-items-center gap-3">
+                    <i class="bi bi-x-octagon-fill fs-3 text-danger"></i>
+                    <div>
+                        <div class="fw-bold">Feedback Collection Expired</div>
+                        <div class="small">The visit day ({{ $visit->visit_date->format('d/m/Y') }}) has ended. As per policy, feedback can only be submitted on the day of the visit and cannot be collected on subsequent days.</div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Visitor & Shift Context Card -->
             <div class="card-modern mb-4" style="border-left: 4px solid var(--shibaura-blue);">
                 <div class="card-body p-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
                         <div>
-                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1 mb-1">
-                                <i class="bi bi-clock-history"></i> Awaiting Feedback
-                            </span>
+                            @if ($visit->is_feedback_expired)
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 mb-1">
+                                    <i class="bi bi-clock-history"></i> Feedback Expired (Day Ended)
+                                </span>
+                            @else
+                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1 mb-1">
+                                    <i class="bi bi-clock-history"></i> Awaiting Feedback
+                                </span>
+                            @endif
                             <div class="d-flex align-items-center gap-2">
                                 <h4 class="fw-bold text-dark mb-0">{{ $visit->visitor_name }}</h4>
                                 @if ($visit->visitor_code)
@@ -201,10 +217,17 @@
                     <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Cancel
                     </a>
-                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold d-flex align-items-center gap-2">
-                        <i class="bi bi-check2-circle fs-5"></i>
-                        <span>Submit Feedback on Behalf</span>
-                    </button>
+                    @if ($visit->is_feedback_expired)
+                        <button type="button" class="btn btn-secondary px-4 py-2 fw-bold d-flex align-items-center gap-2 disabled" disabled>
+                            <i class="bi bi-lock-fill fs-5"></i>
+                            <span>Feedback Expired (Locked)</span>
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-primary px-4 py-2 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-check2-circle fs-5"></i>
+                            <span>Submit Feedback on Behalf</span>
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>

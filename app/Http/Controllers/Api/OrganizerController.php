@@ -145,6 +145,10 @@ class OrganizerController extends Controller
             abort(422, 'Feedback already submitted for this visit.');
         }
 
+        if ($visit->is_feedback_expired) {
+            abort(422, 'Feedback submission has expired for this visit. Feedback must be submitted on the day of the visit.');
+        }
+
         $data = $request->validate([
             'overall_rating' => 'required|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',

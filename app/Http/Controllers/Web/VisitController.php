@@ -109,10 +109,25 @@ class VisitController extends Controller
             'organizer_id' => 'nullable|integer|exists:users,id',
             'visit_date' => 'nullable|date',
         ], [
-            'visitor_mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'visitor_name.required' => 'Visitor full name is required.',
+            'visitor_name.min' => 'Visitor full name must be at least 2 characters.',
+            'visitor_name.max' => 'Visitor full name cannot exceed 100 characters.',
             'visitor_name.regex' => 'Visitor Name may only contain letters, spaces, hyphens, and dots.',
+            'visitor_company.required' => 'Company or organization name is required.',
+            'visitor_company.min' => 'Company name must be at least 2 characters.',
+            'visitor_company.max' => 'Company name cannot exceed 150 characters.',
             'visitor_company.regex' => 'Company Name contains invalid characters.',
-            'visitor_email.regex' => 'Please provide a valid email address with domain.',
+            'visitor_mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
+            'visitor_email.email' => 'Please provide a valid email address.',
+            'visitor_email.regex' => 'Please provide a valid email address with a recognized domain (e.g. name@domain.com).',
+            'visitor_email.max' => 'Email address cannot exceed 150 characters.',
+            'visitor_designation.max' => 'Designation cannot exceed 150 characters.',
+            'visitor_designation.regex' => 'Designation contains invalid characters.',
+            'purpose.max' => 'Purpose cannot exceed 255 characters.',
+            'purpose.regex' => 'Purpose contains invalid characters.',
+            'shift_id.required' => 'Please select an operational duty shift.',
+            'shift_id.exists' => 'The selected shift is invalid or does not exist.',
+            'visit_date.date' => 'Please provide a valid visit date.',
         ]);
 
         $organizerId = $request->organizer_id ?: auth()->id();
@@ -147,6 +162,12 @@ class VisitController extends Controller
                 ->with('info', 'Feedback has already been recorded for this visit.');
         }
 
+        if ($visit->is_feedback_expired) {
+            $formattedDate = $visit->visit_date ? $visit->visit_date->format('d/m/Y') : 'the visit date';
+            return redirect()->route('shift_queue')
+                ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
+        }
+
         $visit->load(['organizer', 'shift']);
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
@@ -159,6 +180,12 @@ class VisitController extends Controller
         if ($visit->feedback) {
             return redirect()->route('feedbacks.show', $visit->feedback)
                 ->with('info', 'Feedback has already been recorded for this visit.');
+        }
+
+        if ($visit->is_feedback_expired) {
+            $formattedDate = $visit->visit_date ? $visit->visit_date->format('d/m/Y') : 'the visit date';
+            return redirect()->route('shift_queue')
+                ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
         }
 
         $request->validate([

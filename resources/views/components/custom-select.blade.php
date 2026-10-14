@@ -10,12 +10,14 @@
     'icon' => null,
     'id' => null,
     'minWidth' => '170px',
+    'disabled' => false,
+    'class' => '',
 ])
 
 @php
     $inputId = $id ?? ('custom_select_' . $name . '_' . \Illuminate\Support\Str::random(6));
     $currentVal = (string) ($value ?? $selected ?? request($name, ''));
-
+    $hasError = $errors->has($name);
 
     // Normalize options
     $parsedOptions = collect($options)->map(function ($opt, $key) {
@@ -58,31 +60,32 @@
     $selectedOption = $parsedOptions->firstWhere('value', $currentVal);
 @endphp
 
-<div class="custom-select-wrapper" 
+<div class="custom-select-wrapper {{ ($minWidth === '100%' || str_contains($class, 'w-100')) ? 'w-100 form-custom-select' : '' }} {{ $class }} {{ $disabled ? 'is-disabled' : '' }} {{ $hasError ? 'is-invalid' : '' }}" 
      id="{{ $inputId }}_wrapper" 
      data-custom-select-container
      data-auto-submit="{{ $autoSubmit ? 'true' : 'false' }}"
-     style="min-width: {{ $minWidth }};">
+     style="min-width: {{ $minWidth }}; {{ $minWidth === '100%' ? 'width: 100%;' : '' }}">
 
     <!-- Hidden Form Input -->
     <input type="hidden" 
            name="{{ $name }}" 
            id="{{ $inputId }}" 
            value="{{ $currentVal }}" 
-           class="custom-select-hidden-input">
+           class="custom-select-hidden-input {{ $hasError ? 'is-invalid' : '' }}">
 
     <!-- Trigger Button -->
-    <div class="custom-select-trigger" 
-         tabindex="0" 
+    <div class="custom-select-trigger {{ $hasError ? 'is-invalid' : '' }} {{ $disabled ? 'is-disabled' : '' }}" 
+         tabindex="{{ $disabled ? '-1' : '0' }}" 
          role="combobox" 
          aria-expanded="false" 
          aria-haspopup="listbox"
+         aria-disabled="{{ $disabled ? 'true' : 'false' }}"
          title="{{ $selectedOption ? $selectedOption['label'] : $placeholder }}">
         
         <div class="custom-select-trigger-content">
             @if($selectedOption && !empty($selectedOption['dot']))
                 <span class="status-dot {{ $selectedOption['dot'] }}"></span>
-            @elseif($selectedOption && !empty($selectedOption['code']))
+            @elseif($selectedOption && !empty($selectedOption['code']) && !empty($selectedOption['sub']))
                 <span class="badge-modern badge-shibaura py-0 px-1" style="font-size: 0.72rem;">{{ $selectedOption['code'] }}</span>
             @elseif($icon)
                 <i class="bi {{ $icon }} custom-select-trigger-icon"></i>
@@ -90,7 +93,7 @@
 
             <span class="custom-select-trigger-text">
                 @if($selectedOption)
-                    @if(!empty($selectedOption['code']))
+                    @if(!empty($selectedOption['code']) && !empty($selectedOption['sub']))
                         {{ $selectedOption['code'] }} ({{ Str::limit($selectedOption['label'], 16) }})
                     @else
                         {{ $selectedOption['label'] }}
@@ -101,7 +104,11 @@
             </span>
         </div>
 
-        <i class="bi bi-chevron-down custom-select-chevron"></i>
+        @if($disabled)
+            <i class="bi bi-lock-fill custom-select-chevron text-muted"></i>
+        @else
+            <i class="bi bi-chevron-down custom-select-chevron"></i>
+        @endif
     </div>
 
     <!-- Dropdown Overlay Menu -->
@@ -224,6 +231,10 @@
         }
 
         function openDropdown() {
+            if (container.classList.contains('is-disabled') || trigger.classList.contains('is-disabled')) {
+                return;
+            }
+
             // Close other open custom selects first
             document.querySelectorAll('[data-custom-select-container].is-open').forEach(other => {
                 if (other !== container && other._closeCustomSelect) {
@@ -293,7 +304,7 @@
             if (val === '') {
                 contentHtml += `<span class="text-muted">${label}</span>`;
             } else {
-                contentHtml += code ? `${code} (${label.substring(0, 16)})` : label;
+                contentHtml += label;
             }
             triggerText.innerHTML = contentHtml;
 
@@ -342,6 +353,9 @@
         // Toggle dropdown on trigger click
         trigger.addEventListener('click', function(e) {
             e.stopPropagation();
+            if (container.classList.contains('is-disabled') || trigger.classList.contains('is-disabled')) {
+                return;
+            }
             if (container.classList.contains('is-open')) {
                 closeDropdown();
             } else {
@@ -351,6 +365,9 @@
 
         // Trigger keyboard open
         trigger.addEventListener('keydown', function(e) {
+            if (container.classList.contains('is-disabled') || trigger.classList.contains('is-disabled')) {
+                return;
+            }
             if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
                 e.preventDefault();
                 if (!container.classList.contains('is-open')) {

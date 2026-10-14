@@ -9,9 +9,15 @@ use App\Models\Question;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ReportController extends Controller
 {
@@ -92,13 +98,27 @@ class ReportController extends Controller
             'to' => 'nullable|date',
             'shift_id' => 'nullable|integer|exists:shifts,id',
             'type' => 'nullable|string|in:staff,low_rating,pending',
+            'format' => 'nullable|string|in:csv,excel,xlsx,pdf',
         ]);
 
         $type = $request->input('type', 'staff');
+        $format = $request->input('format', 'csv');
+        if ($format === 'excel') {
+            $format = 'xlsx';
+        }
+
         $selectedShift = $request->shift_id ? Shift::find($request->shift_id) : null;
         $shiftLabel = $selectedShift ? ($selectedShift->name . ' (' . $selectedShift->formatted_24h_range . ')') : 'All Shifts';
+        $periodLabel = ($request->from && $request->to)
+            ? ($request->from . ' to ' . $request->to)
+            : ($request->from ? ('From ' . $request->from) : ($request->to ? ('Up to ' . $request->to) : 'All Time'));
+        $currentUser = auth()->user();
+        $generatedBy = $currentUser ? $currentUser->name : 'System';
+        $generatedAt = now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y, h:i A') . ' IST';
 
         if ($type === 'low_rating') {
+            $title = 'Low-Rating Reviews (≤ 2★) Incident Report';
+            $baseFilename = 'low-rating-incidents-' . now()->format('Ymd');
             $lowRatingsQuery = Feedback::with(['visit.shift', 'organizer', 'submittedBy'])
                 ->where('overall_rating', '<=', 2);
             $this->dates($lowRatingsQuery, 'submitted_at', $request);
@@ -106,62 +126,246 @@ class ReportController extends Controller
                 $lowRatingsQuery->whereHas('visit', fn ($v) => $v->where('shift_id', $request->shift_id));
             }
             $items = $lowRatingsQuery->latest('submitted_at')->get();
+            $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
 
-            $filename = 'low-rating-incidents-' . now()->format('Ymd') . '.csv';
-
-            return response()->streamDownload(function () use ($items, $shiftLabel) {
-                $out = fopen('php://output', 'w');
-                fputcsv($out, ['Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Submitted Mode', 'Submitted By', 'Visitor Comments']);
-                foreach ($items as $f) {
-                    fputcsv($out, [
-                        $f->submitted_at->format('Y-m-d H:i:s'),
-                        $f->overall_rating . ' Stars',
-                        $f->visit?->visitor_name ?? '—',
-                        $f->visit?->visitor_company ?? '—',
-                        $f->organizer?->name ?? 'Unassigned',
-                        $f->is_staff_assisted ? 'Staff-assisted' : 'Direct Visitor',
-                        $f->submittedBy?->name ?? '—',
-                        $f->comments ?: 'No comments provided',
-                    ]);
-                }
-                fclose($out);
-            }, $filename, ['Content-Type' => 'text/csv']);
+            if ($format === 'pdf') {
+                return $this->exportPdf($type, $items, $meta, $baseFilename . '.pdf');
+            } elseif ($format === 'xlsx') {
+                return $this->exportExcel($type, $items, $meta, $baseFilename . '.xlsx');
+            }
+            return $this->exportCsvLowRating($items, $baseFilename . '.csv');
         }
 
         if ($type === 'pending') {
+            $title = 'Pending Feedback Queue Report';
+            $baseFilename = 'pending-feedback-report-' . now()->format('Ymd');
             $pendingVisitsQuery = Visit::with(['shift', 'organizer'])->doesntHave('feedback');
             $this->dates($pendingVisitsQuery, 'visit_date', $request);
             if ($request->shift_id) {
                 $pendingVisitsQuery->where('shift_id', $request->shift_id);
             }
             $items = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
+            $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
 
-            $filename = 'pending-feedback-report-' . now()->format('Ymd') . '.csv';
-
-            return response()->streamDownload(function () use ($items) {
-                $out = fopen('php://output', 'w');
-                fputcsv($out, ['Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit']);
-                foreach ($items as $v) {
-                    fputcsv($out, [
-                        $v->visit_date->format('Y-m-d'),
-                        $v->visitor_code ?: 'VIS-' . $v->id,
-                        $v->visitor_name,
-                        $v->visitor_company ?: '—',
-                        $v->visitor_mobile ?: '—',
-                        $v->shift?->name ?: '—',
-                        $v->organizer?->name ?: 'Unassigned',
-                        $v->out_time ? 'Checked Out' : 'Inside Plant',
-                        $v->time_since_exit ?? '—',
-                    ]);
-                }
-                fclose($out);
-            }, $filename, ['Content-Type' => 'text/csv']);
+            if ($format === 'pdf') {
+                return $this->exportPdf($type, $items, $meta, $baseFilename . '.pdf');
+            } elseif ($format === 'xlsx') {
+                return $this->exportExcel($type, $items, $meta, $baseFilename . '.xlsx');
+            }
+            return $this->exportCsvPending($items, $baseFilename . '.csv');
         }
 
         // Default: Staff Performance Report
+        $title = 'Staff & Shift Tour Performance Report';
         $rows = $this->organizerRows($request);
-        $filename = ($selectedShift ? Str::slug($selectedShift->name) . '-' : '') . 'performance-report-' . now()->format('Ymd') . '.csv';
+        $baseFilename = ($selectedShift ? Str::slug($selectedShift->name) . '-' : '') . 'performance-report-' . now()->format('Ymd');
+        $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
 
+        if ($format === 'pdf') {
+            return $this->exportPdf($type, $rows, $meta, $baseFilename . '.pdf');
+        } elseif ($format === 'xlsx') {
+            return $this->exportExcel($type, $rows, $meta, $baseFilename . '.xlsx');
+        }
+        return $this->exportCsvStaff($rows, $shiftLabel, $baseFilename . '.csv');
+    }
+
+    private function exportPdf(string $type, $data, array $meta, string $filename)
+    {
+        $pdf = Pdf::loadView('reports.pdf', [
+            'type' => $type,
+            'title' => $meta['title'],
+            'periodLabel' => $meta['periodLabel'],
+            'shiftLabel' => $meta['shiftLabel'],
+            'totalCount' => $data->count(),
+            'rows' => $type === 'staff' ? $data : null,
+            'items' => $type !== 'staff' ? $data : null,
+            'generatedBy' => $meta['generatedBy'],
+            'generatedAt' => $meta['generatedAt'],
+        ]);
+
+        if ($type === 'low_rating' || $type === 'pending') {
+            $pdf->setPaper('A4', 'landscape');
+        } else {
+            $pdf->setPaper('A4', 'portrait');
+        }
+
+        return $pdf->download($filename);
+    }
+
+    private function exportExcel(string $type, $data, array $meta, string $filename)
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle(substr($meta['title'], 0, 30));
+
+        // Company Banner
+        $sheet->setCellValue('A1', 'SHIBAURA MACHINE INDIA PRIVATE LIMITED');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('06539D'));
+
+        // Report Title
+        $sheet->setCellValue('A2', strtoupper($meta['title']));
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11);
+
+        // Metadata block
+        $sheet->setCellValue('A3', 'Filter Period: ' . $meta['periodLabel'] . '   |   Shift: ' . $meta['shiftLabel'] . '   |   Generated: ' . $meta['generatedAt'] . ' by ' . $meta['generatedBy']);
+        $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('64748B'));
+
+        $startRow = 5;
+
+        if ($type === 'staff') {
+            $headers = ['#', 'Staff / Organizer', 'Department', 'Shift Filter', 'Tours Handled', 'Feedbacks Received', 'Response Rate %', 'Average Rating (Stars)'];
+            $colLetter = 'H';
+            $sheet->fromArray($headers, null, 'A' . $startRow);
+
+            $currentRow = $startRow + 1;
+            foreach ($data as $idx => $r) {
+                $respRate = $r->visits_count > 0 ? min(100, round(($r->feedbacks_count / $r->visits_count) * 100)) : 0;
+                $sheet->fromArray([
+                    $idx + 1,
+                    $r->name,
+                    $r->department ?: 'General Operations',
+                    $meta['shiftLabel'],
+                    $r->visits_count,
+                    $r->feedbacks_count,
+                    $respRate . '%',
+                    $r->avg_rating ? round((float) $r->avg_rating, 2) : '—',
+                ], null, 'A' . $currentRow);
+                $currentRow++;
+            }
+        } elseif ($type === 'low_rating') {
+            $headers = ['#', 'Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Duty Shift', 'Mode', 'Submitted By', 'Visitor Comments / Remarks'];
+            $colLetter = 'J';
+            $sheet->fromArray($headers, null, 'A' . $startRow);
+
+            $currentRow = $startRow + 1;
+            foreach ($data as $idx => $f) {
+                $sheet->fromArray([
+                    $idx + 1,
+                    $f->submitted_at ? $f->submitted_at->format('Y-m-d H:i:s') : '—',
+                    $f->overall_rating . ' Stars',
+                    $f->visit?->visitor_name ?? '—',
+                    $f->visit?->visitor_company ?: '—',
+                    $f->organizer?->name ?? 'Unassigned',
+                    $f->visit?->shift?->name ?: '—',
+                    $f->is_staff_assisted ? 'Staff-assisted' : 'Direct Visitor',
+                    $f->submittedBy?->name ?? '—',
+                    $f->comments ?: 'No comments provided',
+                ], null, 'A' . $currentRow);
+                $currentRow++;
+            }
+        } else { // pending
+            $headers = ['#', 'Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile Number', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit'];
+            $colLetter = 'J';
+            $sheet->fromArray($headers, null, 'A' . $startRow);
+
+            $currentRow = $startRow + 1;
+            foreach ($data as $idx => $v) {
+                $sheet->fromArray([
+                    $idx + 1,
+                    $v->visit_date ? $v->visit_date->format('Y-m-d') : '—',
+                    $v->visitor_code ?: 'VIS-' . $v->id,
+                    $v->visitor_name,
+                    $v->visitor_company ?: '—',
+                    $v->visitor_mobile ?: '—',
+                    $v->shift?->name ?: '—',
+                    $v->organizer?->name ?? 'Unassigned',
+                    $v->out_time ? 'Checked Out' : 'Inside Plant',
+                    $v->time_since_exit ?? '—',
+                ], null, 'A' . $currentRow);
+                $currentRow++;
+            }
+        }
+
+        $lastRow = max($startRow + 1, $currentRow - 1);
+
+        // Header row styling
+        $headerRange = 'A' . $startRow . ':' . $colLetter . $startRow;
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '06539D']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension($startRow)->setRowHeight(25);
+
+        // Borders
+        $sheet->getStyle('A' . $startRow . ':' . $colLetter . $lastRow)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => 'E2E8F0'],
+                ],
+            ],
+        ]);
+
+        // Alternating zebra rows
+        for ($r = $startRow + 1; $r <= $lastRow; $r++) {
+            if ($r % 2 === 0) {
+                $sheet->getStyle('A' . $r . ':' . $colLetter . $r)->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F8FAFC']],
+                ]);
+            }
+        }
+
+        // Auto-fit columns
+        foreach (range('A', $colLetter) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    private function exportCsvLowRating($items, string $filename)
+    {
+        return response()->streamDownload(function () use ($items) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Submitted Mode', 'Submitted By', 'Visitor Comments']);
+            foreach ($items as $f) {
+                fputcsv($out, [
+                    $f->submitted_at ? $f->submitted_at->format('Y-m-d H:i:s') : '—',
+                    $f->overall_rating . ' Stars',
+                    $f->visit?->visitor_name ?? '—',
+                    $f->visit?->visitor_company ?? '—',
+                    $f->organizer?->name ?? 'Unassigned',
+                    $f->is_staff_assisted ? 'Staff-assisted' : 'Direct Visitor',
+                    $f->submittedBy?->name ?? '—',
+                    $f->comments ?: 'No comments provided',
+                ]);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    private function exportCsvPending($items, string $filename)
+    {
+        return response()->streamDownload(function () use ($items) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit']);
+            foreach ($items as $v) {
+                fputcsv($out, [
+                    $v->visit_date ? $v->visit_date->format('Y-m-d') : '—',
+                    $v->visitor_code ?: 'VIS-' . $v->id,
+                    $v->visitor_name,
+                    $v->visitor_company ?: '—',
+                    $v->visitor_mobile ?: '—',
+                    $v->shift?->name ?: '—',
+                    $v->organizer?->name ?? 'Unassigned',
+                    $v->out_time ? 'Checked Out' : 'Inside Plant',
+                    $v->time_since_exit ?? '—',
+                ]);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    private function exportCsvStaff($rows, string $shiftLabel, string $filename)
+    {
         return response()->streamDownload(function () use ($rows, $shiftLabel) {
             $out = fopen('php://output', 'w');
             fputcsv($out, ['Staff / Organizer', 'Department', 'Shift Filter', 'Visits Handled', 'Feedbacks Received', 'Response %', 'Avg Rating']);
