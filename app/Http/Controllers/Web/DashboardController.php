@@ -33,9 +33,9 @@ class DashboardController extends Controller
             $totalVisitorsCount = Visit::count();
         }
         $totalFeedbacksCount = Feedback::count();
-        $overallAvg = Feedback::avg('overall_rating') ? round((float) Feedback::avg('overall_rating'), 1) : 4.5;
+        $overallAvg = Feedback::avg('overall_rating') ? round((float) Feedback::avg('overall_rating'), 1) : 0.0;
         $positiveCount = Feedback::where('overall_rating', '>=', 4)->count();
-        $positivePct = $totalFeedbacksCount > 0 ? round(($positiveCount / $totalFeedbacksCount) * 100) : 82;
+        $positivePct = $totalFeedbacksCount > 0 ? round(($positiveCount / $totalFeedbacksCount) * 100) : 0;
         $pendingActionsCount = Visit::doesntHave('feedback')->count();
 
         $stats = [
@@ -57,11 +57,11 @@ class DashboardController extends Controller
         // Dynamic Growth indicators (comparing this month vs previous month or past 30 days)
         $visitorsLast30 = Visit::where('visit_date', '>=', now()->subDays(30))->count();
         $visitorsPrev30 = Visit::whereBetween('visit_date', [now()->subDays(60), now()->subDays(30)])->count();
-        $visitorsGrowth = $visitorsPrev30 > 0 ? round((($visitorsLast30 - $visitorsPrev30) / $visitorsPrev30) * 100) : 12;
+        $visitorsGrowth = $visitorsPrev30 > 0 ? round((($visitorsLast30 - $visitorsPrev30) / $visitorsPrev30) * 100) : 0;
 
         $feedbackLast30 = Feedback::where('submitted_at', '>=', now()->subDays(30))->count();
         $feedbackPrev30 = Feedback::whereBetween('submitted_at', [now()->subDays(60), now()->subDays(30)])->count();
-        $feedbackGrowth = $feedbackPrev30 > 0 ? round((($feedbackLast30 - $feedbackPrev30) / $feedbackPrev30) * 100) : 18;
+        $feedbackGrowth = $feedbackPrev30 > 0 ? round((($feedbackLast30 - $feedbackPrev30) / $feedbackPrev30) * 100) : 0;
 
         // 5 Modern Key Metric Cards matching Reference UI
         $saasMetrics = [
@@ -76,8 +76,8 @@ class DashboardController extends Controller
                 'subtext' => 'vs last month',
             ],
             'average_rating' => [
-                'value' => number_format($overallAvg, 1) . ' / 5',
-                'growth' => '+6%',
+                'value' => ($totalFeedbacksCount > 0 ? number_format($overallAvg, 1) : '0.0') . ' / 5',
+                'growth' => ($totalFeedbacksCount > 0 ? '+6%' : '+0%'),
                 'subtext' => 'vs last month',
             ],
             'positive_feedbacks' => [
@@ -87,7 +87,7 @@ class DashboardController extends Controller
             ],
             'pending_actions' => [
                 'value' => number_format($pendingActionsCount),
-                'growth' => '+20%',
+                'growth' => ($pendingActionsCount > 0 ? '+100%' : '+0%'),
                 'subtext' => 'vs last month',
             ],
         ];
@@ -171,12 +171,12 @@ class DashboardController extends Controller
 
         if (empty($categoryFeedback)) {
             $categoryFeedback = [
-                ['name' => 'Facility & Infrastructure', 'count' => $totalFeedbacksCount, 'percent' => 88, 'color' => '#2563eb'],
-                ['name' => 'Staff Behaviour',          'count' => $totalFeedbacksCount, 'percent' => 82, 'color' => '#10b981'],
-                ['name' => 'Cleanliness',              'count' => $totalFeedbacksCount, 'percent' => 85, 'color' => '#f59e0b'],
-                ['name' => 'Security & Safety',        'count' => $totalFeedbacksCount, 'percent' => 80, 'color' => '#f97316'],
-                ['name' => 'Demo & Machine Trial',     'count' => $totalFeedbacksCount, 'percent' => 86, 'color' => '#f43f5e'],
-                ['name' => 'Others',                  'count' => $totalFeedbacksCount, 'percent' => 78, 'color' => '#8b5cf6'],
+                ['name' => 'Facility & Infrastructure', 'count' => 0, 'percent' => 0, 'color' => '#2563eb'],
+                ['name' => 'Staff Behaviour',          'count' => 0, 'percent' => 0, 'color' => '#10b981'],
+                ['name' => 'Cleanliness',              'count' => 0, 'percent' => 0, 'color' => '#f59e0b'],
+                ['name' => 'Security & Safety',        'count' => 0, 'percent' => 0, 'color' => '#f97316'],
+                ['name' => 'Demo & Machine Trial',     'count' => 0, 'percent' => 0, 'color' => '#f43f5e'],
+                ['name' => 'Others',                  'count' => 0, 'percent' => 0, 'color' => '#8b5cf6'],
             ];
         }
 

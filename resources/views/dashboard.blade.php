@@ -247,7 +247,7 @@
                     </a>
                 </div>
                 <div class="d-flex flex-column">
-                    @foreach($recentFeedbacks as $rf)
+                    @forelse($recentFeedbacks as $rf)
                         <a href="{{ $rf['url'] ?? route('feedbacks.index') }}" class="saas-feedback-item">
                             <div class="saas-avatar-pill" style="background: {{ $rf['bg_color'] }}; color: {{ $rf['text_color'] }};">
                                 {{ $rf['initials'] }}
@@ -266,7 +266,13 @@
                             </div>
                             <i class="bi bi-chevron-right saas-feedback-arrow ms-2"></i>
                         </a>
-                    @endforeach
+                    @empty
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-chat-square-dots fs-3 text-secondary opacity-50 d-block mb-2"></i>
+                            <div class="fw-semibold small text-dark">No feedback submitted yet</div>
+                            <div class="small text-muted" style="font-size: 0.75rem;">Submitted visitor feedback will appear here in real-time.</div>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
