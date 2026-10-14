@@ -17,7 +17,6 @@
 @section('status_pill', 'System Updating')
 
 @section('heading', 'Under Scheduled Maintenance')
-@section('heading_tamil', 'கணினி திட்டமிடப்பட்ட பராமரிப்பில் உள்ளது')
 @section('description', 'The Shibaura Machine Plant Feedback System is temporarily undergoing routine upgrades and synchronization. Service will resume shortly.')
 
 @section('tips')

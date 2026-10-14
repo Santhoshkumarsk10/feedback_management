@@ -9,8 +9,28 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Visit extends Model
 {
     protected $fillable = [
-        'visitor_id', 'visitor_code', 'organizer_id', 'shift_id', 'visitor_name', 'visitor_designation', 'visitor_mobile', 'visitor_company', 'visitor_email',
-        'visit_date', 'in_time', 'out_time', 'purpose', 'department',
+        'visitor_id',
+        'visitor_code',
+        'organizer_id',
+        'shift_id',
+        'visit_date',
+        'in_time',
+        'out_time',
+        'purpose',
+        'department',
+        // Virtual/transient fields delegated directly to the master Visitor record
+        'visitor_name',
+        'visitor_designation',
+        'visitor_mobile',
+        'visitor_company',
+        'visitor_email',
+    ];
+
+    /**
+     * Always eager-load the master Visitor relation to prevent N+1 queries.
+     */
+    protected $with = [
+        'visitor',
     ];
 
     protected $casts = [
@@ -21,7 +41,71 @@ class Visit extends Model
 
     protected $appends = [
         'is_feedback_expired',
+        'visitor_name',
+        'visitor_company',
+        'visitor_designation',
+        'visitor_mobile',
+        'visitor_email',
     ];
+
+    /**
+     * Staging store for incoming visitor attributes before persistence.
+     */
+    protected array $pendingVisitorData = [];
+
+    // --- Accessors for Visitor Details from Master Table ---
+
+    public function getVisitorNameAttribute(): ?string
+    {
+        return $this->visitor?->name ?? ($this->pendingVisitorData['name'] ?? null);
+    }
+
+    public function getVisitorCompanyAttribute(): ?string
+    {
+        return $this->visitor?->company ?? ($this->pendingVisitorData['company'] ?? null);
+    }
+
+    public function getVisitorDesignationAttribute(): ?string
+    {
+        return $this->visitor?->designation ?? ($this->pendingVisitorData['designation'] ?? null);
+    }
+
+    public function getVisitorMobileAttribute(): ?string
+    {
+        return $this->visitor?->mobile ?? ($this->pendingVisitorData['mobile'] ?? null);
+    }
+
+    public function getVisitorEmailAttribute(): ?string
+    {
+        return $this->visitor?->email ?? ($this->pendingVisitorData['email'] ?? null);
+    }
+
+    // --- Mutators for Visitor Details ---
+
+    public function setVisitorNameAttribute($value): void
+    {
+        $this->pendingVisitorData['name'] = $value;
+    }
+
+    public function setVisitorCompanyAttribute($value): void
+    {
+        $this->pendingVisitorData['company'] = $value;
+    }
+
+    public function setVisitorDesignationAttribute($value): void
+    {
+        $this->pendingVisitorData['designation'] = $value;
+    }
+
+    public function setVisitorMobileAttribute($value): void
+    {
+        $this->pendingVisitorData['mobile'] = $value;
+    }
+
+    public function setVisitorEmailAttribute($value): void
+    {
+        $this->pendingVisitorData['email'] = $value;
+    }
 
     /**
      * Check if feedback collection has expired because the visit day has ended.
@@ -100,23 +184,37 @@ class Visit extends Model
 
     protected static function booted()
     {
-        static::creating(function (Visit $visit) {
+        static::saving(function (Visit $visit) {
+            // Strip any raw visitor columns from attributes so SQL INSERT/UPDATE doesn't fail
+            unset(
+                $visit->attributes['visitor_name'],
+                $visit->attributes['visitor_company'],
+                $visit->attributes['visitor_designation'],
+                $visit->attributes['visitor_mobile'],
+                $visit->attributes['visitor_email']
+            );
+
             // Auto link or create Visitor record if not assigned
             if (empty($visit->visitor_id)) {
                 $visitor = Visitor::upsertFromExternal([
                     'visitor_id' => $visit->visitor_code,
-                    'name' => $visit->visitor_name,
-                    'company' => $visit->visitor_company,
-                    'designation' => $visit->visitor_designation,
-                    'mobile' => $visit->visitor_mobile,
-                    'email' => $visit->visitor_email,
+                    'name' => $visit->pendingVisitorData['name'] ?? 'Guest Visitor',
+                    'company' => $visit->pendingVisitorData['company'] ?? null,
+                    'designation' => $visit->pendingVisitorData['designation'] ?? null,
+                    'mobile' => $visit->pendingVisitorData['mobile'] ?? null,
+                    'email' => $visit->pendingVisitorData['email'] ?? null,
                 ], 'visit_entry');
 
                 $visit->visitor_id = $visitor->id;
                 $visit->visitor_code = $visitor->visitor_id;
-            } elseif (empty($visit->visitor_code)) {
-                $visitor = Visitor::find($visit->visitor_id);
-                $visit->visitor_code = $visitor?->visitor_id ?: Visitor::generateUniqueVisitorId();
+            } else {
+                $visitor = $visit->visitor ?: Visitor::find($visit->visitor_id);
+                if ($visitor && !empty(array_filter($visit->pendingVisitorData))) {
+                    $visitor->update(array_filter($visit->pendingVisitorData));
+                }
+                if (empty($visit->visitor_code) && $visitor) {
+                    $visit->visitor_code = $visitor->visitor_id;
+                }
             }
         });
     }

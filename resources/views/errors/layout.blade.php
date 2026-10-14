@@ -222,15 +222,6 @@
             line-height: 1.25;
         }
 
-        .error-subtitle-tamil {
-            font-family: 'Noto Sans Tamil', var(--font-family);
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #0284c7;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-
         .error-desc {
             font-size: 0.95rem;
             color: var(--text-body);
@@ -447,10 +438,6 @@
             </div>
 
             <h1 class="error-title">@yield('heading', 'An Error Occurred')</h1>
-
-            @hasSection('heading_tamil')
-                <div class="error-subtitle-tamil">@yield('heading_tamil')</div>
-            @endif
 
             <p class="error-desc">@yield('description', 'The requested action could not be processed at this time.')</p>
 

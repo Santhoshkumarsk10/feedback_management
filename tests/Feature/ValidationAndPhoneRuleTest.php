@@ -253,10 +253,15 @@ class ValidationAndPhoneRuleTest extends TestCase
         ];
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $validData);
         $res->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('visitors', [
+            'name' => 'Dr. R. Ramanathan',
+            'company' => 'Tata Motors Ltd. (CVBU)',
+            'mobile' => '9840123456',
+        ]);
+        $visitor = \App\Models\Visitor::where('mobile', '9840123456')->first();
         $this->assertDatabaseHas('visits', [
-            'visitor_name' => 'Dr. R. Ramanathan',
-            'visitor_company' => 'Tata Motors Ltd. (CVBU)',
-            'visitor_mobile' => '9840123456',
+            'visitor_id' => $visitor->id,
+            'shift_id' => $shift->id,
         ]);
 
         // 3. Invalid phone starting with 4

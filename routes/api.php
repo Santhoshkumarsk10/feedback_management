@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('visitor')->middleware('throttle:60,1')->group(function () {
     Route::get('/organizers', [VisitorController::class, 'organizers']);
     Route::get('/questions', [VisitorController::class, 'questions']);
+    Route::get('/today-visitors', [VisitorController::class, 'todayVisitors']);
     Route::get('/lookup/{visitor_id}', [VisitorController::class, 'lookup']);
     Route::post('/feedback', [VisitorController::class, 'submitFeedback'])->middleware('throttle:10,1');
 });

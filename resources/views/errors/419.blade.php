@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-hourglass-end')
 
 @section('heading', 'Session Expired')
-@section('heading_tamil', 'உங்கள் பாதுகாப்பு அமர்வு காலாவதியானது')
 @section('description', 'For plant data security and privacy, sessions automatically expire after periods of inactivity. Please refresh to renew your session.')
 
 @section('tips')

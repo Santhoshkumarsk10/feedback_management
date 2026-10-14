@@ -165,9 +165,13 @@ class StaffShiftOperationsTest extends TestCase
         ]);
 
         $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('visitors', [
+            'name' => 'Senthil Nathan',
+            'company' => 'Apex Automation',
+        ]);
+        $visitor = \App\Models\Visitor::where('name', 'Senthil Nathan')->first();
         $this->assertDatabaseHas('visits', [
-            'visitor_name' => 'Senthil Nathan',
-            'visitor_company' => 'Apex Automation',
+            'visitor_id' => $visitor->id,
             'shift_id' => $shift->id,
         ]);
     }
