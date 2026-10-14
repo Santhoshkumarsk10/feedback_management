@@ -48,6 +48,7 @@ class VisitorController extends Controller
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
             'answers.*.answer' => 'nullable|string|max:2000',
+            'answers.*.reason' => 'nullable|string|max:2000',
         ], [
             'visitor_mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
             'visitor_name.regex' => 'Visitor Name may only contain letters, spaces, hyphens, and dots.',
@@ -144,6 +145,7 @@ class VisitorController extends Controller
                 collect($data['answers'])->map(fn ($a) => [
                     'question_id' => $a['question_id'],
                     'answer' => $a['answer'] ?? null,
+                    'reason' => $a['reason'] ?? null,
                 ])->all()
             );
 

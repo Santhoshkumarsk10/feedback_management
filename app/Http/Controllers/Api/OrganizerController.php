@@ -155,6 +155,7 @@ class OrganizerController extends Controller
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
             'answers.*.answer' => 'nullable',
+            'answers.*.reason' => 'nullable',
         ]);
 
         $organizer = auth('api')->user();
@@ -182,6 +183,7 @@ class OrganizerController extends Controller
                 $feedback->answers()->create([
                     'question_id' => $ans['question_id'],
                     'answer' => $val,
+                    'reason' => $ans['reason'] ?? null,
                 ]);
             }
 
