@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-gears')
 
 @section('heading', 'Internal Server Error')
-@section('heading_tamil', 'சர்வரில் தொழில்நுட்ப சிக்கல் ஏற்பட்டுள்ளது')
 @section('description', 'An unexpected system error occurred while processing your request. Our plant technical operations team has been notified.')
 
 @section('tips')

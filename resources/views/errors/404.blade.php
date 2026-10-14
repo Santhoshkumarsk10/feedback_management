@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-magnifying-glass-location')
 
 @section('heading', 'Page or Link Not Found')
-@section('heading_tamil', 'கோரப்பட்ட பக்கம் அல்லது இணைப்பு கிடைக்கவில்லை')
 @section('description', 'The feedback link, visitor pass, or page you requested does not exist or may have been relocated.')
 
 @section('tips')

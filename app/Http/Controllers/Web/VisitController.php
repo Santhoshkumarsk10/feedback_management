@@ -9,6 +9,7 @@ use App\Models\Question;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
+use App\Models\Visitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -34,10 +35,11 @@ class VisitController extends Controller
             ->when($request->shift_id, fn ($q, $v) => $q->where('shift_id', $v))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
-                ->where('visitor_name', 'like', "%$v%")
-                ->orWhere('visitor_mobile', 'like', "%$v%")
-                ->orWhere('visitor_company', 'like', "%$v%")
-                ->orWhere('visitor_code', 'like', "%$v%")))
+                ->where('visitor_code', 'like', "%$v%")
+                ->orWhereHas('visitor', fn ($vq) => $vq
+                    ->where('name', 'like', "%$v%")
+                    ->orWhere('mobile', 'like', "%$v%")
+                    ->orWhere('company', 'like', "%$v%"))))
             ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'));
 
@@ -47,10 +49,11 @@ class VisitController extends Controller
             ->when($request->shift_id, fn ($q, $v) => $q->where('shift_id', $v))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
-                ->where('visitor_name', 'like', "%$v%")
-                ->orWhere('visitor_mobile', 'like', "%$v%")
-                ->orWhere('visitor_company', 'like', "%$v%")
-                ->orWhere('visitor_code', 'like', "%$v%")));
+                ->where('visitor_code', 'like', "%$v%")
+                ->orWhereHas('visitor', fn ($vq) => $vq
+                    ->where('name', 'like', "%$v%")
+                    ->orWhere('mobile', 'like', "%$v%")
+                    ->orWhere('company', 'like', "%$v%"))));
 
         $totalCount = (clone $baseCount)->count();
         $completedCount = (clone $baseCount)->has('feedback')->count();
@@ -58,16 +61,16 @@ class VisitController extends Controller
 
         $visits = $query->latest('visit_date')->latest('id')->paginate(10)->withQueryString();
 
-        $visitSuggestions = Visit::select('id', 'visitor_name', 'visitor_company', 'visitor_mobile')
+        $visitSuggestions = Visitor::where('is_active', true)
             ->latest('id')
             ->take(30)
             ->get()
             ->map(function ($v) {
                 return [
-                    'code' => $v->visitor_company ? substr($v->visitor_company, 0, 8) : null,
-                    'name' => $v->visitor_name,
-                    'sub' => ($v->visitor_company ? $v->visitor_company . ' • ' : '') . $v->visitor_mobile,
-                    'value' => $v->visitor_name,
+                    'code' => $v->company ? substr($v->company, 0, 8) : null,
+                    'name' => $v->name,
+                    'sub' => ($v->company ? $v->company . ' • ' : '') . $v->mobile,
+                    'value' => $v->name,
                 ];
             });
 

@@ -8,6 +8,7 @@ use App\Models\Feedback;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
+use App\Models\Visitor;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -29,7 +30,7 @@ class DashboardController extends Controller
         // Overall Analytics & Historical Metrics
         $stats = [
             'organizers' => User::whereIn('role', ['organizer', 'staff'])->count(),
-            'visitors' => (int) Visit::selectRaw('COUNT(DISTINCT COALESCE(visitor_mobile, visitor_name)) as c')->value('c'),
+            'visitors' => (int) Visitor::where('is_active', true)->count(),
             'visits' => Visit::count(),
             'feedbacks' => Feedback::count(),
             'avg' => round((float) Feedback::avg('overall_rating'), 2),
@@ -141,10 +142,12 @@ class DashboardController extends Controller
             ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
-                    $sub->where('visitor_name', 'like', "%{$term}%")
-                        ->orWhere('visitor_company', 'like', "%{$term}%")
-                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
-                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                    $sub->where('visitor_code', 'like', "%{$term}%")
+                        ->orWhereHas('visitor', function ($vq) use ($term) {
+                            $vq->where('name', 'like', "%{$term}%")
+                               ->orWhere('company', 'like', "%{$term}%")
+                               ->orWhere('mobile', 'like', "%{$term}%");
+                        });
                 });
             });
 
@@ -152,10 +155,12 @@ class DashboardController extends Controller
             ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
-                    $sub->where('visitor_name', 'like', "%{$term}%")
-                        ->orWhere('visitor_company', 'like', "%{$term}%")
-                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
-                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                    $sub->where('visitor_code', 'like', "%{$term}%")
+                        ->orWhereHas('visitor', function ($vq) use ($term) {
+                            $vq->where('name', 'like', "%{$term}%")
+                               ->orWhere('company', 'like', "%{$term}%")
+                               ->orWhere('mobile', 'like', "%{$term}%");
+                        });
                 });
             });
 
@@ -164,10 +169,12 @@ class DashboardController extends Controller
             ->when($currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
-                    $sub->where('visitor_name', 'like', "%{$term}%")
-                        ->orWhere('visitor_company', 'like', "%{$term}%")
-                        ->orWhere('visitor_mobile', 'like', "%{$term}%")
-                        ->orWhere('visitor_code', 'like', "%{$term}%");
+                    $sub->where('visitor_code', 'like', "%{$term}%")
+                        ->orWhereHas('visitor', function ($vq) use ($term) {
+                            $vq->where('name', 'like', "%{$term}%")
+                               ->orWhere('company', 'like', "%{$term}%")
+                               ->orWhere('mobile', 'like', "%{$term}%");
+                        });
                 });
             });
 

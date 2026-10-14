@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-lock')
 
 @section('heading', 'Access Restricted / Forbidden')
-@section('heading_tamil', 'இந்த பக்கத்திற்கான அணுகல் மறுக்கப்பட்டுள்ளது')
 @section('description', 'You do not have the required permissions or authentication to access this plant operation resource.')
 
 @section('tips')

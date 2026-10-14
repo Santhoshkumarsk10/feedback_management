@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-hand')
 
 @section('heading', 'Too Many Requests')
-@section('heading_tamil', 'அதிகப்படியான கோரிக்கைகள் பெறப்பட்டன')
 @section('description', 'You have sent too many requests in a short period of time. Please wait a brief moment before trying again.')
 
 @section('tips')

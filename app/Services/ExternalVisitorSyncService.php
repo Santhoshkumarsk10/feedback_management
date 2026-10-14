@@ -110,11 +110,6 @@ class ExternalVisitorSyncService
                 $visit = Visit::create([
                     'visitor_id' => $visitor->id,
                     'visitor_code' => $visitor->visitor_id,
-                    'visitor_name' => $visitor->name,
-                    'visitor_company' => $visitor->company,
-                    'visitor_designation' => $visitor->designation,
-                    'visitor_mobile' => $visitor->mobile,
-                    'visitor_email' => $visitor->email,
                     'visit_date' => $visitDate,
                     'in_time' => $inTime,
                     'out_time' => $outTime,
@@ -128,11 +123,6 @@ class ExternalVisitorSyncService
                 $existingVisits++;
                 // Sync updated details if needed
                 $visit->update([
-                    'visitor_name' => $visitor->name,
-                    'visitor_company' => $visitor->company,
-                    'visitor_designation' => $visitor->designation ?: $visit->visitor_designation,
-                    'visitor_mobile' => $visitor->mobile ?: $visit->visitor_mobile,
-                    'visitor_email' => $visitor->email ?: $visit->visitor_email,
                     'in_time' => $inTime ?: $visit->in_time,
                     'out_time' => $outTime ?: $visit->out_time,
                     'department' => $department ?: $visit->department,

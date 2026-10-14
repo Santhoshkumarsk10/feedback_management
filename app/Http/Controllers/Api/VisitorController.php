@@ -21,6 +21,47 @@ class VisitorController extends Controller
             ->orderBy('name')->get(['id', 'name', 'department']);
     }
 
+    /**
+     * Public list of today's common visitors for the mobile check-in app.
+     * By default returns only pending visitors (who haven't submitted feedback yet today).
+     */
+    public function todayVisitors(Request $request)
+    {
+        $status = $request->query('status', 'pending'); // 'pending' or 'all'
+
+        $query = Visit::with(['visitor', 'shift', 'feedback', 'organizer'])
+            ->whereDate('visit_date', today());
+
+        if ($status === 'pending') {
+            $query->doesntHave('feedback');
+        }
+
+        $visits = $query->latest('id')->get()->map(function ($v) {
+            return [
+                'id' => (int) $v->id,
+                'visitor_id' => $v->visitor_id,
+                'visitor_code' => $v->visitor_code,
+                'name' => $v->visitor_name ?? $v->visitor?->name ?? 'Valued Visitor',
+                'company' => $v->visitor_company ?? $v->visitor?->company ?? '',
+                'designation' => $v->visitor_designation ?? $v->visitor?->designation ?? '',
+                'mobile' => $v->visitor_mobile ?? $v->visitor?->mobile ?? '',
+                'email' => $v->visitor_email ?? $v->visitor?->email ?? '',
+                'purpose' => $v->purpose ?? 'Plant & Facility Tour',
+                'shift_name' => $v->shift?->name,
+                'organizer_id' => $v->organizer_id,
+                'organizer_name' => $v->organizer?->name,
+                'has_feedback' => !is_null($v->feedback),
+                'visit_date' => $v->visit_date ? $v->visit_date->format('Y-m-d') : date('Y-m-d'),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'count' => $visits->count(),
+            'data' => $visits,
+        ]);
+    }
+
     /** Screen 3: feedback questions. */
     public function questions()
     {
@@ -101,7 +142,7 @@ class VisitorController extends Controller
         }
 
         // basic double-submit guard: same mobile + same organizer + same day with existing feedback
-        if (! empty($data['visitor_mobile']) && Visit::where('visitor_mobile', $data['visitor_mobile'])
+        if (! empty($data['visitor_mobile']) && Visit::whereHas('visitor', fn ($q) => $q->where('mobile', $data['visitor_mobile']))
             ->where('organizer_id', $organizer->id)->whereDate('visit_date', today())->has('feedback')->exists()) {
             abort(422, 'Thank you! Your feedback has already been received for this visit.');
         }
@@ -110,12 +151,17 @@ class VisitorController extends Controller
             if ($existingVisit) {
                 $visit = $existingVisit;
                 $visit->update(array_filter([
-                    'visitor_designation' => $data['visitor_designation'] ?? $visit->visitor_designation,
-                    'visitor_mobile' => $data['visitor_mobile'] ?? $visit->visitor_mobile,
-                    'visitor_company' => $data['visitor_company'] ?? $visit->visitor_company,
-                    'visitor_email' => $data['visitor_email'] ?? $visit->visitor_email,
+                    'organizer_id' => $organizer->id,
                     'purpose' => $data['purpose'] ?? $visit->purpose,
                 ]));
+                if ($visit->visitor) {
+                    $visit->visitor->update(array_filter([
+                        'designation' => $data['visitor_designation'] ?? $visit->visitor->designation,
+                        'mobile' => $data['visitor_mobile'] ?? $visit->visitor->mobile,
+                        'company' => $data['visitor_company'] ?? $visit->visitor->company,
+                        'email' => $data['visitor_email'] ?? $visit->visitor->email,
+                    ]));
+                }
             } else {
                 $currentShift = \App\Models\Shift::current();
                 $visit = Visit::create([
@@ -186,11 +232,6 @@ class VisitorController extends Controller
             $visit = Visit::create([
                 'visitor_id' => $visitor->id,
                 'visitor_code' => $visitor->visitor_id,
-                'visitor_name' => $visitor->name,
-                'visitor_company' => $visitor->company,
-                'visitor_designation' => $visitor->designation,
-                'visitor_mobile' => $visitor->mobile,
-                'visitor_email' => $visitor->email,
                 'visit_date' => today(),
                 'shift_id' => $currentShift?->id,
                 'purpose' => 'Plant & Facility Tour',

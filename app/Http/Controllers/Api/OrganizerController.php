@@ -76,7 +76,7 @@ class OrganizerController extends Controller
                 ->where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
                 ->selectRaw("DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as c")
                 ->groupBy('ym')->orderBy('ym')->pluck('c', 'ym'),
-            'recent_feedback' => $feedback()->with('visit:id,visitor_name,visitor_company')
+            'recent_feedback' => $feedback()->with('visit.visitor')
                 ->latest('submitted_at')->limit(5)
                 ->get(['id', 'visit_id', 'overall_rating', 'comments', 'submitted_at']),
         ];
@@ -110,9 +110,10 @@ class OrganizerController extends Controller
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'))
             ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
-                ->where('visitor_name', 'like', "%$v%")
-                ->orWhere('visitor_company', 'like', "%$v%")
-                ->orWhere('visitor_code', 'like', "%$v%")))
+                ->where('visitor_code', 'like', "%$v%")
+                ->orWhereHas('visitor', fn ($vq) => $vq
+                    ->where('name', 'like', "%$v%")
+                    ->orWhere('company', 'like', "%$v%"))))
             ->latest('visit_date')->latest('id')->paginate(20);
     }
 
@@ -132,7 +133,8 @@ class OrganizerController extends Controller
     {
         return Feedback::where('organizer_id', auth('api')->id())
             ->with([
-                'visit:id,visitor_name,visitor_mobile,visitor_company,visitor_email,visit_date,purpose,shift_id',
+                'visit:id,visitor_id,visitor_code,visit_date,purpose,shift_id',
+                'visit.visitor',
                 'visit.shift:id,name,code,start_time,end_time',
                 'answers.question:id,question,type',
             ])->findOrFail($id);

@@ -16,7 +16,6 @@
 @section('main_icon', 'fa-solid fa-circle-exclamation')
 
 @section('heading', $message ?? 'System Notice')
-@section('heading_tamil', 'கணினி அறிவிப்பு மற்றும் தகவல்')
 @section('description', $exception && $exception->getMessage() ? $exception->getMessage() : 'An unexpected condition was encountered during this request.')
 
 @section('primary_url', '/visitor')
