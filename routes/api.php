@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 // ---------- Visitor app: PUBLIC (no login) ----------
 Route::prefix('visitor')->middleware('throttle:60,1')->group(function () {
+    Route::get('/plants', [VisitorController::class, 'plants']);
     Route::get('/organizers', [VisitorController::class, 'organizers']);
     Route::get('/questions', [VisitorController::class, 'questions']);
     Route::get('/today-visitors', [VisitorController::class, 'todayVisitors']);

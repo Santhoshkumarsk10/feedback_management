@@ -140,10 +140,6 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // 3. Link Existing & Demo Users
-        $defaultPlant = Plant::first();
-        $p1 = Plant::where('code', 'PLANT-01')->first() ?? $defaultPlant;
-        $p2 = Plant::where('code', 'PLANT-02')->first() ?? $defaultPlant;
-
         $roleSuper = Role::where('name', 'superadmin')->first();
         $roleAdmin = Role::where('name', 'admin')->first();
         $roleSupervisor = Role::where('name', 'supervisor')->first();
@@ -157,7 +153,6 @@ class RoleAndPermissionSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'superadmin',
                 'role_id' => $roleSuper?->id,
-                'plant_id' => $p1?->id,
                 'is_active' => true,
             ]
         );
@@ -171,7 +166,6 @@ class RoleAndPermissionSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'role_id' => $roleAdmin?->id,
-                'plant_id' => $p1?->id,
                 'is_active' => true,
             ]
         );
@@ -185,7 +179,6 @@ class RoleAndPermissionSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'supervisor',
                 'role_id' => $roleSupervisor?->id,
-                'plant_id' => $p1?->id,
                 'department' => 'Quality & Operations',
                 'is_active' => true,
             ]
@@ -200,7 +193,6 @@ class RoleAndPermissionSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'staff',
                 'role_id' => $roleStaff?->id,
-                'plant_id' => $p2?->id,
                 'department' => 'Machine Tools Assembly',
                 'is_active' => true,
             ]

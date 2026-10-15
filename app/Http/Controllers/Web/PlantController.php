@@ -22,7 +22,7 @@ class PlantController extends Controller
             ]);
         }
 
-        $query = Plant::withCount('users')
+        $query = Plant::withCount(['feedbacks', 'visits'])
             ->when($statusTab === 'active', fn ($q) => $q->where('is_active', true))
             ->when($statusTab === 'inactive', fn ($q) => $q->where('is_active', false))
             ->when($request->filled('q'), fn ($q) => $q->where(function ($w) use ($request) {
@@ -183,8 +183,8 @@ class PlantController extends Controller
 
     public function destroy(Plant $plant)
     {
-        if ($plant->users()->exists()) {
-            return back()->with('error', 'Cannot delete plant "'.$plant->name.'" because users are currently assigned to it.');
+        if ($plant->feedbacks()->exists() || $plant->visits()->exists()) {
+            return back()->with('error', 'Cannot delete plant "'.$plant->name.'" because visits or feedback evaluations are associated with it.');
         }
 
         $code = $plant->code;

@@ -16,7 +16,7 @@ class User extends Authenticatable implements JWTSubject
     public const ROLES = ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'];
 
     protected $fillable = [
-        'name', 'email', 'mobile', 'password', 'role', 'role_id', 'plant_id', 'department', 'is_active',
+        'name', 'email', 'mobile', 'password', 'role', 'role_id', 'department', 'is_active',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -58,10 +58,6 @@ class User extends Authenticatable implements JWTSubject
     }
 
     // ---- Relations ----
-    public function plant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Plant::class);
-    }
 
     public function roleModel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

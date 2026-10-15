@@ -70,17 +70,6 @@
             />
 
             <x-custom-select 
-                name="plant_id" 
-                :value="request('plant_id')" 
-                placeholder="All Facilities / Plants" 
-                search-placeholder="Search facilities & codes..." 
-                icon="bi-buildings" 
-                min-width="210px" 
-                :options="$plants->map(fn($pl) => ['value' => $pl->id, 'label' => $pl->name, 'code' => $pl->code])" 
-                auto-submit
-            />
-
-            <x-custom-select 
                 name="status" 
                 :value="request('status')" 
                 placeholder="All Statuses" 
@@ -98,7 +87,7 @@
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['role', 'plant_id', 'q', 'status']))
+            @if(request()->hasAny(['role', 'q', 'status']))
                 <a href="{{ route('users.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Clear all filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -122,7 +111,6 @@
                 <tr>
                     <th>User</th>
                     <th>Role</th>
-                    <th>Assigned Plant</th>
                     <th>Department</th>
                     <th>Contact</th>
                     <th>Status</th>
@@ -147,16 +135,6 @@
                         <span class="badge-modern {{ $roleBadges[$u->role] ?? 'badge-slate' }}">
                             <i class="bi bi-shield-shaded"></i> {{ $u->roleModel?->name ?? ucfirst($u->role) }}
                         </span>
-                    </td>
-                    <td>
-                        @if($u->plant)
-                            <span class="badge-modern badge-shibaura" title="{{ $u->plant->name }}">
-                                <i class="bi bi-buildings"></i> {{ $u->plant->code }}
-                            </span>
-                            <div class="small text-muted mt-0 text-truncate" style="max-width: 180px; font-size: 0.72rem;">{{ $u->plant->name }}</div>
-                        @else
-                            <span class="badge-modern badge-slate">HQ / General</span>
-                        @endif
                     </td>
                     <td>
                         @if($u->department)
@@ -211,7 +189,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-search fs-2 d-block mb-2 text-slate-300"></i>
                         No users found matching your search.
                     </td>

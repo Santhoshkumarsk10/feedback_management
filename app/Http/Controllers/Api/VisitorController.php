@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
+use App\Models\Plant;
 use App\Models\Question;
 use App\Models\User;
 use App\Models\Visit;
@@ -19,6 +20,14 @@ class VisitorController extends Controller
     {
         return User::whereIn('role', ['organizer', 'staff'])->where('is_active', true)
             ->orderBy('name')->get(['id', 'name', 'department']);
+    }
+
+    /** List of active plants for visitors/kiosk to pick from. */
+    public function plants()
+    {
+        return Plant::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'location']);
     }
 
     /**
@@ -76,6 +85,7 @@ class VisitorController extends Controller
         $data = $request->validate([
             'visit_id' => 'nullable|integer|exists:visits,id',
             'visitor_code' => 'nullable|string|max:100',
+            'plant_id' => 'required|integer|exists:plants,id',
             'organizer_id' => 'required|integer',
             'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
             'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -150,6 +160,7 @@ class VisitorController extends Controller
             if ($existingVisit) {
                 $visit = $existingVisit;
                 $visit->update(array_filter([
+                    'plant_id' => $data['plant_id'],
                     'organizer_id' => $organizer->id,
                     'purpose' => $data['purpose'] ?? $visit->purpose,
                 ]));
@@ -163,6 +174,7 @@ class VisitorController extends Controller
                 }
             } else {
                 $visit = Visit::create([
+                    'plant_id' => $data['plant_id'],
                     'organizer_id' => $organizer->id,
                     'visitor_name' => $data['visitor_name'],
                     'visitor_designation' => $data['visitor_designation'] ?? null,
@@ -176,6 +188,7 @@ class VisitorController extends Controller
 
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
+                'plant_id' => $data['plant_id'],
                 'organizer_id' => $organizer->id,
                 'overall_rating' => $data['overall_rating'] ?? null,
                 'comments' => $data['comments'] ?? null,

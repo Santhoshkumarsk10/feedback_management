@@ -92,11 +92,6 @@ class MasterSeeder extends Seeder
         }
 
         // 3. Link existing Users to Roles and Plants
-        $p1 = Plant::where('code', 'PLANT-01')->first();
-        $p2 = Plant::where('code', 'PLANT-02')->first();
-        $p3 = Plant::where('code', 'PLANT-03')->first();
-        $p4 = Plant::where('code', 'PLANT-04')->first();
-
         $roleSuper = Role::where('slug', 'superadmin')->first();
         $roleAdmin = Role::where('slug', 'admin')->first();
         $roleOrganizer = Role::where('slug', 'organizer')->first();
@@ -104,39 +99,32 @@ class MasterSeeder extends Seeder
         // Superadmin & Admin
         User::where('email', 'superadmin@plant.test')->update([
             'role_id' => $roleSuper?->id,
-            'plant_id' => $p4?->id,
         ]);
 
         User::where('email', 'admin@plant.test')->update([
             'role_id' => $roleAdmin?->id,
-            'plant_id' => $p1?->id,
         ]);
 
         // Organizers
         User::where('email', 'ravi@plant.test')->update([
             'role_id' => $roleOrganizer?->id,
-            'plant_id' => $p2?->id,
         ]);
 
         User::where('email', 'priya@plant.test')->update([
             'role_id' => $roleOrganizer?->id,
-            'plant_id' => $p2?->id,
         ]);
 
         User::where('email', 'karthik@plant.test')->update([
             'role_id' => $roleOrganizer?->id,
-            'plant_id' => $p1?->id,
         ]);
 
         User::where('email', 'suresh@plant.test')->update([
             'role_id' => $roleOrganizer?->id,
-            'plant_id' => $p3?->id,
         ]);
 
         // Default any remaining users
         User::whereNull('role_id')->where('role', 'organizer')->update([
             'role_id' => $roleOrganizer?->id,
-            'plant_id' => $p1?->id,
         ]);
 
         // 4. Spatie Roles & Permissions

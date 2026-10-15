@@ -202,7 +202,9 @@ class ValidationAndPhoneRuleTest extends TestCase
         ])->values()->all();
 
         // Valid visitor feedback
+        $plant = Plant::first() ?? Plant::create(['name' => 'Demo Plant', 'code' => 'PL-DEMO', 'is_active' => true]);
         $validPayload = [
+            'plant_id' => $plant->id,
             'organizer_id' => $this->organizer->id,
             'visitor_name' => 'Mr. Sundar Rajan',
             'visitor_company' => 'Sundaram Fasteners Ltd.',
@@ -437,7 +439,9 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res->assertSessionHasErrors('email');
 
         // 5. Visitor submission email validation
+        $plant = Plant::first() ?? Plant::create(['name' => 'Demo Plant', 'code' => 'PL-DEMO', 'is_active' => true]);
         $res = $this->postJson('/api/visitor/feedback', [
+            'plant_id' => $plant->id,
             'organizer_id' => $this->organizer->id,
             'visitor_name' => 'Corporate Visitor',
             'visitor_company' => 'Honda Cars',

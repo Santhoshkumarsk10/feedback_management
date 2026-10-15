@@ -24,8 +24,13 @@ class Plant extends Model
         'is_active' => 'boolean',
     ];
 
-    public function users(): HasMany
+    public function feedbacks(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Feedback::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
     }
 }
