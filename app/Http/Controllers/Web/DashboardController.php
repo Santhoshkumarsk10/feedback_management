@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Feedback;
+use App\Models\FeedbackAnswer;
+use App\Models\Question;
 use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -17,6 +21,80 @@ class DashboardController extends Controller
     {
         $currentShift = Shift::current();
         $currentUser = auth()->user();
+        $now = now();
+
+        // 1. Date Range Handling
+        $selectedRange = $request->input('range', 'month');
+        $isAllTime = false;
+        $startDate = null;
+        $endDate = null;
+        $prevStartDate = null;
+        $prevEndDate = null;
+        $growthSubtext = 'vs last month';
+        $rangeLabel = '';
+
+        if ($request->filled('from') && $request->filled('to')) {
+            try {
+                $startDate = Carbon::parse($request->input('from'))->startOfDay();
+                $endDate = Carbon::parse($request->input('to'))->endOfDay();
+                $diffDays = $startDate->diffInDays($endDate) + 1;
+                $prevStartDate = (clone $startDate)->subDays($diffDays);
+                $prevEndDate = (clone $endDate)->subDays($diffDays);
+                $selectedRange = 'custom';
+                $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+                $growthSubtext = 'vs prev ' . $diffDays . 'd';
+            } catch (\Throwable $e) {
+                $selectedRange = 'month';
+            }
+        }
+
+        if (!$startDate && !$isAllTime) {
+            switch ($selectedRange) {
+                case 'today':
+                    $startDate = (clone $now)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $prevStartDate = (clone $now)->subDay()->startOfDay();
+                    $prevEndDate = (clone $now)->subDay()->endOfDay();
+                    $rangeLabel = $now->format('d M Y');
+                    $growthSubtext = 'vs yesterday';
+                    break;
+
+                case '7days':
+                    $startDate = (clone $now)->subDays(6)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $prevStartDate = (clone $now)->subDays(13)->startOfDay();
+                    $prevEndDate = (clone $now)->subDays(7)->endOfDay();
+                    $rangeLabel = $startDate->format('d M') . ' - ' . $endDate->format('d M Y');
+                    $growthSubtext = 'vs prev 7 days';
+                    break;
+
+                case '30days':
+                    $startDate = (clone $now)->subDays(29)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $prevStartDate = (clone $now)->subDays(59)->startOfDay();
+                    $prevEndDate = (clone $now)->subDays(30)->endOfDay();
+                    $rangeLabel = $startDate->format('d M') . ' - ' . $endDate->format('d M Y');
+                    $growthSubtext = 'vs prev 30 days';
+                    break;
+
+                case 'all':
+                    $isAllTime = true;
+                    $rangeLabel = 'All Time Records';
+                    $growthSubtext = 'overall';
+                    break;
+
+                case 'month':
+                default:
+                    $selectedRange = 'month';
+                    $startDate = (clone $now)->startOfMonth();
+                    $endDate = (clone $now)->endOfMonth();
+                    $prevStartDate = (clone $now)->subMonth()->startOfMonth();
+                    $prevEndDate = (clone $now)->subMonth()->endOfMonth();
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+                    $growthSubtext = 'vs last month';
+                    break;
+            }
+        }
 
         // Today Summary Metrics for executive status banner
         $todayTotalVisitors = Visit::whereDate('visit_date', today())->count();
@@ -27,23 +105,55 @@ class DashboardController extends Controller
         $todayAvgRating = Feedback::whereHas('visit', fn ($v) => $v->whereDate('visit_date', today()))->avg('overall_rating');
         $lastSyncAt = AuditLog::where('module', 'visitors')->where('action', 'sync')->latest('created_at')->value('created_at');
 
-        // Overall Analytics & Historical Metrics
-        $totalVisitorsCount = (int) Visitor::where('is_active', true)->count();
-        if ($totalVisitorsCount === 0) {
-            $totalVisitorsCount = Visit::count();
+        // Dynamic Filtering Query Builders
+        $visitsQuery = Visit::query();
+        $feedbacksQuery = Feedback::query();
+
+        if (!$isAllTime && $startDate && $endDate) {
+            $visitsQuery->whereBetween('visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
+            $feedbacksQuery->whereBetween('submitted_at', [$startDate, $endDate]);
         }
-        $totalFeedbacksCount = Feedback::count();
-        $overallAvg = Feedback::avg('overall_rating') ? round((float) Feedback::avg('overall_rating'), 1) : 0.0;
-        $positiveCount = Feedback::where('overall_rating', '>=', 4)->count();
+
+        $totalVisitorsCount = (clone $visitsQuery)->count();
+        $totalFeedbacksCount = (clone $feedbacksQuery)->count();
+        $overallAvg = (clone $feedbacksQuery)->avg('overall_rating') ? round((float) (clone $feedbacksQuery)->avg('overall_rating'), 1) : 0.0;
+        $positiveCount = (clone $feedbacksQuery)->where('overall_rating', '>=', 4)->count();
         $positivePct = $totalFeedbacksCount > 0 ? round(($positiveCount / $totalFeedbacksCount) * 100) : 0;
-        $pendingActionsCount = Visit::doesntHave('feedback')->count();
+        $pendingActionsCount = (clone $visitsQuery)->doesntHave('feedback')->count();
+
+        // Growth metrics vs Previous Period
+        if ($prevStartDate && $prevEndDate) {
+            $prevVisitors = Visit::whereBetween('visit_date', [$prevStartDate->toDateString(), $prevEndDate->toDateString()])->count();
+            $visitorsGrowth = $prevVisitors > 0 ? round((($totalVisitorsCount - $prevVisitors) / $prevVisitors) * 100) : ($totalVisitorsCount > 0 ? 100 : 0);
+
+            $prevFeedbacks = Feedback::whereBetween('submitted_at', [$prevStartDate, $prevEndDate])->count();
+            $feedbackGrowth = $prevFeedbacks > 0 ? round((($totalFeedbacksCount - $prevFeedbacks) / $prevFeedbacks) * 100) : ($totalFeedbacksCount > 0 ? 100 : 0);
+
+            $prevAvg = Feedback::whereBetween('submitted_at', [$prevStartDate, $prevEndDate])->avg('overall_rating');
+            if ($prevAvg !== null && $overallAvg > 0) {
+                $ratingDiff = round($overallAvg - (float) $prevAvg, 1);
+                $ratingGrowthText = ($ratingDiff >= 0 ? '+' : '') . $ratingDiff . ' pts';
+            } elseif ($overallAvg > 0) {
+                $ratingGrowthText = '+' . $overallAvg . ' pts';
+            } else {
+                $ratingGrowthText = '+0.0 pts';
+            }
+
+            $prevPending = Visit::whereBetween('visit_date', [$prevStartDate->toDateString(), $prevEndDate->toDateString()])->doesntHave('feedback')->count();
+            $pendingGrowth = $prevPending > 0 ? round((($pendingActionsCount - $prevPending) / $prevPending) * 100) : ($pendingActionsCount > 0 ? 100 : 0);
+        } else {
+            $visitorsGrowth = 0;
+            $feedbackGrowth = 0;
+            $ratingGrowthText = '+0.0 pts';
+            $pendingGrowth = 0;
+        }
 
         $stats = [
             'organizers' => User::whereIn('role', ['organizer', 'staff'])->count(),
             'visitors' => $totalVisitorsCount,
             'visits' => Visit::count(),
             'feedbacks' => $totalFeedbacksCount,
-            'avg' => round((float) Feedback::avg('overall_rating'), 2),
+            'avg' => $overallAvg,
             'low' => Feedback::where('overall_rating', '<=', 2)->count(),
             'today_total' => $todayTotalVisitors,
             'today_given' => $todayGivenCount,
@@ -54,31 +164,22 @@ class DashboardController extends Controller
             'last_sync_at' => $lastSyncAt,
         ];
 
-        // Dynamic Growth indicators (comparing this month vs previous month or past 30 days)
-        $visitorsLast30 = Visit::where('visit_date', '>=', now()->subDays(30))->count();
-        $visitorsPrev30 = Visit::whereBetween('visit_date', [now()->subDays(60), now()->subDays(30)])->count();
-        $visitorsGrowth = $visitorsPrev30 > 0 ? round((($visitorsLast30 - $visitorsPrev30) / $visitorsPrev30) * 100) : 0;
-
-        $feedbackLast30 = Feedback::where('submitted_at', '>=', now()->subDays(30))->count();
-        $feedbackPrev30 = Feedback::whereBetween('submitted_at', [now()->subDays(60), now()->subDays(30)])->count();
-        $feedbackGrowth = $feedbackPrev30 > 0 ? round((($feedbackLast30 - $feedbackPrev30) / $feedbackPrev30) * 100) : 0;
-
         // 5 Modern Key Metric Cards matching Reference UI
         $saasMetrics = [
             'total_visitors' => [
                 'value' => number_format($totalVisitorsCount),
                 'growth' => ($visitorsGrowth >= 0 ? '+' : '') . $visitorsGrowth . '%',
-                'subtext' => 'vs last month',
+                'subtext' => $growthSubtext,
             ],
             'total_feedbacks' => [
                 'value' => number_format($totalFeedbacksCount),
                 'growth' => ($feedbackGrowth >= 0 ? '+' : '') . $feedbackGrowth . '%',
-                'subtext' => 'vs last month',
+                'subtext' => $growthSubtext,
             ],
             'average_rating' => [
                 'value' => ($totalFeedbacksCount > 0 ? number_format($overallAvg, 1) : '0.0') . ' / 5',
-                'growth' => ($totalFeedbacksCount > 0 ? '+6%' : '+0%'),
-                'subtext' => 'vs last month',
+                'growth' => $ratingGrowthText,
+                'subtext' => $growthSubtext,
             ],
             'positive_feedbacks' => [
                 'value' => number_format($positiveCount),
@@ -87,61 +188,71 @@ class DashboardController extends Controller
             ],
             'pending_actions' => [
                 'value' => number_format($pendingActionsCount),
-                'growth' => ($pendingActionsCount > 0 ? '+100%' : '+0%'),
-                'subtext' => 'vs last month',
+                'growth' => ($pendingGrowth >= 0 ? '+' : '') . $pendingGrowth . '%',
+                'subtext' => $growthSubtext,
             ],
         ];
 
-        // Feedback Trends (Dual-Line Chart: Total Feedbacks & Positive Feedbacks)
-        $trendsLabels = ['Oct 01', 'Oct 05', 'Oct 10', 'Oct 15', 'Oct 20', 'Oct 25', 'Oct 31'];
-        $activeDays = [1, 5, 10, 15, 20, 25, 31];
-        $currentMonthStart = now()->startOfMonth();
-        $trendsTotal = [];
-        $trendsPositive = [];
-        foreach ($activeDays as $day) {
-            $pointDate = (clone $currentMonthStart)->setDay(min($day, (int) now()->endOfMonth()->format('d')));
-            $windowStart = (clone $pointDate)->subDays(2)->startOfDay();
-            $windowEnd = (clone $pointDate)->addDays(2)->endOfDay();
-            $cnt = Feedback::whereBetween('submitted_at', [$windowStart, $windowEnd])->count();
-            $pos = Feedback::whereBetween('submitted_at', [$windowStart, $windowEnd])->where('overall_rating', '>=', 4)->count();
-            $trendsTotal[] = $cnt;
-            $trendsPositive[] = $pos;
-        }
+        // Trends Builder: Pre-builds 30, 14, and 7 day trends for instant client-side switching
+        $buildTrends = function ($daysCount, $step = 1) use ($now) {
+            $labels = [];
+            $total = [];
+            $positive = [];
 
-        $trendsData = [
-            'labels' => $trendsLabels,
-            'total' => $trendsTotal,
-            'positive' => $trendsPositive,
+            $points = ceil($daysCount / $step);
+            for ($i = $points - 1; $i >= 0; $i--) {
+                $pointEnd = (clone $now)->subDays($i * $step)->endOfDay();
+                $pointStart = (clone $pointEnd)->subDays($step - 1)->startOfDay();
+
+                $labels[] = $pointEnd->format('d M');
+                $cnt = Feedback::whereBetween('submitted_at', [$pointStart, $pointEnd])->count();
+                $pos = Feedback::whereBetween('submitted_at', [$pointStart, $pointEnd])->where('overall_rating', '>=', 4)->count();
+
+                $total[] = $cnt;
+                $positive[] = $pos;
+            }
+
+            return [
+                'labels' => $labels,
+                'total' => $total,
+                'positive' => $positive,
+            ];
+        };
+
+        $allTrends = [
+            '30' => $buildTrends(30, 4),
+            '14' => $buildTrends(14, 1),
+            '7'  => $buildTrends(7, 1),
         ];
 
+        $trendsData = $allTrends['30'];
+
         // Rating Distribution Donut
-        $dist = Feedback::whereNotNull('overall_rating')
+        $dist = (clone $feedbacksQuery)->whereNotNull('overall_rating')
             ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
-        $distribution = collect(range(1, 5))->map(fn ($i) => (int) ($dist[$i] ?? 0))->all();
 
         $c5 = (int) ($dist[5] ?? 0);
         $c4 = (int) ($dist[4] ?? 0);
         $c3 = (int) ($dist[3] ?? 0);
         $c2 = (int) ($dist[2] ?? 0);
         $c1 = (int) ($dist[1] ?? 0);
-        $sumRatings = max(1, $c5 + $c4 + $c3 + $c2 + $c1);
+        $sumRatings = $c5 + $c4 + $c3 + $c2 + $c1;
+        $denomRatings = max(1, $sumRatings);
 
         $ratingDist = [
-            'total' => $totalFeedbacksCount,
+            'total' => $sumRatings,
             'items' => [
-                ['label' => '5 Star', 'count' => $c5, 'percent' => round(($c5 / $sumRatings) * 100), 'color' => '#2563eb'],
-                ['label' => '4 Star', 'count' => $c4, 'percent' => round(($c4 / $sumRatings) * 100), 'color' => '#38bdf8'],
-                ['label' => '3 Star', 'count' => $c3, 'percent' => round(($c3 / $sumRatings) * 100), 'color' => '#f59e0b'],
-                ['label' => '2 Star', 'count' => $c2, 'percent' => round(($c2 / $sumRatings) * 100), 'color' => '#fb923c'],
-                ['label' => '1 Star', 'count' => $c1, 'percent' => round(($c1 / $sumRatings) * 100), 'color' => '#ef4444'],
+                ['label' => '5 Star', 'count' => $c5, 'percent' => $sumRatings > 0 ? round(($c5 / $denomRatings) * 100) : 0, 'color' => '#2563eb'],
+                ['label' => '4 Star', 'count' => $c4, 'percent' => $sumRatings > 0 ? round(($c4 / $denomRatings) * 100) : 0, 'color' => '#38bdf8'],
+                ['label' => '3 Star', 'count' => $c3, 'percent' => $sumRatings > 0 ? round(($c3 / $denomRatings) * 100) : 0, 'color' => '#f59e0b'],
+                ['label' => '2 Star', 'count' => $c2, 'percent' => $sumRatings > 0 ? round(($c2 / $denomRatings) * 100) : 0, 'color' => '#fb923c'],
+                ['label' => '1 Star', 'count' => $c1, 'percent' => $sumRatings > 0 ? round(($c1 / $denomRatings) * 100) : 0, 'color' => '#ef4444'],
             ],
         ];
 
-        // Dynamic Feedback by Category (from Section 4 & question answers in database)
-        $section4Answers = \App\Models\FeedbackAnswer::join('questions', 'feedback_answers.question_id', '=', 'questions.id')
-            ->where('questions.section', 'like', '%Section 4%')
-            ->selectRaw('questions.question, count(*) as total_answers, avg(cast(feedback_answers.answer as decimal(10,2))) as avg_score')
-            ->groupBy('questions.question')
+        // Dynamic Feedback by Category from questions in database
+        $sec4Questions = Question::where('section', 'like', '%Section 4%')
+            ->orderBy('id')
             ->get();
 
         $catColors = ['#2563eb', '#10b981', '#f59e0b', '#f97316', '#f43f5e', '#8b5cf6'];
@@ -156,34 +267,36 @@ class DashboardController extends Controller
 
         $categoryFeedback = [];
         $catIdx = 0;
-        foreach ($section4Answers as $row) {
-            $shortName = $cleanCatNames[$row->question] ?? str_replace('Facilities Rating: ', '', $row->question);
-            $avg = (float) $row->avg_score;
-            $percent = $avg > 0 ? min(100, round(($avg / 5.0) * 100)) : 80;
+        foreach ($sec4Questions as $question) {
+            $shortName = $cleanCatNames[$question->question] ?? str_replace('Facilities Rating: ', '', $question->question);
+            
+            $ansQuery = FeedbackAnswer::where('question_id', $question->id);
+            if (!$isAllTime && $startDate && $endDate) {
+                $ansQuery->whereHas('feedback', fn ($fq) => $fq->whereBetween('submitted_at', [$startDate, $endDate]));
+            }
+            
+            $cnt = $ansQuery->count();
+            $avg = $cnt > 0 ? (float) $ansQuery->avg('answer') : 0.0;
+            $percent = $cnt > 0 ? min(100, round(($avg / 5.0) * 100)) : 0;
+
             $categoryFeedback[] = [
                 'name' => $shortName,
-                'count' => (int) $row->total_answers,
+                'count' => $cnt,
                 'percent' => $percent,
+                'avg' => $avg,
                 'color' => $catColors[$catIdx % count($catColors)],
             ];
             $catIdx++;
         }
 
-        if (empty($categoryFeedback)) {
-            $categoryFeedback = [
-                ['name' => 'Facility & Infrastructure', 'count' => 0, 'percent' => 0, 'color' => '#2563eb'],
-                ['name' => 'Staff Behaviour',          'count' => 0, 'percent' => 0, 'color' => '#10b981'],
-                ['name' => 'Cleanliness',              'count' => 0, 'percent' => 0, 'color' => '#f59e0b'],
-                ['name' => 'Security & Safety',        'count' => 0, 'percent' => 0, 'color' => '#f97316'],
-                ['name' => 'Demo & Machine Trial',     'count' => 0, 'percent' => 0, 'color' => '#f43f5e'],
-                ['name' => 'Others',                  'count' => 0, 'percent' => 0, 'color' => '#8b5cf6'],
-            ];
+        // Top Locations / Plant Facilities from visits table
+        $locQuery = Visit::leftJoin('users', 'visits.organizer_id', '=', 'users.id');
+        if (!$isAllTime && $startDate && $endDate) {
+            $locQuery->whereBetween('visits.visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
         }
+        $totalLocVisits = (clone $locQuery)->count() ?: 1;
 
-        // Dynamic Top Locations / Plant Facilities from visits table
-        $totalVisitsCount = Visit::count() ?: 1;
-        $locRows = Visit::leftJoin('users', 'visits.organizer_id', '=', 'users.id')
-            ->selectRaw('COALESCE(NULLIF(visits.department,""), NULLIF(users.department,""), "Main Technical Centre") as loc_name, count(*) as count')
+        $locRows = $locQuery->selectRaw('COALESCE(NULLIF(visits.department,""), NULLIF(users.department,""), "Main Technical Centre") as loc_name, count(*) as count')
             ->groupBy('loc_name')
             ->orderByDesc('count')
             ->limit(6)
@@ -193,7 +306,7 @@ class DashboardController extends Controller
         $topLocations = [];
         $rank = 1;
         foreach ($locRows as $loc) {
-            $pct = round(($loc->count / $totalVisitsCount) * 100);
+            $pct = round(($loc->count / $totalLocVisits) * 100);
             $topLocations[] = [
                 'rank' => $rank,
                 'name' => $loc->loc_name,
@@ -205,10 +318,15 @@ class DashboardController extends Controller
         }
 
         // Recent Feedbacks Stream
-        $recentFeedbacksList = Feedback::with(['visit.visitor', 'organizer'])
-            ->latest('submitted_at')
-            ->limit(5)
-            ->get();
+        $recentQuery = Feedback::with(['visit.visitor', 'organizer']);
+        if (!$isAllTime && $startDate && $endDate) {
+            $recentQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        }
+        $recentFeedbacksList = $recentQuery->latest('submitted_at')->limit(5)->get();
+
+        if ($recentFeedbacksList->isEmpty() && Feedback::exists()) {
+            $recentFeedbacksList = Feedback::with(['visit.visitor', 'organizer'])->latest('submitted_at')->limit(5)->get();
+        }
 
         $avatarBgColors = ['#eff6ff', '#ecfdf5', '#fef3c7', '#fff1f2', '#f3e8ff'];
         $avatarTextColors = ['#1d4ed8', '#047857', '#b45309', '#be123c', '#7e22ce'];
@@ -226,52 +344,63 @@ class DashboardController extends Controller
                 'initials' => $initials ?: 'VI',
                 'bg_color' => $avatarBgColors[$idx % count($avatarBgColors)],
                 'text_color' => $avatarTextColors[$idx % count($avatarTextColors)],
-                'date_time' => $f->submitted_at ? $f->submitted_at->format('d M Y, h:i A') : 'Recently',
+                'date_time' => $f->submitted_at ? $f->submitted_at->diffForHumans() : 'Recently',
+                'full_date' => $f->submitted_at ? $f->submitted_at->format('d M Y, h:i A') : '—',
                 'rating' => (int) ($f->overall_rating ?? 5),
-                'comment' => $f->comments ? \Illuminate\Support\Str::limit($f->comments, 65) : 'Great experience! The staff were very helpful.',
+                'comment' => $f->comments ? Str::limit($f->comments, 65) : 'Visitor feedback submitted.',
                 'url' => route('feedbacks.show', $f),
             ];
         });
 
-        // Dynamic Visitor Types from visits purpose classification
-        $trialsCount = Visit::where(function($q) {
+        // Visitor Types segmentation
+        $periodVisitorsCount = $totalVisitorsCount;
+        $trialsCount = (clone $visitsQuery)->where(function($q) {
             $q->where('purpose', 'like', '%Trial%')->orWhere('purpose', 'like', '%Demo%');
         })->count();
-        $discussionCount = Visit::where(function($q) {
-            $q->where('purpose', 'like', '%Discussion%')->orWhere('purpose', 'like', '%Evaluation%');
+        $discussionCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Discussion%')->orWhere('purpose', 'like', '%Evaluation%')->orWhere('purpose', 'like', '%Meeting%');
         })->count();
-        $auditCount = Visit::where(function($q) {
+        $auditCount = (clone $visitsQuery)->where(function($q) {
             $q->where('purpose', 'like', '%Inspection%')->orWhere('purpose', 'like', '%Audit%');
         })->count();
-        $toursCount = Visit::where(function($q) {
+        $maintCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Maintenance%')->orWhere('purpose', 'like', '%Review%')->orWhere('purpose', 'like', '%Assessment%');
+        })->count();
+        $toursCount = (clone $visitsQuery)->where(function($q) {
             $q->where('purpose', 'like', '%Tour%')->orWhere('purpose', 'like', '%VR%');
         })->count();
-        $otherPurposesCount = max(0, $totalVisitorsCount - ($trialsCount + $discussionCount + $auditCount + $toursCount));
-        $sumVisitorSegments = max(1, $trialsCount + $discussionCount + $auditCount + $toursCount + $otherPurposesCount);
+        $otherPurposesCount = max(0, $periodVisitorsCount - ($trialsCount + $discussionCount + $auditCount + $maintCount + $toursCount));
+        $sumVisitorSegments = max(1, $periodVisitorsCount);
 
         $visitorTypes = [
-            'total' => $totalVisitorsCount,
+            'total' => $periodVisitorsCount,
             'items' => [
-                ['label' => 'Machine Trials & Demo', 'percent' => round(($trialsCount / $sumVisitorSegments) * 100), 'count' => $trialsCount, 'color' => '#2563eb'],
-                ['label' => 'Technical Discussion',  'percent' => round(($discussionCount / $sumVisitorSegments) * 100), 'count' => $discussionCount, 'color' => '#10b981'],
-                ['label' => 'Machinery Audit',       'percent' => round(($auditCount / $sumVisitorSegments) * 100), 'count' => $auditCount, 'color' => '#f59e0b'],
-                ['label' => 'Plant & VR Tours',      'percent' => round(($toursCount / $sumVisitorSegments) * 100), 'count' => $toursCount, 'color' => '#f97316'],
-                ['label' => 'General / Other Visits','percent' => round(($otherPurposesCount / $sumVisitorSegments) * 100), 'count' => $otherPurposesCount, 'color' => '#8b5cf6'],
+                ['label' => 'Audits & Compliance',     'percent' => $periodVisitorsCount > 0 ? round(($auditCount / $sumVisitorSegments) * 100) : 0, 'count' => $auditCount, 'color' => '#2563eb'],
+                ['label' => 'Technical Discussion',    'percent' => $periodVisitorsCount > 0 ? round(($discussionCount / $sumVisitorSegments) * 100) : 0, 'count' => $discussionCount, 'color' => '#10b981'],
+                ['label' => 'Maintenance & Reviews',   'percent' => $periodVisitorsCount > 0 ? round(($maintCount / $sumVisitorSegments) * 100) : 0, 'count' => $maintCount, 'color' => '#f59e0b'],
+                ['label' => 'Machine Trials & Demo',   'percent' => $periodVisitorsCount > 0 ? round(($trialsCount / $sumVisitorSegments) * 100) : 0, 'count' => $trialsCount, 'color' => '#f97316'],
+                ['label' => 'Plant & VR Tours',        'percent' => $periodVisitorsCount > 0 ? round(($toursCount / $sumVisitorSegments) * 100) : 0, 'count' => $toursCount, 'color' => '#8b5cf6'],
+                ['label' => 'General / Other Visits',  'percent' => $periodVisitorsCount > 0 ? round(($otherPurposesCount / $sumVisitorSegments) * 100) : 0, 'count' => $otherPurposesCount, 'color' => '#64748b'],
             ],
         ];
 
         // Dynamic Feedback Status from database
         $reviewedCount = $totalFeedbacksCount;
         $pendingCount = $pendingActionsCount;
-        $escalatedCount = Feedback::where('overall_rating', '<=', 2)->count();
-        $sumStatus = max(1, $reviewedCount + $pendingCount + $escalatedCount);
+        $escalatedQuery = Feedback::where('overall_rating', '<=', 2);
+        if (!$isAllTime && $startDate && $endDate) {
+            $escalatedQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        }
+        $escalatedCount = $escalatedQuery->count();
+        $sumStatus = $reviewedCount + $pendingCount + $escalatedCount;
+        $denomStatus = max(1, $sumStatus);
 
         $feedbackStatuses = [
-            'total' => $totalFeedbacksCount,
+            'total' => $sumStatus,
             'items' => [
-                ['label' => 'Reviewed',  'percent' => round(($reviewedCount / $sumStatus) * 100), 'count' => $reviewedCount, 'color' => '#2563eb'],
-                ['label' => 'Pending',   'percent' => round(($pendingCount / $sumStatus) * 100), 'count' => $pendingCount, 'color' => '#f59e0b'],
-                ['label' => 'Escalated', 'percent' => round(($escalatedCount / $sumStatus) * 100), 'count' => $escalatedCount, 'color' => '#ef4444'],
+                ['label' => 'Reviewed',  'percent' => $sumStatus > 0 ? round(($reviewedCount / $denomStatus) * 100) : 0, 'count' => $reviewedCount, 'color' => '#2563eb'],
+                ['label' => 'Pending',   'percent' => $sumStatus > 0 ? round(($pendingCount / $denomStatus) * 100) : 0, 'count' => $pendingCount, 'color' => '#f59e0b'],
+                ['label' => 'Escalated', 'percent' => $sumStatus > 0 ? round(($escalatedCount / $denomStatus) * 100) : 0, 'count' => $escalatedCount, 'color' => '#ef4444'],
             ],
         ];
 
@@ -281,74 +410,121 @@ class DashboardController extends Controller
             'completed' => $todayGivenCount,
         ];
 
-        $allVisits = Visit::where('visit_date', '>=', now()->subMonths(6)->startOfMonth())
-            ->pluck('visit_date')
-            ->map(fn ($d) => \Carbon\Carbon::parse($d)->toDateString());
-
-        // 1. Daily: Last 14 days
-        $daily = [];
-        for ($i = 13; $i >= 0; $i--) {
-            $date = now()->subDays($i);
-            $dStr = $date->toDateString();
-            $daily[$date->format('d M')] = $allVisits->filter(fn ($v) => $v === $dStr)->count();
-        }
-
-        // 2. Weekly: Last 8 weeks
-        $weekly = [];
-        for ($i = 7; $i >= 0; $i--) {
-            $start = now()->subWeeks($i)->startOfWeek();
-            $end = (clone $start)->endOfWeek();
-            $sStr = $start->toDateString();
-            $eStr = $end->toDateString();
-            $label = $start->format('d M') . ' - ' . $end->format('d M');
-            $weekly[$label] = $allVisits->filter(fn ($v) => $v >= $sStr && $v <= $eStr)->count();
-        }
-
-        // 3. Monthly: Last 6 months
-        $monthly = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $start = now()->subMonths($i)->startOfMonth();
-            $end = (clone $start)->endOfMonth();
-            $sStr = $start->toDateString();
-            $eStr = $end->toDateString();
-            $label = $start->format('M Y');
-            $monthly[$label] = $allVisits->filter(fn ($v) => $v >= $sStr && $v <= $eStr)->count();
-        }
-
-        $timeline = [
-            'daily' => [
-                'labels' => array_keys($daily),
-                'values' => array_values($daily),
-            ],
-            'weekly' => [
-                'labels' => array_keys($weekly),
-                'values' => array_values($weekly),
-            ],
-            'monthly' => [
-                'labels' => array_keys($monthly),
-                'values' => array_values($monthly),
-            ],
-        ];
-
-        $months = collect($monthly);
-
-        $leaders = User::whereIn('role', ['organizer', 'staff'])
-            ->withCount(['visitsAsOrganizer as visits_count', 'feedbacksReceived as feedbacks_count'])
-            ->withAvg('feedbacksReceived as avg_rating', 'overall_rating')
-            ->orderByDesc('avg_rating')->get();
-
-        $recent = Feedback::with(['visit', 'organizer', 'submittedBy'])->latest('submitted_at')->limit(8)->get();
-        $low = Feedback::with(['visit', 'organizer', 'submittedBy'])->where('overall_rating', '<=', 2)
-            ->latest('submitted_at')->limit(5)->get();
-
         $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
 
         return view('dashboard', compact(
-            'stats', 'saasMetrics', 'trendsData', 'ratingDist', 'categoryFeedback',
+            'stats', 'saasMetrics', 'trendsData', 'allTrends', 'ratingDist', 'categoryFeedback',
             'topLocations', 'recentFeedbacks', 'visitorTypes', 'feedbackStatuses',
-            'distribution', 'months', 'timeline', 'leaders', 'recent', 'low',
-            'currentShift', 'currentUser', 'todayCounts', 'shiftAlerts'
+            'currentShift', 'currentUser', 'todayCounts', 'shiftAlerts',
+            'selectedRange', 'rangeLabel'
         ));
+    }
+
+    /**
+     * Unified Global Search for Visitors, Feedbacks, and Staff Directory
+     */
+    public function globalSearch(Request $request)
+    {
+        $term = trim($request->input('q', ''));
+        if (strlen($term) < 2) {
+            return response()->json([
+                'success' => true,
+                'results' => [
+                    'visitors' => [],
+                    'feedbacks' => [],
+                    'staff' => [],
+                ],
+                'total' => 0,
+            ]);
+        }
+
+        // 1. Visitors & Visits
+        $visits = Visit::with(['visitor', 'feedback'])
+            ->where(function ($q) use ($term) {
+                $q->where('visitor_code', 'like', "%{$term}%")
+                  ->orWhere('department', 'like', "%{$term}%")
+                  ->orWhere('purpose', 'like', "%{$term}%")
+                  ->orWhereHas('visitor', function ($vq) use ($term) {
+                      $vq->where('name', 'like', "%{$term}%")
+                         ->orWhere('company', 'like', "%{$term}%")
+                         ->orWhere('mobile', 'like', "%{$term}%")
+                         ->orWhere('email', 'like', "%{$term}%");
+                  });
+            })
+            ->latest('id')
+            ->limit(5)
+            ->get()
+            ->map(function ($v) {
+                $hasFeedback = $v->feedback()->exists();
+                $name = $v->visitor_name ?? ('Visitor #' . $v->id);
+                return [
+                    'id' => $v->id,
+                    'title' => $name,
+                    'company' => $v->visitor_company ?: 'Company —',
+                    'code' => $v->visitor_code,
+                    'department' => $v->department ?: '—',
+                    'date' => $v->visit_date ? $v->visit_date->format('d M Y') : '—',
+                    'has_feedback' => $hasFeedback,
+                    'url' => $hasFeedback 
+                        ? route('feedbacks.show', $v->feedback->id) 
+                        : route('visits.feedback.create', $v->id),
+                    'action_label' => $hasFeedback ? 'View Feedback' : 'Give Feedback',
+                ];
+            });
+
+        // 2. Feedbacks
+        $feedbacks = Feedback::with('visit.visitor')
+            ->where(function ($q) use ($term) {
+                $q->where('comments', 'like', "%{$term}%")
+                  ->orWhereHas('visit.visitor', function ($vq) use ($term) {
+                      $vq->where('name', 'like', "%{$term}%")
+                         ->orWhere('company', 'like', "%{$term}%");
+                  });
+            })
+            ->latest('submitted_at')
+            ->limit(5)
+            ->get()
+            ->map(function ($f) {
+                return [
+                    'id' => $f->id,
+                    'title' => $f->visit?->visitor_name ?? 'Guest Feedback',
+                    'rating' => (int) $f->overall_rating,
+                    'comments' => Str::limit($f->comments ?? 'No comments provided', 50),
+                    'date' => $f->submitted_at ? $f->submitted_at->format('d M Y') : 'Recently',
+                    'url' => route('feedbacks.show', $f->id),
+                ];
+            });
+
+        // 3. Staff / Hosts
+        $staff = User::where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('email', 'like', "%{$term}%")
+                  ->orWhere('department', 'like', "%{$term}%");
+            })
+            ->limit(4)
+            ->get()
+            ->map(function ($u) {
+                return [
+                    'id' => $u->id,
+                    'title' => $u->name,
+                    'department' => $u->department ?? 'Staff',
+                    'role' => ucfirst($u->role ?? 'User'),
+                    'email' => $u->email,
+                    'url' => route('users.index', ['search' => $u->name]),
+                ];
+            });
+
+        $totalCount = $visits->count() + $feedbacks->count() + $staff->count();
+
+        return response()->json([
+            'success' => true,
+            'results' => [
+                'visitors' => $visits,
+                'feedbacks' => $feedbacks,
+                'staff' => $staff,
+            ],
+            'total' => $totalCount,
+        ]);
     }
 
     /**
