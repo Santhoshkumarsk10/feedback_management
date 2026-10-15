@@ -51,6 +51,17 @@
 
 
             <x-custom-select 
+                name="plant_id" 
+                :value="request('plant_id')" 
+                placeholder="All Plant Units" 
+                search-placeholder="Search plant..." 
+                icon="bi-buildings" 
+                min-width="190px" 
+                :options="$plants->map(fn($p) => ['value' => $p->id, 'label' => $p->code . ' — ' . $p->name])" 
+                auto-submit
+            />
+
+            <x-custom-select 
                 name="organizer_id" 
                 :value="request('organizer_id')" 
                 placeholder="All Staff" 
@@ -92,7 +103,7 @@
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['organizer_id', 'rating', 'from', 'to', 'tier']))
+            @if(request()->hasAny(['plant_id', 'organizer_id', 'rating', 'from', 'to', 'tier']))
                 <a href="{{ route('feedbacks.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Reset Filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -117,9 +128,10 @@
                 <tr>
                     <th>Submitted Time</th>
                     <th>Visitor & Company</th>
+                    <th>Plant Facility</th>
                     <th>Assigned Organizer</th>
                     <th>Overall Rating</th>
-                    <th style="width: 35%;">Visitor Comments</th>
+                    <th style="width: 30%;">Visitor Comments</th>
                     <th class="text-end">Action</th>
                 </tr>
             </thead>
@@ -144,6 +156,16 @@
                             <div class="small text-muted">
                                 <i class="bi bi-building"></i> {{ $f->visit->visitor_company }}
                             </div>
+                        @endif
+                    </td>
+                    <td>
+                        @if($f->plant)
+                            <span class="badge-modern badge-shibaura" title="{{ $f->plant->name }}">
+                                <i class="bi bi-buildings"></i> {{ $f->plant->code }}
+                            </span>
+                            <div class="small text-muted text-truncate" style="max-width: 160px; font-size: 0.72rem;">{{ $f->plant->name }}</div>
+                        @else
+                            <span class="badge-modern badge-slate">—</span>
                         @endif
                     </td>
                     <td>
@@ -175,7 +197,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">
+                    <td colspan="7" class="text-center text-muted py-5">
                         <i class="bi bi-chat-left-quote fs-2 d-block mb-2 text-slate-300"></i>
                         No feedback submissions found matching the criteria.
                     </td>

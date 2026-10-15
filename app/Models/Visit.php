@@ -11,6 +11,7 @@ class Visit extends Model
     protected $fillable = [
         'visitor_id',
         'visitor_code',
+        'plant_id',
         'organizer_id',
         'visit_date',
         'in_time',
@@ -216,6 +217,11 @@ class Visit extends Model
                 }
             }
         });
+    }
+
+    public function plant(): BelongsTo
+    {
+        return $this->belongsTo(Plant::class);
     }
 
     public function visitor(): BelongsTo

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
+use App\Models\Plant;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -16,12 +17,14 @@ class FeedbackController extends Controller
             'to' => 'nullable|date',
             'rating' => 'nullable|integer|between:1,5',
             'organizer_id' => 'nullable|integer|exists:users,id',
+            'plant_id' => 'nullable|integer|exists:plants,id',
             'tier' => 'nullable|string|in:all,5_star,4_star,critical',
         ]);
 
         $tier = $request->input('tier', 'all');
 
-        $query = Feedback::with(['visit', 'organizer'])
+        $query = Feedback::with(['visit', 'organizer', 'plant'])
+            ->when($request->plant_id, fn ($q, $v) => $q->where('plant_id', $v))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->rating, fn ($q, $v) => $q->where('overall_rating', $v))
             ->when($tier === '5_star', fn ($q) => $q->where('overall_rating', 5))
@@ -30,7 +33,8 @@ class FeedbackController extends Controller
             ->when($request->from, fn ($q, $v) => $q->whereDate('submitted_at', '>=', $v))
             ->when($request->to, fn ($q, $v) => $q->whereDate('submitted_at', '<=', $v));
 
-        $baseCount = Feedback::when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
+        $baseCount = Feedback::when($request->plant_id, fn ($q, $v) => $q->where('plant_id', $v))
+            ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->from, fn ($q, $v) => $q->whereDate('submitted_at', '>=', $v))
             ->when($request->to, fn ($q, $v) => $q->whereDate('submitted_at', '<=', $v));
 
@@ -44,6 +48,7 @@ class FeedbackController extends Controller
         return view('feedbacks.index', [
             'feedbacks' => $feedbacks,
             'organizers' => User::whereIn('role', ['organizer', 'staff'])->orderBy('name')->get(['id', 'name']),
+            'plants' => Plant::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
             'tabCounts' => [
                 'all' => $totalCount,
                 '5_star' => $star5Count,
@@ -56,7 +61,7 @@ class FeedbackController extends Controller
 
     public function show(Feedback $feedback)
     {
-        $feedback->load(['visit', 'organizer', 'submittedBy', 'answers.question']);
+        $feedback->load(['visit', 'organizer', 'submittedBy', 'plant', 'answers.question']);
 
         return view('feedbacks.show', compact('feedback'));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Feedback;
+use App\Models\Plant;
 use App\Models\Question;
 use App\Models\User;
 use App\Models\Visit;
@@ -158,11 +159,13 @@ class VisitController extends Controller
                 ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
         }
 
-        $visit->load(['organizer']);
+        $visit->load(['organizer', 'plant']);
+        $plants = Plant::where('is_active', true)->orderBy('name')->get();
+        $organizers = User::whereIn('role', ['staff', 'organizer'])->where('is_active', true)->orderBy('name')->get();
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
 
-        return view('visits.submit-feedback', compact('visit', 'questions', 'sections'));
+        return view('visits.submit-feedback', compact('visit', 'questions', 'sections', 'plants', 'organizers'));
     }
 
     public function storeFeedback(Request $request, Visit $visit)
@@ -179,11 +182,18 @@ class VisitController extends Controller
         }
 
         $request->validate([
+            'plant_id' => 'required|integer|exists:plants,id',
+            'organizer_id' => 'required|integer|exists:users,id',
             'overall_rating' => 'required|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
             'answers.*.answer' => 'nullable',
+        ], [
+            'plant_id.required' => 'Please select the manufacturing plant facility.',
+            'plant_id.exists' => 'Selected manufacturing plant facility is invalid.',
+            'organizer_id.required' => 'Please select the host tour organizer.',
+            'organizer_id.exists' => 'Selected tour organizer is invalid.',
         ]);
 
         $activeRequired = Question::active()->where('is_required', true)->pluck('id');
@@ -201,12 +211,18 @@ class VisitController extends Controller
         $feedback = DB::transaction(function () use ($request, $visit, $staffUser) {
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
-                'organizer_id' => $visit->organizer_id ?: $staffUser->id,
+                'plant_id' => $request->plant_id,
+                'organizer_id' => $request->organizer_id,
                 'overall_rating' => $request->overall_rating,
                 'comments' => $request->comments,
                 'submitted_mode' => 'staff_assisted',
                 'submitted_by_staff_id' => $staffUser->id,
                 'submitted_at' => now(),
+            ]);
+
+            $visit->update([
+                'plant_id' => $request->plant_id,
+                'organizer_id' => $request->organizer_id,
             ]);
 
             foreach ($request->answers as $ans) {

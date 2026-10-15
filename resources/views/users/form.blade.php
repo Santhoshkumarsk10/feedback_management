@@ -77,28 +77,6 @@
                             @endif
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-modern-label" for="user_plant">Assigned Manufacturing Plant</label>
-                            <x-custom-select 
-                                name="plant_id"
-                                id="user_plant"
-                                :options="$plants->map(fn($p) => [
-                                    'value' => (string)$p->id,
-                                    'label' => $p->code . ' — ' . $p->name,
-                                ])"
-                                :value="(string) old('plant_id', $user->plant_id ?? '')"
-                                placeholder="— HQ / Corporate (All Plants) —"
-                                search-placeholder="Search plant code or name..."
-                                icon="bi-buildings"
-                                :auto-submit="false"
-                                :allow-empty="true"
-                                min-width="100%"
-                            />
-                            @error('plant_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <div class="small text-muted mt-1">Select the factory unit this user belongs to</div>
-                        </div>
 
                         <div class="col-md-6">
                             <label class="form-modern-label" for="user_email">Email Address</label>

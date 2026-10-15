@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Plant;
 use App\Models\Question;
 use App\Models\User;
 use App\Models\Visit;
@@ -13,11 +14,18 @@ class VisitorFeedbackExpirationTest extends TestCase
     use DatabaseTransactions;
 
     private User $staff;
+    private Plant $plant;
     private Question $question;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->plant = Plant::first() ?? Plant::create([
+            'code' => 'PLANT-TEST',
+            'name' => 'Test Division Plant',
+            'is_active' => true,
+        ]);
 
         $this->staff = User::factory()->create([
             'role' => 'staff',
@@ -119,6 +127,8 @@ class VisitorFeedbackExpirationTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->staff)->post(route('visits.feedback.store', $todayVisit), [
+            'plant_id' => $this->plant->id,
+            'organizer_id' => $this->staff->id,
             'overall_rating' => 5,
             'comments' => 'Great tour today!',
             'answers' => $this->getValidAnswers('5'),
@@ -129,8 +139,28 @@ class VisitorFeedbackExpirationTest extends TestCase
 
         $this->assertDatabaseHas('feedbacks', [
             'visit_id' => $todayVisit->id,
+            'plant_id' => $this->plant->id,
+            'organizer_id' => $this->staff->id,
             'overall_rating' => 5,
         ]);
+    }
+
+    public function test_feedback_web_submission_requires_plant_and_organizer(): void
+    {
+        $todayVisit = Visit::create([
+            'visitor_name' => 'Kavitha Visitor',
+            'visitor_company' => 'Apex Components',
+            'visitor_mobile' => '9876543299',
+            'visit_date' => today(),
+        ]);
+
+        // Submit without plant_id and organizer_id
+        $response = $this->actingAs($this->staff)->post(route('visits.feedback.store', $todayVisit), [
+            'overall_rating' => 5,
+            'answers' => $this->getValidAnswers('5'),
+        ]);
+
+        $response->assertSessionHasErrors(['plant_id', 'organizer_id']);
     }
 
     public function test_api_visitor_feedback_blocks_expired_visit(): void
@@ -146,6 +176,7 @@ class VisitorFeedbackExpirationTest extends TestCase
 
         $response = $this->postJson('/api/visitor/feedback', [
             'visit_id' => $pastVisit->id,
+            'plant_id' => $this->plant->id,
             'organizer_id' => $this->staff->id,
             'visitor_name' => 'Fiona Past',
             'visitor_mobile' => '9876543215',
@@ -172,12 +203,20 @@ class VisitorFeedbackExpirationTest extends TestCase
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson("/api/organizer/visits/{$pastVisit->id}/feedback", [
+                'plant_id' => $this->plant->id,
                 'overall_rating' => 4,
                 'answers' => $this->getValidAnswers('4'),
             ]);
 
         $response->assertStatus(422);
         $this->assertStringContainsString('expired', strtolower($response->json('message') ?? ''));
+    }
+
+    public function test_visitor_plants_api_returns_active_plants(): void
+    {
+        $res = $this->getJson('/api/visitor/plants');
+        $res->assertStatus(200);
+        $res->assertJsonFragment(['id' => $this->plant->id]);
     }
 
     public function test_visits_index_view_displays_expired_status_for_past_visits(): void

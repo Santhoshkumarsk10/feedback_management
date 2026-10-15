@@ -94,7 +94,7 @@
                     <th>Facility & Capability</th>
                     <th>Location / City</th>
                     <th>Contact Info</th>
-                    <th class="text-center">Team Members</th>
+                    <th class="text-center">Feedbacks</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -140,8 +140,8 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <a href="{{ route('users.index', ['plant_id' => $p->id]) }}" class="badge-modern badge-slate text-decoration-none" title="View users in this plant">
-                            <i class="bi bi-people me-1"></i> {{ $p->users_count }} Users
+                        <a href="{{ route('feedbacks.index', ['plant_id' => $p->id]) }}" class="badge-modern badge-slate text-decoration-none" title="View feedback submissions for this plant">
+                            <i class="bi bi-chat-heart me-1"></i> {{ $p->feedbacks_count }} Feedbacks
                         </a>
                     </td>
                     <td>

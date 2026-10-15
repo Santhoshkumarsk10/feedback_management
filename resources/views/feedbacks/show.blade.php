@@ -35,7 +35,7 @@
             <div class="col-lg-9 ps-lg-4">
                 <div class="row g-3">
                     <!-- Visitor Info -->
-                    <div class="col-sm-6 col-md-4">
+                    <div class="col-sm-6 col-md-3">
                         <div class="p-3 rounded-3 bg-light border border-slate-200 h-100">
                             <div class="small text-muted fw-semibold mb-1">
                                 <i class="bi bi-person-fill text-primary"></i> Visitor
@@ -55,8 +55,26 @@
                         </div>
                     </div>
 
+                    <!-- Plant Facility Info -->
+                    <div class="col-sm-6 col-md-3">
+                        <div class="p-3 rounded-3 bg-light border border-slate-200 h-100">
+                            <div class="small text-muted fw-semibold mb-1">
+                                <i class="bi bi-buildings text-primary"></i> Evaluated Plant
+                            </div>
+                            <div class="fw-bold text-dark fs-6">{{ $feedback->plant?->name ?? '—' }}</div>
+                            @if($feedback->plant?->code)
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 mt-1" style="font-size: 0.72rem;">
+                                    <i class="bi bi-qr-code me-1"></i> {{ $feedback->plant->code }}
+                                </span>
+                            @endif
+                            @if($feedback->plant?->location)
+                                <div class="small text-muted mt-1"><i class="bi bi-geo-alt"></i> {{ $feedback->plant->location }}</div>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Organizer Info -->
-                    <div class="col-sm-6 col-md-4">
+                    <div class="col-sm-6 col-md-3">
                         <div class="p-3 rounded-3 bg-light border border-slate-200 h-100">
                             <div class="small text-muted fw-semibold mb-1">
                                 <i class="bi bi-shield-check text-primary"></i> Tour Organizer
@@ -72,7 +90,7 @@
                     </div>
 
                     <!-- Visit Info -->
-                    <div class="col-sm-12 col-md-4">
+                    <div class="col-sm-6 col-md-3">
                         <div class="p-3 rounded-3 bg-light border border-slate-200 h-100">
                             <div class="small text-muted fw-semibold mb-1">
                                 <i class="bi bi-calendar-event text-primary"></i> Visit Details

@@ -136,6 +136,8 @@ class OrganizerController extends Controller
         }
 
         $data = $request->validate([
+            'plant_id' => 'required|integer|exists:plants,id',
+            'organizer_id' => 'nullable|integer|exists:users,id',
             'overall_rating' => 'required|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',
             'answers' => 'required|array|min:1',
@@ -151,14 +153,22 @@ class OrganizerController extends Controller
         }
 
         $feedback = DB::transaction(function () use ($data, $visit, $organizer) {
+            $organizerId = $data['organizer_id'] ?? $visit->organizer_id ?? $organizer->id;
+
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
-                'organizer_id' => $visit->organizer_id ?: $organizer->id,
+                'plant_id' => $data['plant_id'],
+                'organizer_id' => $organizerId,
                 'overall_rating' => $data['overall_rating'],
                 'comments' => $data['comments'] ?? null,
                 'submitted_mode' => 'staff_assisted',
                 'submitted_by_staff_id' => $organizer->id,
                 'submitted_at' => now(),
+            ]);
+
+            $visit->update([
+                'plant_id' => $data['plant_id'],
+                'organizer_id' => $organizerId,
             ]);
 
             foreach ($data['answers'] as $ans) {

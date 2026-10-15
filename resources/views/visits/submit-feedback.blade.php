@@ -80,6 +80,73 @@
             <form action="{{ route('visits.feedback.store', $visit) }}" method="POST">
                 @csrf
 
+                <!-- Manufacturing Plant & Tour Organizer Selection -->
+                <div class="card-modern mb-4" style="border-left: 4px solid var(--shibaura-blue);">
+                    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="stat-icon-bubble shibaura" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                <i class="bi bi-buildings-fill"></i>
+                            </span>
+                            <span class="fw-bold text-dark fs-6">Facility & Organizer Selection</span>
+                        </div>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle small px-2 py-1">Mandatory Fields</span>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark" for="feedback_plant_id">
+                                    Manufacturing Plant / Facility <span class="text-danger">*</span>
+                                </label>
+                                <x-custom-select 
+                                    name="plant_id"
+                                    id="feedback_plant_id"
+                                    :options="$plants->map(fn($p) => [
+                                        'value' => (string)$p->id,
+                                        'label' => $p->code . ' — ' . $p->name,
+                                    ])"
+                                    :value="(string) old('plant_id', $visit->plant_id ?? '')"
+                                    placeholder="— Select Evaluated Plant Unit —"
+                                    search-placeholder="Search plant facility..."
+                                    icon="bi-buildings"
+                                    :auto-submit="false"
+                                    :allow-empty="true"
+                                    min-width="100%"
+                                />
+                                @error('plant_id')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                                <div class="small text-muted mt-1">Specify which factory division or technical centre is being evaluated.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark" for="feedback_organizer_id">
+                                    Host Tour Organizer / Staff <span class="text-danger">*</span>
+                                </label>
+                                <x-custom-select 
+                                    name="organizer_id"
+                                    id="feedback_organizer_id"
+                                    :options="$organizers->map(fn($o) => [
+                                        'value' => (string)$o->id,
+                                        'label' => $o->name . ($o->department ? ' (' . $o->department . ')' : ''),
+                                    ])"
+                                    :value="(string) old('organizer_id', $visit->organizer_id ?? '')"
+                                    placeholder="— Select Host Organizer —"
+                                    search-placeholder="Search organizer name..."
+                                    icon="bi-person-badge"
+                                    :auto-submit="false"
+                                    :allow-empty="true"
+                                    min-width="100%"
+                                />
+                                @error('organizer_id')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                                <div class="small text-muted mt-1">The staff escort/organizer assigned to this visitor experience.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Section-Wise Questions -->
                 @foreach ($sections as $secName => $secQuestions)
                     <div class="card-modern mb-4">

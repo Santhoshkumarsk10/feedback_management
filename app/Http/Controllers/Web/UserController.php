@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plant;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -33,7 +32,6 @@ class UserController extends Controller
         $request->validate([
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’@+]+$~u'],
             'role' => 'nullable|string|max:50',
-            'plant_id' => 'nullable|integer|exists:plants,id',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -47,10 +45,9 @@ class UserController extends Controller
             ->all();
         $totalUsers = array_sum($roleCounts);
 
-        $users = User::with(['plant', 'roleModel'])
+        $users = User::with(['roleModel'])
             ->whereIn('role', $manageableSlugs)
             ->when($request->role, fn ($q, $v) => $q->where('role', $v))
-            ->when($request->plant_id, fn ($q, $v) => $q->where('plant_id', $v))
             ->when($request->filled('status'), fn ($q) => $q->where('is_active', $request->status === 'active' ? 1 : 0))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%$v%")
@@ -59,7 +56,6 @@ class UserController extends Controller
                 ->orWhere('department', 'like', "%$v%")))
             ->orderBy('role')->orderBy('name')->paginate(10)->withQueryString();
 
-        $plants = Plant::orderBy('code')->get();
         $availableRoles = Role::whereIn('slug', $manageableSlugs)->get();
 
         $userSuggestions = User::whereIn('role', $manageableSlugs)
@@ -79,7 +75,6 @@ class UserController extends Controller
             'users' => $users,
             'roles' => $manageableSlugs,
             'roleModels' => $availableRoles,
-            'plants' => $plants,
             'roleCounts' => $roleCounts,
             'totalUsers' => $totalUsers,
             'userSuggestions' => $userSuggestions,
@@ -90,14 +85,12 @@ class UserController extends Controller
     {
         $manageableSlugs = $this->manageableSlugs();
         $roles = Role::whereIn('slug', $manageableSlugs)->where('is_active', true)->orderBy('name')->get();
-        $plants = Plant::where('is_active', true)->orderBy('code')->get();
 
         $defaultRole = Role::where('slug', 'organizer')->first();
 
         return view('users.form', [
             'user' => new User(['is_active' => true, 'role' => 'organizer', 'role_id' => $defaultRole?->id]),
             'roles' => $roles,
-            'plants' => $plants,
         ]);
     }
 
@@ -108,7 +101,6 @@ class UserController extends Controller
 
         AuditLog::record('create', 'users', "Registered user account: {$user->name} ({$user->role})", [
             'user_id' => $user->id,
-            'plant_id' => $user->plant_id,
             'role' => $user->role,
         ]);
 
@@ -125,14 +117,9 @@ class UserController extends Controller
             ->orderBy('name')
             ->get();
 
-        $plants = Plant::where(fn($q) => $q->where('is_active', true)->orWhere('id', $user->plant_id))
-            ->orderBy('code')
-            ->get();
-
         return view('users.form', [
             'user' => $user,
             'roles' => $roles,
-            'plants' => $plants,
         ]);
     }
 
@@ -190,7 +177,6 @@ class UserController extends Controller
             'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
             'mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/', 'required_without:email', Rule::unique('users', 'mobile')->ignore($user?->id)],
             'role_id' => 'required|exists:roles,id',
-            'plant_id' => 'nullable|exists:plants,id',
             'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:6', 'max:60'],
         ], [

@@ -12,6 +12,7 @@ class Feedback extends Model
 
     protected $fillable = [
         'visit_id',
+        'plant_id',
         'organizer_id',
         'overall_rating',
         'comments',
@@ -23,6 +24,11 @@ class Feedback extends Model
     protected $casts = [
         'submitted_at' => 'datetime',
     ];
+
+    public function plant(): BelongsTo
+    {
+        return $this->belongsTo(Plant::class);
+    }
 
     public function visit(): BelongsTo
     {
