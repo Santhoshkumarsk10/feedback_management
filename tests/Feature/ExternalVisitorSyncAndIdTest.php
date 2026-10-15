@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
@@ -30,10 +29,6 @@ class ExternalVisitorSyncAndIdTest extends TestCase
 
     public function test_external_sync_service_upserts_unique_visitors_and_today_visits()
     {
-        $shift = Shift::firstOrCreate(
-            ['code' => 'SHIFT-B'],
-            ['name' => 'Shift B', 'start_time' => '14:00:00', 'end_time' => '22:00:00', 'is_active' => true]
-        );
 
         $service = app(ExternalVisitorSyncService::class);
         $result = $service->syncVisitors();

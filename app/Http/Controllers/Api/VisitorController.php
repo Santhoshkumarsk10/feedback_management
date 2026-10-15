@@ -29,7 +29,7 @@ class VisitorController extends Controller
     {
         $status = $request->query('status', 'pending'); // 'pending' or 'all'
 
-        $query = Visit::with(['visitor', 'shift', 'feedback', 'organizer'])
+        $query = Visit::with(['visitor', 'feedback', 'organizer'])
             ->whereDate('visit_date', today());
 
         if ($status === 'pending') {
@@ -47,7 +47,6 @@ class VisitorController extends Controller
                 'mobile' => $v->visitor_mobile ?? $v->visitor?->mobile ?? '',
                 'email' => $v->visitor_email ?? $v->visitor?->email ?? '',
                 'purpose' => $v->purpose ?? 'Plant & Facility Tour',
-                'shift_name' => $v->shift?->name,
                 'organizer_id' => $v->organizer_id,
                 'organizer_name' => $v->organizer?->name,
                 'has_feedback' => !is_null($v->feedback),
@@ -163,7 +162,6 @@ class VisitorController extends Controller
                     ]));
                 }
             } else {
-                $currentShift = \App\Models\Shift::current();
                 $visit = Visit::create([
                     'organizer_id' => $organizer->id,
                     'visitor_name' => $data['visitor_name'],
@@ -172,7 +170,6 @@ class VisitorController extends Controller
                     'visitor_company' => $data['visitor_company'] ?? null,
                     'visitor_email' => $data['visitor_email'] ?? null,
                     'visit_date' => today(),
-                    'shift_id' => $currentShift?->id,
                     'purpose' => $data['purpose'] ?? null,
                 ]);
             }
@@ -222,18 +219,16 @@ class VisitorController extends Controller
             ], 404);
         }
 
-        // Find today's visit or create one under current shift
+        // Find today's visit or create one
         $visit = Visit::where(function ($q) use ($visitor) {
             $q->where('visitor_id', $visitor->id)->orWhere('visitor_code', $visitor->visitor_id);
-        })->whereDate('visit_date', today())->with(['feedback', 'shift', 'organizer:id,name,department'])->latest('id')->first();
+        })->whereDate('visit_date', today())->with(['feedback', 'organizer:id,name,department'])->latest('id')->first();
 
         if (! $visit) {
-            $currentShift = \App\Models\Shift::current();
             $visit = Visit::create([
                 'visitor_id' => $visitor->id,
                 'visitor_code' => $visitor->visitor_id,
                 'visit_date' => today(),
-                'shift_id' => $currentShift?->id,
                 'purpose' => 'Plant & Facility Tour',
             ]);
         }
@@ -252,7 +247,6 @@ class VisitorController extends Controller
             'visit' => [
                 'id' => $visit->id,
                 'visitor_code' => $visit->visitor_code,
-                'shift_name' => $visit->shift?->name,
                 'organizer_id' => $visit->organizer_id,
                 'organizer_name' => $visit->organizer?->name,
                 'has_feedback' => ! is_null($visit->feedback),

@@ -23,7 +23,7 @@
                 </div>
             @endif
 
-            <!-- Visitor & Shift Context Card -->
+            <!-- Visitor Context Card -->
             <div class="card-modern mb-4" style="border-left: 4px solid var(--shibaura-blue);">
                 <div class="card-body p-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
@@ -51,21 +51,9 @@
                                 <span class="text-dark">{{ $visit->visitor_company }}</span></div>
                         </div>
                         <div class="text-end">
-                            @if ($visit->shift)
-                                @php
-                                    $shiftBadgeColor = match ($visit->shift->code) {
-                                        'SHIFT-A' => 'badge-indigo',
-                                        'SHIFT-B' => 'badge-amber',
-                                        'SHIFT-C' => 'badge-purple',
-                                        default => 'badge-slate',
-                                    };
-                                @endphp
-                                <span class="badge-modern {{ $shiftBadgeColor }} fs-6 px-3 py-1">
-                                    <i class="bi bi-clock"></i> {{ $visit->shift->name }}
-                                    ({{ $visit->shift->formatted_24h_range }})
-                                </span>
-                            @endif
-                            <div class="small text-muted mt-1">Visit Date: {{ $visit->visit_date->format('d M Y') }}</div>
+                            <div class="badge bg-light text-dark border px-3 py-1 fs-6">
+                                <i class="bi bi-calendar3 me-1"></i> {{ $visit->visit_date->format('d M Y') }}
+                            </div>
                         </div>
                     </div>
 

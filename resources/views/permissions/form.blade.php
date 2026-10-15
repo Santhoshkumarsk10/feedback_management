@@ -41,7 +41,7 @@
                                        id="perm_display_name"
                                        class="form-control form-control-modern border-start-0 @error('display_name') is-invalid @enderror" 
                                        value="{{ old('display_name', $permission->display_name ?: $permission->title) }}" 
-                                       placeholder="e.g. Manage Shift Schedules" 
+                                       placeholder="e.g. Manage Plant Locations" 
                                        required 
                                        minlength="2"
                                        maxlength="80">
@@ -61,13 +61,13 @@
                                        id="perm_name"
                                        class="form-control form-control-modern border-start-0 @error('name') is-invalid @enderror font-monospace" 
                                        value="{{ old('name', $permission->name) }}" 
-                                       placeholder="e.g. manage-shifts" 
+                                       placeholder="e.g. manage-plants" 
                                        required 
                                        minlength="3"
                                        maxlength="60"
                                        {{ $permission->exists ? 'readonly' : '' }}>
                             </div>
-                            <div class="form-text text-muted small mt-1">Machine-readable key used in <code>@@can</code> &amp; middleware (e.g. manage-shifts)</div>
+                            <div class="form-text text-muted small mt-1">Machine-readable key used in <code>@@can</code> &amp; middleware (e.g. manage-plants)</div>
                             @error('name')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -110,7 +110,7 @@
                                       id="perm_description"
                                       rows="3" 
                                       class="form-control form-control-modern @error('description') is-invalid @enderror" 
-                                      placeholder="e.g. Grants access to configure factory shift timings, create presets, and toggle active shift status" 
+                                      placeholder="e.g. Grants access to configure factory facilities, locations, and plants" 
                                       maxlength="255">{{ old('description', $permission->description) }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>

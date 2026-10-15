@@ -158,28 +158,6 @@
                             <div class="invalid-feedback d-none custom-live-err" id="live_err_user_department"></div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-modern-label" for="user_shift">Assigned Plant Shift (Roster Duty)</label>
-                            <x-custom-select 
-                                name="shift_id"
-                                id="user_shift"
-                                :options="$shifts->map(fn($s) => [
-                                    'value' => (string)$s->id,
-                                    'label' => $s->name . ' (' . $s->formatted_24h_range . ')',
-                                ])"
-                                :value="(string) old('shift_id', $user->shift_id ?? '')"
-                                placeholder="— Unassigned (Available for All Shifts) —"
-                                search-placeholder="Search shift name or timings..."
-                                icon="bi-clock-history"
-                                :auto-submit="false"
-                                :allow-empty="true"
-                                min-width="100%"
-                            />
-                            @error('shift_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <div class="small text-muted mt-1">Operational duty shift for assisted feedback & availability (Section 6.6)</div>
-                        </div>
 
                         <div class="col-md-6">
                             <label class="form-modern-label" for="user_password">

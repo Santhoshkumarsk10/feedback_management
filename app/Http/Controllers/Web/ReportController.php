@@ -6,13 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use App\Models\Question;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -26,65 +24,26 @@ class ReportController extends Controller
         $request->validate([
             'from' => 'nullable|date',
             'to' => 'nullable|date',
-            'shift_id' => 'nullable|integer|exists:shifts,id',
             'report_tab' => 'nullable|string|in:staff,low_rating,pending',
         ]);
 
         $reportTab = $request->input('report_tab', 'staff');
-        $shifts = Shift::active()->orderBy('start_time')->get();
-        $selectedShift = $request->shift_id ? $shifts->firstWhere('id', (int) $request->shift_id) : null;
-
-        // Shift performance comparison metrics across all active shifts
-        $shiftStats = $shifts->map(function ($s) use ($request) {
-            $visitsQuery = Visit::where('shift_id', $s->id);
-            $this->dates($visitsQuery, 'visit_date', $request);
-            $visitsCount = $visitsQuery->count();
-
-            $feedbacksQuery = Feedback::whereHas('visit', function ($v) use ($s, $request) {
-                $v->where('shift_id', $s->id);
-                $this->dates($v, 'visit_date', $request);
-            });
-            $feedbacksCount = $feedbacksQuery->count();
-            $avgRating = (clone $feedbacksQuery)->avg('overall_rating');
-
-            return [
-                'id' => $s->id,
-                'name' => $s->name,
-                'code' => $s->code,
-                'time_range' => $s->formatted_24h_range,
-                'time_12h' => $s->formatted_12h_range,
-                'visits_count' => $visitsCount,
-                'feedbacks_count' => $feedbacksCount,
-                'response_rate' => $visitsCount > 0 ? min(100, round(($feedbacksCount / $visitsCount) * 100)) : 0,
-                'avg_rating' => $avgRating ? round((float) $avgRating, 2) : 0,
-                'is_active_now' => $s->is_currently_active,
-            ];
-        });
 
         // Section 6.8: Low-Rating Report (Ratings <= 2 for management follow-up)
-        $lowRatingsQuery = Feedback::with(['visit.shift', 'organizer', 'submittedBy'])
+        $lowRatingsQuery = Feedback::with(['visit', 'organizer', 'submittedBy'])
             ->where('overall_rating', '<=', 2);
         $this->dates($lowRatingsQuery, 'submitted_at', $request);
-        if ($request->shift_id) {
-            $lowRatingsQuery->whereHas('visit', fn ($v) => $v->where('shift_id', $request->shift_id));
-        }
         $lowRatings = $lowRatingsQuery->latest('submitted_at')->get();
 
         // Section 6.8: Pending Feedback Report (Visitors with no feedback in date range)
-        $pendingVisitsQuery = Visit::with(['shift', 'organizer'])
+        $pendingVisitsQuery = Visit::with(['organizer'])
             ->doesntHave('feedback');
         $this->dates($pendingVisitsQuery, 'visit_date', $request);
-        if ($request->shift_id) {
-            $pendingVisitsQuery->where('shift_id', $request->shift_id);
-        }
         $pendingVisits = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
 
         return view('reports.index', [
             'rows' => $this->organizerRows($request),
             'questionStats' => $this->questionStats($request),
-            'shifts' => $shifts,
-            'selectedShift' => $selectedShift,
-            'shiftStats' => $shiftStats,
             'lowRatings' => $lowRatings,
             'pendingVisits' => $pendingVisits,
             'reportTab' => $reportTab,
@@ -96,7 +55,6 @@ class ReportController extends Controller
         $request->validate([
             'from' => 'nullable|date',
             'to' => 'nullable|date',
-            'shift_id' => 'nullable|integer|exists:shifts,id',
             'type' => 'nullable|string|in:staff,low_rating,pending',
             'format' => 'nullable|string|in:csv,excel,xlsx,pdf',
         ]);
@@ -107,8 +65,6 @@ class ReportController extends Controller
             $format = 'xlsx';
         }
 
-        $selectedShift = $request->shift_id ? Shift::find($request->shift_id) : null;
-        $shiftLabel = $selectedShift ? ($selectedShift->name . ' (' . $selectedShift->formatted_24h_range . ')') : 'All Shifts';
         $periodLabel = ($request->from && $request->to)
             ? ($request->from . ' to ' . $request->to)
             : ($request->from ? ('From ' . $request->from) : ($request->to ? ('Up to ' . $request->to) : 'All Time'));
@@ -119,14 +75,11 @@ class ReportController extends Controller
         if ($type === 'low_rating') {
             $title = 'Low-Rating Reviews (≤ 2★) Incident Report';
             $baseFilename = 'low-rating-incidents-' . now()->format('Ymd');
-            $lowRatingsQuery = Feedback::with(['visit.shift', 'organizer', 'submittedBy'])
+            $lowRatingsQuery = Feedback::with(['visit', 'organizer', 'submittedBy'])
                 ->where('overall_rating', '<=', 2);
             $this->dates($lowRatingsQuery, 'submitted_at', $request);
-            if ($request->shift_id) {
-                $lowRatingsQuery->whereHas('visit', fn ($v) => $v->where('shift_id', $request->shift_id));
-            }
             $items = $lowRatingsQuery->latest('submitted_at')->get();
-            $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
+            $meta = compact('title', 'periodLabel', 'generatedBy', 'generatedAt');
 
             if ($format === 'pdf') {
                 return $this->exportPdf($type, $items, $meta, $baseFilename . '.pdf');
@@ -139,13 +92,10 @@ class ReportController extends Controller
         if ($type === 'pending') {
             $title = 'Pending Feedback Queue Report';
             $baseFilename = 'pending-feedback-report-' . now()->format('Ymd');
-            $pendingVisitsQuery = Visit::with(['shift', 'organizer'])->doesntHave('feedback');
+            $pendingVisitsQuery = Visit::with(['organizer'])->doesntHave('feedback');
             $this->dates($pendingVisitsQuery, 'visit_date', $request);
-            if ($request->shift_id) {
-                $pendingVisitsQuery->where('shift_id', $request->shift_id);
-            }
             $items = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
-            $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
+            $meta = compact('title', 'periodLabel', 'generatedBy', 'generatedAt');
 
             if ($format === 'pdf') {
                 return $this->exportPdf($type, $items, $meta, $baseFilename . '.pdf');
@@ -156,17 +106,17 @@ class ReportController extends Controller
         }
 
         // Default: Staff Performance Report
-        $title = 'Staff & Shift Tour Performance Report';
+        $title = 'Staff Tour Performance Report';
         $rows = $this->organizerRows($request);
-        $baseFilename = ($selectedShift ? Str::slug($selectedShift->name) . '-' : '') . 'performance-report-' . now()->format('Ymd');
-        $meta = compact('title', 'periodLabel', 'shiftLabel', 'generatedBy', 'generatedAt');
+        $baseFilename = 'staff-performance-report-' . now()->format('Ymd');
+        $meta = compact('title', 'periodLabel', 'generatedBy', 'generatedAt');
 
         if ($format === 'pdf') {
             return $this->exportPdf($type, $rows, $meta, $baseFilename . '.pdf');
         } elseif ($format === 'xlsx') {
             return $this->exportExcel($type, $rows, $meta, $baseFilename . '.xlsx');
         }
-        return $this->exportCsvStaff($rows, $shiftLabel, $baseFilename . '.csv');
+        return $this->exportCsvStaff($rows, $baseFilename . '.csv');
     }
 
     private function exportPdf(string $type, $data, array $meta, string $filename)
@@ -175,7 +125,6 @@ class ReportController extends Controller
             'type' => $type,
             'title' => $meta['title'],
             'periodLabel' => $meta['periodLabel'],
-            'shiftLabel' => $meta['shiftLabel'],
             'totalCount' => $data->count(),
             'rows' => $type === 'staff' ? $data : null,
             'items' => $type !== 'staff' ? $data : null,
@@ -207,14 +156,14 @@ class ReportController extends Controller
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11);
 
         // Metadata block
-        $sheet->setCellValue('A3', 'Filter Period: ' . $meta['periodLabel'] . '   |   Shift: ' . $meta['shiftLabel'] . '   |   Generated: ' . $meta['generatedAt'] . ' by ' . $meta['generatedBy']);
+        $sheet->setCellValue('A3', 'Filter Period: ' . $meta['periodLabel'] . '   |   Generated: ' . $meta['generatedAt'] . ' by ' . $meta['generatedBy']);
         $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('64748B'));
 
         $startRow = 5;
 
         if ($type === 'staff') {
-            $headers = ['#', 'Staff / Organizer', 'Department', 'Shift Filter', 'Tours Handled', 'Feedbacks Received', 'Response Rate %', 'Average Rating (Stars)'];
-            $colLetter = 'H';
+            $headers = ['#', 'Staff / Organizer', 'Department', 'Tours Handled', 'Feedbacks Received', 'Response Rate %', 'Average Rating (Stars)'];
+            $colLetter = 'G';
             $sheet->fromArray($headers, null, 'A' . $startRow);
 
             $currentRow = $startRow + 1;
@@ -224,7 +173,6 @@ class ReportController extends Controller
                     $idx + 1,
                     $r->name,
                     $r->department ?: 'General Operations',
-                    $meta['shiftLabel'],
                     $r->visits_count,
                     $r->feedbacks_count,
                     $respRate . '%',
@@ -233,8 +181,8 @@ class ReportController extends Controller
                 $currentRow++;
             }
         } elseif ($type === 'low_rating') {
-            $headers = ['#', 'Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Duty Shift', 'Mode', 'Submitted By', 'Visitor Comments / Remarks'];
-            $colLetter = 'J';
+            $headers = ['#', 'Submission Date', 'Rating (Stars)', 'Visitor Name', 'Company', 'Host Staff', 'Mode', 'Submitted By', 'Visitor Comments / Remarks'];
+            $colLetter = 'I';
             $sheet->fromArray($headers, null, 'A' . $startRow);
 
             $currentRow = $startRow + 1;
@@ -246,7 +194,6 @@ class ReportController extends Controller
                     $f->visit?->visitor_name ?? '—',
                     $f->visit?->visitor_company ?: '—',
                     $f->organizer?->name ?? 'Unassigned',
-                    $f->visit?->shift?->name ?: '—',
                     $f->is_staff_assisted ? 'Staff-assisted' : 'Direct Visitor',
                     $f->submittedBy?->name ?? '—',
                     $f->comments ?: 'No comments provided',
@@ -254,8 +201,8 @@ class ReportController extends Controller
                 $currentRow++;
             }
         } else { // pending
-            $headers = ['#', 'Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile Number', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit'];
-            $colLetter = 'J';
+            $headers = ['#', 'Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile Number', 'Host Staff', 'Checkout Status', 'Time Since Exit'];
+            $colLetter = 'I';
             $sheet->fromArray($headers, null, 'A' . $startRow);
 
             $currentRow = $startRow + 1;
@@ -267,7 +214,6 @@ class ReportController extends Controller
                     $v->visitor_name,
                     $v->visitor_company ?: '—',
                     $v->visitor_mobile ?: '—',
-                    $v->shift?->name ?: '—',
                     $v->organizer?->name ?? 'Unassigned',
                     $v->out_time ? 'Checked Out' : 'Inside Plant',
                     $v->time_since_exit ?? '—',
@@ -346,7 +292,7 @@ class ReportController extends Controller
     {
         return response()->streamDownload(function () use ($items) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile', 'Duty Shift', 'Host Staff', 'Checkout Status', 'Time Since Exit']);
+            fputcsv($out, ['Visit Date', 'Visitor ID', 'Visitor Name', 'Company', 'Mobile', 'Host Staff', 'Checkout Status', 'Time Since Exit']);
             foreach ($items as $v) {
                 fputcsv($out, [
                     $v->visit_date ? $v->visit_date->format('Y-m-d') : '—',
@@ -354,7 +300,6 @@ class ReportController extends Controller
                     $v->visitor_name,
                     $v->visitor_company ?: '—',
                     $v->visitor_mobile ?: '—',
-                    $v->shift?->name ?: '—',
                     $v->organizer?->name ?? 'Unassigned',
                     $v->out_time ? 'Checked Out' : 'Inside Plant',
                     $v->time_since_exit ?? '—',
@@ -364,16 +309,15 @@ class ReportController extends Controller
         }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    private function exportCsvStaff($rows, string $shiftLabel, string $filename)
+    private function exportCsvStaff($rows, string $filename)
     {
-        return response()->streamDownload(function () use ($rows, $shiftLabel) {
+        return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Staff / Organizer', 'Department', 'Shift Filter', 'Visits Handled', 'Feedbacks Received', 'Response %', 'Avg Rating']);
+            fputcsv($out, ['Staff / Organizer', 'Department', 'Visits Handled', 'Feedbacks Received', 'Response %', 'Avg Rating']);
             foreach ($rows as $r) {
                 fputcsv($out, [
                     $r->name,
                     $r->department ?: 'General',
-                    $shiftLabel,
                     $r->visits_count,
                     $r->feedbacks_count,
                     $r->visits_count ? min(100, round($r->feedbacks_count / $r->visits_count * 100)) : 0,
@@ -402,9 +346,6 @@ class ReportController extends Controller
             $base = FeedbackAnswer::where('question_id', $q->id)
                 ->whereHas('feedback', function ($f) use ($r) {
                     $this->dates($f, 'submitted_at', $r);
-                    if ($r->shift_id) {
-                        $f->whereHas('visit', fn ($v) => $v->where('shift_id', $r->shift_id));
-                    }
                 });
 
             return [
@@ -418,14 +359,12 @@ class ReportController extends Controller
 
     private function filterVisits($q, Request $r)
     {
-        $this->dates($q, 'visit_date', $r);
-        return $q->when($r->shift_id, fn ($x, $v) => $x->where('shift_id', $v));
+        return $this->dates($q, 'visit_date', $r);
     }
 
     private function filterFeedbacks($q, Request $r)
     {
-        $this->dates($q, 'submitted_at', $r);
-        return $q->when($r->shift_id, fn ($x, $v) => $x->whereHas('visit', fn ($w) => $w->where('shift_id', $v)));
+        return $this->dates($q, 'submitted_at', $r);
     }
 
     private function dates($q, string $column, Request $r)

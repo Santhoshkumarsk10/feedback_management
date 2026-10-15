@@ -7,7 +7,6 @@ use App\Models\AuditLog;
 use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use App\Models\Question;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
@@ -19,7 +18,6 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $currentShift = Shift::current();
         $currentUser = auth()->user();
         $now = now();
 
@@ -410,12 +408,10 @@ class DashboardController extends Controller
             'completed' => $todayGivenCount,
         ];
 
-        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
-
         return view('dashboard', compact(
             'stats', 'saasMetrics', 'trendsData', 'allTrends', 'ratingDist', 'categoryFeedback',
             'topLocations', 'recentFeedbacks', 'visitorTypes', 'feedbackStatuses',
-            'currentShift', 'currentUser', 'todayCounts', 'shiftAlerts',
+            'currentUser', 'todayCounts',
             'selectedRange', 'rangeLabel'
         ));
     }
@@ -528,22 +524,19 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dedicated Operations Page: Today's Plant Visitors & Shift Feedback Queue
+     * Dedicated Operations Page: Today's Plant Visitors & Feedback Queue
      */
     public function shiftQueue(Request $request)
     {
-        $currentShift = Shift::current();
         $currentUser = auth()->user();
 
-        // Today's Operations Queue & Shift Filter
+        // Today's Operations Queue Filter
         $todayTab = $request->input('today_tab', 'pending');
-        $shiftFilter = $request->input('shift_id');
         $scope = $request->input('scope', 'all'); // 'all' or 'my'
         $search = $request->input('search');
 
-        $todayBase = Visit::with(['organizer', 'feedback', 'shift'])
+        $todayBase = Visit::with(['organizer', 'feedback'])
             ->whereDate('visit_date', today())
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
@@ -557,7 +550,6 @@ class DashboardController extends Controller
             });
 
         $allScopeBase = Visit::whereDate('visit_date', today())
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
                     $sub->where('visitor_code', 'like', "%{$term}%")
@@ -570,7 +562,6 @@ class DashboardController extends Controller
             });
 
         $myScopeBase = Visit::whereDate('visit_date', today())
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
             ->when($search, function ($q, $term) {
                 $q->where(function ($sub) use ($term) {
@@ -608,9 +599,7 @@ class DashboardController extends Controller
             ->when($todayTab === 'all', fn ($q) => $q->latest('id'))
             ->get();
 
-        $shifts = Shift::active()->orderBy('start_time')->get();
-
-        // Today Summary Metrics (per requirement Section 6.5)
+        // Today Summary Metrics
         $todayTotalVisitors = $todayCounts['all'];
         $todayGivenCount = $todayCounts['completed'];
         $todayPendingCount = $todayCounts['pending'];
@@ -629,11 +618,9 @@ class DashboardController extends Controller
             'last_sync_at' => $lastSyncAt,
         ];
 
-        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
-
         return view('shift_queue', compact(
-            'stats', 'currentShift', 'todayVisits', 'todayCounts', 'todayTab',
-            'currentUser', 'shifts', 'scope', 'shiftFilter', 'search', 'shiftAlerts'
+            'stats', 'todayVisits', 'todayCounts', 'todayTab',
+            'currentUser', 'scope', 'search'
         ));
     }
 
@@ -642,13 +629,10 @@ class DashboardController extends Controller
      */
     public function liveFeed(Request $request)
     {
-        $currentShift = Shift::current();
         $currentUser = auth()->user();
-        $shiftFilter = $request->input('shift_id');
         $scope = $request->input('scope', 'all');
 
         $todayBase = Visit::whereDate('visit_date', today())
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id));
 
         $counts = [
@@ -659,19 +643,12 @@ class DashboardController extends Controller
 
         $todayAvgRating = Feedback::whereHas('visit', fn ($v) => $v->whereDate('visit_date', today()))->avg('overall_rating');
         $lastSyncAt = AuditLog::where('module', 'visitors')->where('action', 'sync')->latest('created_at')->value('created_at');
-        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
 
         return response()->json([
             'success' => true,
             'counts' => $counts,
             'today_avg' => $todayAvgRating ? round((float) $todayAvgRating, 1) : null,
             'last_sync_formatted' => $lastSyncAt ? $lastSyncAt->diffForHumans() : 'Not yet synced',
-            'current_shift' => $currentShift ? [
-                'name' => $currentShift->name,
-                'range' => $currentShift->formatted_24h_range,
-                'progress' => $currentShift->shift_progress,
-            ] : null,
-            'shift_alerts' => $shiftAlerts,
         ]);
     }
 
@@ -681,13 +658,11 @@ class DashboardController extends Controller
     public function exportPending(Request $request)
     {
         $currentUser = auth()->user();
-        $shiftFilter = $request->input('shift_id');
         $scope = $request->input('scope', 'all');
 
-        $pendingVisits = Visit::with(['organizer', 'shift'])
+        $pendingVisits = Visit::with(['organizer'])
             ->whereDate('visit_date', today())
             ->doesntHave('feedback')
-            ->when($shiftFilter, fn ($q, $s) => $q->where('shift_id', $s))
             ->when($scope === 'my' && $currentUser, fn ($q) => $q->where('organizer_id', $currentUser->id))
             ->orderByRaw('CASE WHEN out_time IS NOT NULL THEN 0 ELSE 1 END')
             ->orderBy('out_time', 'asc')
@@ -704,7 +679,6 @@ class DashboardController extends Controller
                 'Company',
                 'Mobile',
                 'Designation',
-                'Duty Shift',
                 'Host Staff',
                 'Department',
                 'In Time',
@@ -725,7 +699,6 @@ class DashboardController extends Controller
                     $v->visitor_company ?: '—',
                     $v->visitor_mobile ?: '—',
                     $v->visitor_designation ?: '—',
-                    $v->shift?->name ?: '—',
                     $v->organizer?->name ?: 'Unassigned',
                     $v->department ?: ($v->organizer?->department ?: '—'),
                     $v->formatted_in_time ?: '—',

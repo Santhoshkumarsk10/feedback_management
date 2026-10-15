@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Plant;
 use App\Models\Role;
-use App\Models\Shift;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -48,7 +47,7 @@ class UserController extends Controller
             ->all();
         $totalUsers = array_sum($roleCounts);
 
-        $users = User::with(['plant', 'roleModel', 'assignedShift'])
+        $users = User::with(['plant', 'roleModel'])
             ->whereIn('role', $manageableSlugs)
             ->when($request->role, fn ($q, $v) => $q->where('role', $v))
             ->when($request->plant_id, fn ($q, $v) => $q->where('plant_id', $v))
@@ -92,7 +91,6 @@ class UserController extends Controller
         $manageableSlugs = $this->manageableSlugs();
         $roles = Role::whereIn('slug', $manageableSlugs)->where('is_active', true)->orderBy('name')->get();
         $plants = Plant::where('is_active', true)->orderBy('code')->get();
-        $shifts = Shift::active()->orderBy('start_time')->get();
 
         $defaultRole = Role::where('slug', 'organizer')->first();
 
@@ -100,7 +98,6 @@ class UserController extends Controller
             'user' => new User(['is_active' => true, 'role' => 'organizer', 'role_id' => $defaultRole?->id]),
             'roles' => $roles,
             'plants' => $plants,
-            'shifts' => $shifts,
         ]);
     }
 
@@ -131,13 +128,11 @@ class UserController extends Controller
         $plants = Plant::where(fn($q) => $q->where('is_active', true)->orWhere('id', $user->plant_id))
             ->orderBy('code')
             ->get();
-        $shifts = Shift::active()->orderBy('start_time')->get();
 
         return view('users.form', [
             'user' => $user,
             'roles' => $roles,
             'plants' => $plants,
-            'shifts' => $shifts,
         ]);
     }
 
@@ -197,7 +192,6 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'plant_id' => 'nullable|exists:plants,id',
             'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'shift_id' => 'nullable|exists:shifts,id',
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:6', 'max:60'],
         ], [
             'name.required' => 'Full Name is required.',

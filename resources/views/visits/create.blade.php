@@ -1,14 +1,14 @@
 @extends('layouts.app')
 @section('title', 'Register Plant Visitor')
 @section('page_title', 'Register Plant Visitor')
-@section('page_subtitle', 'Record new visitor arrival, escort assignment & duty shift')
+@section('page_subtitle', 'Record new visitor arrival & escort assignment')
 
 @section('hide_top_errors', true)
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
         <a href="{{ route('shift_queue') }}" class="btn btn-outline-primary btn-sm fw-semibold shadow-xs">
-            <i class="bi bi-clock-history me-1"></i> Live Shift Queue
+            <i class="bi bi-clock-history me-1"></i> Live Visitor Queue
         </a>
         <a href="{{ route('dashboard') }}" class="btn-modern-secondary btn-sm" title="Back to Dashboard">
             <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
@@ -46,16 +46,10 @@
                             <i class="bi bi-person-plus-fill fs-5"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold text-dark mb-0 fs-6">Visitor Registration & Shift Assignment</h5>
+                            <h5 class="fw-bold text-dark mb-0 fs-6">Visitor Registration Details</h5>
                             <div class="small text-muted">Complete guest credentials to issue immediate evaluation pass</div>
                         </div>
                     </div>
-                    @if($currentShift)
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-semibold d-inline-flex align-items-center gap-2">
-                            <span class="status-pulse-dot success"></span>
-                            <span>Active Duty: <strong>{{ $currentShift->name }}</strong> ({{ $currentShift->formatted_24h_range }})</span>
-                        </span>
-                    @endif
                 </div>
 
                 <!-- Card Body Form -->
@@ -63,50 +57,10 @@
                     <form action="{{ route('visits.store') }}" method="POST" id="registerVisitorForm" novalidate>
                         @csrf
 
-                        <!-- SECTION 1: OPERATIONAL SHIFT SELECTION -->
+                        <!-- SECTION 1: VISITOR & COMPANY IDENTITY -->
                         <div class="mb-4">
                             <div class="form-section-title">
-                                <i class="bi bi-clock-history text-primary"></i> 1. Operational Duty Shift <span class="text-danger">*</span>
-                            </div>
-                            <div id="shiftSelectionContainer" class="shift-selection-grid">
-                                <div class="row g-2">
-                                    @foreach($shifts as $s)
-                                        @php
-                                            $isCurrent = $currentShift && $currentShift->id == $s->id;
-                                            $isSelected = old('shift_id', $currentShift?->id) == $s->id;
-                                        @endphp
-                                        <div class="col-12 col-md-4">
-                                            <label class="shift-radio-card {{ $isSelected ? 'active' : '' }}" onclick="selectShift(this)">
-                                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <input type="radio" name="shift_id" value="{{ $s->id }}" class="form-check-input mt-0 shift-radio-input" {{ $isSelected ? 'checked' : '' }} required>
-                                                        <strong class="text-dark">{{ $s->name }}</strong>
-                                                    </div>
-                                                    @if($isCurrent)
-                                                        <span class="badge bg-success text-white" style="font-size: 0.65rem;">
-                                                            <i class="bi bi-lightning-fill"></i> Current
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between text-muted" style="font-size: 0.78rem;">
-                                                    <span><i class="bi bi-clock me-1"></i> {{ $s->formatted_24h_range }}</span>
-                                                    <span class="small fw-semibold text-secondary">({{ $s->formatted_12h_range }})</span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            <div id="feedback_shift_id" class="validation-feedback-box error {{ $errors->has('shift_id') ? '' : 'd-none' }}">
-                                <i class="bi bi-exclamation-circle-fill"></i>
-                                <span id="feedback_shift_id_text">{{ $errors->first('shift_id') ?: 'Please select an operational duty shift.' }}</span>
-                            </div>
-                        </div>
-
-                        <!-- SECTION 2: VISITOR & COMPANY IDENTITY -->
-                        <div class="mb-4">
-                            <div class="form-section-title">
-                                <i class="bi bi-person-vcard text-primary"></i> 2. Guest Identity & Organization
+                                <i class="bi bi-person-vcard text-primary"></i> 1. Guest Identity & Organization
                             </div>
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
@@ -189,10 +143,10 @@
                             </div>
                         </div>
 
-                        <!-- SECTION 3: CONTACT & SCHEDULE -->
+                        <!-- SECTION 2: CONTACT & SCHEDULE -->
                         <div class="mb-4">
                             <div class="form-section-title">
-                                <i class="bi bi-telephone-inbound text-primary"></i> 3. Contact & Visit Schedule
+                                <i class="bi bi-telephone-inbound text-primary"></i> 2. Contact & Visit Schedule
                             </div>
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
@@ -235,7 +189,7 @@
                                 <div class="col-12 col-md-4">
                                     <div class="d-flex align-items-center justify-content-between mb-1">
                                         <label for="visitDateInput" class="form-label fw-bold text-dark small mb-0">
-                                            Visit Date <span class="text-danger">*</span>
+                                             Visit Date <span class="text-danger">*</span>
                                         </label>
                                         <span class="text-muted small" style="font-size: 0.72rem;">YYYY-MM-DD</span>
                                     </div>
@@ -253,10 +207,10 @@
                             </div>
                         </div>
 
-                        <!-- SECTION 4: PURPOSE OF VISIT & QUICK PRESETS -->
+                        <!-- SECTION 3: PURPOSE OF VISIT & QUICK PRESETS -->
                         <div class="mb-4">
                             <div class="form-section-title">
-                                <i class="bi bi-compass text-primary"></i> 4. Visit Purpose & Plant Tour Context
+                                <i class="bi bi-compass text-primary"></i> 3. Visit Purpose & Plant Tour Context
                             </div>
                             <div class="mb-2">
                                 <div class="d-flex align-items-center justify-content-between mb-1">
@@ -301,7 +255,7 @@
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3 border-top mt-4">
                             <div class="text-muted small">
                                 <i class="bi bi-shield-check text-success me-1"></i>
-                                Logged entries are instantly synchronized to the duty shift queue.
+                                Logged entries are instantly synchronized to the live visitor queue.
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary px-3 py-2 fw-semibold">
@@ -319,23 +273,13 @@
 
         <!-- Sidebar Info & Guide Column -->
         <div class="col-12 col-xl-3">
-            <!-- Shift Operation Tip Card -->
+            <!-- Operation Tip Card -->
             <div class="card-modern p-3 mb-3 bg-white">
                 <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold small">
                     <i class="bi bi-lightning-charge-fill text-warning"></i> Instant Queue Sync
                 </div>
                 <p class="small text-muted mb-0" style="line-height: 1.5;">
-                    Newly registered visitors appear in the <strong>Live Shift Queue</strong> immediately. The on-duty tour organizer can trigger feedback collection on the plant floor.
-                </p>
-            </div>
-
-            <!-- Feedback Window Notice -->
-            <div class="card-modern p-3 mb-3 bg-white border-start border-4 border-warning">
-                <div class="d-flex align-items-center gap-2 mb-2 text-dark fw-bold small">
-                    <i class="bi bi-hourglass-split text-warning"></i> 30m Shift Deadline
-                </div>
-                <p class="small text-muted mb-0" style="line-height: 1.5;">
-                    Feedback submissions must be completed before the shift closes. Automated alerts trigger 30 minutes before shift completion.
+                    Newly registered visitors appear in the <strong>Live Visitor Queue</strong> immediately. The on-duty tour organizer can trigger feedback collection on the plant floor.
                 </p>
             </div>
 
@@ -355,16 +299,6 @@
 
 @push('scripts')
 <script>
-    // Shift selection function
-    function selectShift(labelEl) {
-        document.querySelectorAll('.shift-radio-card').forEach(c => c.classList.remove('active'));
-        labelEl.classList.add('active');
-        const radio = labelEl.querySelector('input[type="radio"]');
-        if (radio) {
-            radio.checked = true;
-            validateShift();
-        }
-    }
 
     // Preset purpose fill
     function setPurpose(text) {
@@ -426,24 +360,6 @@
         element.classList.add('field-shake');
     }
 
-    // 1. Shift Validator
-    function validateShift() {
-        const checked = document.querySelector('input[name="shift_id"]:checked');
-        const container = document.getElementById('shiftSelectionContainer');
-        const feedback = document.getElementById('feedback_shift_id');
-        const feedbackText = document.getElementById('feedback_shift_id_text');
-
-        if (!checked) {
-            container.classList.add('is-invalid');
-            feedback.classList.remove('d-none');
-            feedbackText.textContent = 'Please select an operational duty shift.';
-            return false;
-        } else {
-            container.classList.remove('is-invalid');
-            feedback.classList.add('d-none');
-            return true;
-        }
-    }
 
     // 2. Name Validator (Letters, spaces, hyphens, periods, apostrophes)
     const nameRegex = /^[\p{L}\s.\-']+$/u;
@@ -653,9 +569,6 @@
     if (purposeInput) {
         purposeInput.addEventListener('input', validatePurpose);
     }
-    document.querySelectorAll('input[name="shift_id"]').forEach(radio => {
-        radio.addEventListener('change', validateShift);
-    });
 
     // Run initial validations and counter sync on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -687,10 +600,6 @@
             const errors = [];
             let firstInvalidEl = null;
 
-            if (!validateShift()) {
-                errors.push({ msg: 'Please select an operational duty shift.', el: document.getElementById('shiftSelectionContainer') });
-                if (!firstInvalidEl) firstInvalidEl = document.getElementById('shiftSelectionContainer');
-            }
 
             if (!validateName()) {
                 const msg = document.getElementById('feedback_visitor_name_text')?.textContent || 'Visitor full name is required.';

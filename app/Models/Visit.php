@@ -12,7 +12,6 @@ class Visit extends Model
         'visitor_id',
         'visitor_code',
         'organizer_id',
-        'shift_id',
         'visit_date',
         'in_time',
         'out_time',
@@ -229,55 +228,8 @@ class Visit extends Model
         return $this->belongsTo(User::class, 'organizer_id');
     }
 
-    public function shift(): BelongsTo
-    {
-        return $this->belongsTo(Shift::class, 'shift_id');
-    }
-
     public function feedback(): HasOne
     {
         return $this->hasOne(Feedback::class);
-    }
-
-    /**
-     * Check if visitor has pending feedback and their assigned shift is closing within 30 minutes or has ended today.
-     */
-    public function getIsShiftClosingSoonAlertAttribute(): bool
-    {
-        if (!is_null($this->feedback) || $this->feedback()->exists()) {
-            return false;
-        }
-
-        if (! $this->shift) {
-            return false;
-        }
-
-        $tz = config('app.plant_timezone', 'Asia/Kolkata');
-        $visitDate = $this->visit_date ? $this->visit_date->timezone($tz)->format('Y-m-d') : null;
-        $today = now($tz)->format('Y-m-d');
-
-        if ($visitDate !== $today) {
-            return false;
-        }
-
-        return $this->shift->isClosingSoon(30) || $this->shift->hasEndedToday();
-    }
-
-    /**
-     * Human-friendly alert badge text for this visitor's shift feedback deadline.
-     */
-    public function getShiftCloseAlertTextAttribute(): ?string
-    {
-        if (! $this->is_shift_closing_soon_alert) {
-            return null;
-        }
-
-        $shift = $this->shift;
-        if ($shift && $shift->isClosingSoon(30)) {
-            $rem = $shift->shift_progress['remaining_minutes'] ?? 0;
-            return $rem <= 1 ? 'Shift ends <1m' : "Shift ends in {$rem}m";
-        }
-
-        return 'Shift closed — Feedback overdue';
     }
 }

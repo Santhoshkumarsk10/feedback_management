@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Analytics & Reports')
 @section('page_title', 'Performance Reports & Exports')
-@section('page_subtitle', 'Comprehensive aggregated feedback reports by tour organizer, shift, and survey criteria')
+@section('page_subtitle', 'Comprehensive aggregated feedback reports by tour organizer, department, and survey criteria')
 
 @section('topbar_actions')
     <div class="dropdown">
@@ -56,38 +56,20 @@
     $meanRating = $validRatings->count() > 0 ? round($validRatings->avg('avg_rating'), 2) : 0;
 @endphp
 
-@if($selectedShift)
-<div class="alert alert-info border-0 shadow-sm d-flex flex-wrap align-items-center justify-content-between mb-4 p-3 rounded-3" style="background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%); border-left: 4px solid var(--shibaura-blue) !important;">
-    <div class="d-flex align-items-center gap-3">
-        <span class="stat-icon-bubble shibaura" style="width: 40px; height: 40px; font-size: 1.1rem;">
-            <i class="bi bi-clock-history"></i>
-        </span>
-        <div>
-            <div class="fw-bold text-dark fs-6">Shift Filter Applied: <span class="text-primary">{{ $selectedShift->name }} ({{ $selectedShift->formatted_24h_range }})</span></div>
-            <div class="small text-muted">{{ $selectedShift->description ?? 'Reviewing tour throughput, response metrics, and staff performance for this operational shift.' }}</div>
-        </div>
-    </div>
-    <div class="mt-2 mt-sm-0">
-        <a href="{{ route('reports.index', array_merge(request()->except('shift_id'), ['report_tab' => $reportTab])) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
-            <i class="bi bi-x-circle"></i>
-            <span>Clear Shift Filter (Show All)</span>
-        </a>
-    </div>
-</div>
-@endif
+
 
 <!-- Aggregate Metric Summary Cards -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
         <div class="stat-card-widget cyan">
             <div class="stat-widget-header">
-                <span class="stat-label-text">{{ $selectedShift ? $selectedShift->name . ' Tours' : 'Tours In Period' }}</span>
+                <span class="stat-label-text">Tours In Period</span>
                 <div class="stat-icon-bubble cyan">
                     <i class="bi bi-compass-fill"></i>
                 </div>
             </div>
             <div class="stat-metric-number">{{ number_format($totalVisits) }}</div>
-            <span class="stat-pill-trend neutral"><i class="bi bi-calendar3"></i> {{ $selectedShift ? $selectedShift->name : 'Total Tours' }}</span>
+            <span class="stat-pill-trend neutral"><i class="bi bi-calendar3"></i> Total Tours</span>
         </div>
     </div>
 
@@ -133,7 +115,7 @@
     </div>
 </div>
 
-<!-- Date & Shift Filter Card & Tabs -->
+<!-- Date Filter Card & Tabs -->
 <div class="filter-card-wrapper mb-4">
     <div class="filter-tabs-header">
         <div class="filter-tabs-nav">
@@ -149,19 +131,19 @@
                 $endYear = now()->endOfYear()->toDateString();
                 $isThisYear = request('from') === $startYear && request('to') === $endYear;
             @endphp
-            <a href="{{ route('reports.index', array_merge(request()->only(['shift_id', 'report_tab']))) }}" class="filter-tab-btn {{ $isAllTime ? 'active' : '' }}">
+            <a href="{{ route('reports.index', ['report_tab' => $reportTab]) }}" class="filter-tab-btn {{ $isAllTime ? 'active' : '' }}">
                 <i class="bi bi-clock-history"></i>
                 <span>All Time</span>
             </a>
-            <a href="{{ route('reports.index', array_merge(request()->only(['shift_id', 'report_tab']), ['from' => $startThisMonth, 'to' => $endThisMonth])) }}" class="filter-tab-btn {{ $isThisMonth ? 'active' : '' }}">
+            <a href="{{ route('reports.index', ['report_tab' => $reportTab, 'from' => $startThisMonth, 'to' => $endThisMonth]) }}" class="filter-tab-btn {{ $isThisMonth ? 'active' : '' }}">
                 <i class="bi bi-calendar-month"></i>
                 <span>This Month</span>
             </a>
-            <a href="{{ route('reports.index', array_merge(request()->only(['shift_id', 'report_tab']), ['from' => $start30Days, 'to' => $endToday])) }}" class="filter-tab-btn {{ $is30Days ? 'active' : '' }}">
+            <a href="{{ route('reports.index', ['report_tab' => $reportTab, 'from' => $start30Days, 'to' => $endToday]) }}" class="filter-tab-btn {{ $is30Days ? 'active' : '' }}">
                 <i class="bi bi-calendar-week"></i>
                 <span>Last 30 Days</span>
             </a>
-            <a href="{{ route('reports.index', array_merge(request()->only(['shift_id', 'report_tab']), ['from' => $startYear, 'to' => $endYear])) }}" class="filter-tab-btn {{ $isThisYear ? 'active' : '' }}">
+            <a href="{{ route('reports.index', ['report_tab' => $reportTab, 'from' => $startYear, 'to' => $endYear]) }}" class="filter-tab-btn {{ $isThisYear ? 'active' : '' }}">
                 <i class="bi bi-calendar4-range"></i>
                 <span>This Year</span>
             </a>
@@ -177,16 +159,6 @@
         <form method="GET" action="{{ route('reports.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="reportsFilterForm">
             <input type="hidden" name="report_tab" value="{{ $reportTab }}">
 
-            <x-custom-select 
-                name="shift_id" 
-                :value="request('shift_id')" 
-                placeholder="All Shifts" 
-                search-placeholder="Search shifts..." 
-                icon="bi-clock-history" 
-                min-width="190px" 
-                :options="collect([['value' => '', 'label' => 'All Shifts']])->concat($shifts->map(fn($s) => ['value' => $s->id, 'label' => $s->name . ' (' . $s->start_time_short . ' – ' . $s->end_time_short . ')']))" 
-                auto-submit
-            />
 
             <div class="d-flex align-items-center gap-1">
                 <span class="small text-muted fw-bold">From:</span>
@@ -202,7 +174,7 @@
                 <i class="bi bi-check2"></i> Apply Filters
             </button>
 
-            @if(request()->hasAny(['from', 'to', 'shift_id']))
+            @if(request()->hasAny(['from', 'to']))
                 <a href="{{ route('reports.index', ['report_tab' => $reportTab]) }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Clear Filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -217,7 +189,7 @@
         <a href="{{ route('reports.index', array_merge(request()->query(), ['report_tab' => 'staff'])) }}" 
            class="btn btn-sm d-flex align-items-center gap-2 py-2 px-3 fw-bold rounded-pill transition-all {{ $reportTab === 'staff' ? 'btn-primary shadow-sm' : 'btn-light border text-secondary' }}">
             <i class="bi bi-bar-chart-fill"></i>
-            <span>Staff & Shift Performance</span>
+            <span>Staff Performance</span>
         </a>
 
         <a href="{{ route('reports.index', array_merge(request()->query(), ['report_tab' => 'low_rating'])) }}" 
@@ -279,112 +251,6 @@
 </div>
 
 @if($reportTab === 'staff')
-    <!-- Shift Performance Comparison Widget (Shift A vs Shift B vs Shift C) -->
-    <div class="card-modern mb-4">
-        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="card-title">
-                <i class="bi bi-layers-fill text-primary"></i>
-                <span>Shift-Wise Performance Overview (Shift A / B / C)</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge-modern badge-slate"><i class="bi bi-clock"></i> {{ $shifts->count() }} Operational Shifts</span>
-                @if(request('shift_id'))
-                    <a href="{{ route('reports.index', array_merge(request()->except('shift_id'), ['report_tab' => 'staff'])) }}" class="badge-modern badge-indigo text-decoration-none">
-                        <i class="bi bi-arrow-repeat"></i> Reset Shift Filter
-                    </a>
-                @endif
-            </div>
-        </div>
-        <div class="card-body p-3">
-            <div class="row g-3">
-                @foreach($shiftStats as $st)
-                    @php
-                        $isThisShiftSelected = (string)request('shift_id') === (string)$st['id'];
-                        $colorTheme = match($st['code']) {
-                            'SHIFT-A' => 'cyan',
-                            'SHIFT-B' => 'amber',
-                            'SHIFT-C' => 'purple',
-                            default => 'indigo'
-                        };
-                    @endphp
-                    <div class="col-12 col-md-4">
-                        <div class="p-3 rounded-3 h-100 transition-all {{ $isThisShiftSelected ? 'border-primary shadow-sm bg-white' : 'bg-light border' }}" 
-                             style="border-width: {{ $isThisShiftSelected ? '2px' : '1px' }}; transition: all 0.2s ease;">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="stat-icon-bubble {{ $colorTheme }}" style="width: 32px; height: 32px; font-size: 0.85rem;">
-                                        <i class="bi bi-clock"></i>
-                                    </span>
-                                    <div>
-                                        <h6 class="fw-bold mb-0 text-dark">{{ $st['name'] }}</h6>
-                                        <span class="small text-muted">{{ $st['time_range'] }}</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-1">
-                                    @if($st['is_active_now'])
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle small py-1 px-2" style="font-size: 0.7rem;">
-                                            <i class="bi bi-record-fill text-success"></i> Active
-                                        </span>
-                                    @endif
-                                    @if($isThisShiftSelected)
-                                        <span class="badge bg-primary text-white small py-1 px-2" style="font-size: 0.7rem;">
-                                            <i class="bi bi-check-circle-fill"></i> Filtered
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="row g-2 text-center my-2">
-                                <div class="col-4">
-                                    <div class="p-2 rounded bg-white border">
-                                        <div class="text-muted small" style="font-size: 0.7rem;">Tours</div>
-                                        <div class="fw-bold text-dark fs-6">{{ $st['visits_count'] }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="p-2 rounded bg-white border">
-                                        <div class="text-muted small" style="font-size: 0.7rem;">Feedbacks</div>
-                                        <div class="fw-bold text-dark fs-6">{{ $st['feedbacks_count'] }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="p-2 rounded bg-white border">
-                                        <div class="text-muted small" style="font-size: 0.7rem;">Avg Score</div>
-                                        <div class="fw-bold text-dark fs-6">
-                                            {{ $st['avg_rating'] > 0 ? number_format($st['avg_rating'], 1) : '—' }}
-                                            <i class="bi bi-star-fill text-warning" style="font-size: 0.7rem;"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-1 small">
-                                    <span class="text-muted" style="font-size: 0.72rem;">Feedback Rate</span>
-                                    <span class="fw-bold text-dark" style="font-size: 0.75rem;">{{ $st['response_rate'] }}%</span>
-                                </div>
-                                <div class="progress-modern" style="height: 6px;">
-                                    <div class="progress-bar-emerald" style="width: {{ $st['response_rate'] }}%; height: 100%;"></div>
-                                </div>
-                            </div>
-
-                            @if($isThisShiftSelected)
-                                <a href="{{ route('reports.index', array_merge(request()->except('shift_id'), ['report_tab' => 'staff'])) }}" 
-                                   class="btn btn-sm btn-outline-secondary w-100 py-1" style="font-size: 0.8rem;">
-                                    <i class="bi bi-x-circle me-1"></i> Clear Shift Filter
-                                </a>
-                            @else
-                                <a href="{{ route('reports.index', array_merge(request()->query(), ['shift_id' => $st['id'], 'report_tab' => 'staff'])) }}" 
-                                   class="btn btn-sm btn-outline-primary w-100 py-1" style="font-size: 0.8rem;">
-                                    <i class="bi bi-funnel me-1"></i> Filter {{ $st['name'] }}
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
 
     <!-- Staff Performance Section -->
     <div class="card-modern mb-4">
@@ -392,9 +258,6 @@
             <div class="card-title">
                 <i class="bi bi-person-lines-fill text-primary"></i>
                 <span>Staff & Organizer Performance Review</span>
-                @if($selectedShift)
-                    <span class="badge-modern badge-blue ms-2">{{ $selectedShift->name }} ({{ $selectedShift->formatted_24h_range }})</span>
-                @endif
             </div>
             <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'staff'])) }}" class="btn-modern-secondary btn-sm py-1 px-2" title="Download spreadsheet">
                 <i class="bi bi-download"></i> CSV
@@ -472,9 +335,6 @@
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h5 class="fw-bold text-dark mb-0" style="font-family: var(--font-heading);">
             <i class="bi bi-star-half text-warning me-1"></i> Section-Wise Rating Criteria Analysis
-            @if($selectedShift)
-                <span class="badge-modern badge-blue ms-2 fs-6 fw-normal"><i class="bi bi-clock"></i> {{ $selectedShift->name }}</span>
-            @endif
         </h5>
         <span class="badge-modern badge-shibaura">{{ count($questionStats) }} Rating Parameters</span>
     </div>
@@ -536,7 +396,7 @@
         </div>
     @empty
         <div class="card-modern p-4 text-center text-muted">
-            No rating questions available for the selected dates or shift.
+            No rating questions available for the selected dates.
         </div>
     @endforelse
 
@@ -594,9 +454,6 @@
                         </td>
                         <td>
                             <div class="fw-semibold text-dark">{{ $f->organizer?->name ?? 'Unassigned' }}</div>
-                            @if($f->visit?->shift)
-                                <span class="badge bg-light text-secondary border small">{{ $f->visit->shift->name }}</span>
-                            @endif
                         </td>
                         <td>
                             @if($f->is_staff_assisted)
@@ -631,7 +488,7 @@
                                     <i class="bi bi-shield-check"></i>
                                 </div>
                                 <h6 class="fw-bold text-dark">No Low-Rating Incidents</h6>
-                                <p class="text-muted small mb-0">No ratings of 1 or 2 stars were recorded in the selected date range or shift.</p>
+                                <p class="text-muted small mb-0">No ratings of 1 or 2 stars were recorded in the selected date range.</p>
                             </div>
                         </td>
                     </tr>
@@ -666,7 +523,7 @@
                         <th>Visit Date</th>
                         <th>Visitor ID / Pass</th>
                         <th>Visitor Details</th>
-                        <th>Host Staff & Shift</th>
+                        <th>Host Staff</th>
                         <th>Department</th>
                         <th>Plant Gate Status</th>
                         <th>Exit Elapsed</th>
@@ -693,9 +550,6 @@
                         </td>
                         <td>
                             <div class="fw-semibold text-dark">{{ $v->organizer?->name ?? 'Unassigned' }}</div>
-                            @if($v->shift)
-                                <span class="badge bg-light text-secondary border small">{{ $v->shift->name }}</span>
-                            @endif
                         </td>
                         <td>
                             @if($v->department)

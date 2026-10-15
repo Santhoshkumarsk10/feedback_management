@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Feedback;
 use App\Models\Question;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use App\Models\Visitor;
@@ -20,7 +19,6 @@ class VisitController extends Controller
         $request->validate([
             'from' => 'nullable|date',
             'to' => 'nullable|date',
-            'shift_id' => 'nullable|integer|exists:shifts,id',
             'organizer_id' => 'nullable|integer|exists:users,id',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
@@ -28,11 +26,10 @@ class VisitController extends Controller
         $tab = $request->input('tab', 'all');
         $isTodayFilter = $request->boolean('today') || $request->input('date_filter') === 'today';
 
-        $query = Visit::with(['organizer', 'feedback', 'shift'])
+        $query = Visit::with(['organizer', 'feedback'])
             ->when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
             ->when(! $isTodayFilter && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
             ->when(! $isTodayFilter && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
-            ->when($request->shift_id, fn ($q, $v) => $q->where('shift_id', $v))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
@@ -46,7 +43,6 @@ class VisitController extends Controller
         $baseCount = Visit::when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
             ->when(! $isTodayFilter && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
             ->when(! $isTodayFilter && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
-            ->when($request->shift_id, fn ($q, $v) => $q->where('shift_id', $v))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
@@ -76,8 +72,6 @@ class VisitController extends Controller
 
         return view('visits.index', [
             'visits' => $visits,
-            'shifts' => Shift::active()->orderBy('start_time')->get(),
-            'currentShift' => Shift::current(),
             'organizers' => User::whereIn('role', ['organizer', 'staff'])->orderBy('name')->get(['id', 'name']),
             'tabCounts' => [
                 'all' => $totalCount,
@@ -92,11 +86,9 @@ class VisitController extends Controller
 
     public function create()
     {
-        $shifts = Shift::active()->orderBy('start_time')->get();
-        $currentShift = Shift::current();
         $organizers = User::whereIn('role', ['staff', 'organizer'])->orderBy('name')->get(['id', 'name']);
 
-        return view('visits.create', compact('shifts', 'currentShift', 'organizers'));
+        return view('visits.create', compact('organizers'));
     }
 
     public function store(Request $request)
@@ -108,7 +100,6 @@ class VisitController extends Controller
             'visitor_email' => ['nullable', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:150'],
             'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'purpose' => ['nullable', 'string', 'min:2', 'max:255', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'shift_id' => 'required|integer|exists:shifts,id',
             'organizer_id' => 'nullable|integer|exists:users,id',
             'visit_date' => 'nullable|date',
         ], [
@@ -128,8 +119,6 @@ class VisitController extends Controller
             'visitor_designation.regex' => 'Designation contains invalid characters.',
             'purpose.max' => 'Purpose cannot exceed 255 characters.',
             'purpose.regex' => 'Purpose contains invalid characters.',
-            'shift_id.required' => 'Please select an operational duty shift.',
-            'shift_id.exists' => 'The selected shift is invalid or does not exist.',
             'visit_date.date' => 'Please provide a valid visit date.',
         ]);
 
@@ -145,17 +134,15 @@ class VisitController extends Controller
             'visitor_email' => $request->visitor_email,
             'visitor_designation' => $request->visitor_designation,
             'purpose' => $request->purpose ?: 'Plant Tour & Technical Centre Visit',
-            'shift_id' => $request->shift_id,
             'organizer_id' => $organizerId,
             'visit_date' => $request->visit_date ?: today(),
         ]);
 
-        AuditLog::record('create', 'visits', "Staff " . auth()->user()->name . " registered visitor {$visit->visitor_name} ({$visit->visitor_company}) for " . ($visit->shift?->name ?? 'Shift'), [
+        AuditLog::record('create', 'visits', "Staff " . auth()->user()->name . " registered visitor {$visit->visitor_name} ({$visit->visitor_company})", [
             'visit_id' => $visit->id,
-            'shift_id' => $visit->shift_id,
         ]);
 
-        return redirect()->route('dashboard')->with('success', "Visitor {$visit->visitor_name} ({$visit->visitor_company}) successfully registered for {$visit->shift?->name}!");
+        return redirect()->route('dashboard')->with('success', "Visitor {$visit->visitor_name} ({$visit->visitor_company}) successfully registered!");
     }
 
     public function createFeedback(Visit $visit)
@@ -171,7 +158,7 @@ class VisitController extends Controller
                 ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
         }
 
-        $visit->load(['organizer', 'shift']);
+        $visit->load(['organizer']);
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
 

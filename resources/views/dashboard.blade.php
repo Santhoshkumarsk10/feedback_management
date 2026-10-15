@@ -5,39 +5,6 @@
 
 @section('content')
 <div class="saas-dashboard-container">
-    <!-- Active Shift Deadline Alerts if any -->
-    @if(!empty($shiftAlerts))
-        @foreach($shiftAlerts as $alert)
-            <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
-                 style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
-                 role="alert">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 40px; height: 40px;">
-                        <i class="bi bi-alarm-fill fs-5"></i>
-                    </div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <h6 class="fw-bold text-danger mb-0 fs-6">
-                                Shift Feedback Alert: {{ $alert['shift_name'] }}
-                            </h6>
-                            <span class="badge bg-danger text-white fw-bold px-2 py-1">
-                                {{ $alert['remaining_text'] }}
-                            </span>
-                        </div>
-                        <div class="text-dark small mt-1">
-                            <strong>{{ $alert['pending_count'] }} visitor(s)</strong> awaiting feedback before shift closure.
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $alert['shift_id']]) }}" 
-                       class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
-                        View Pending Visitors
-                    </a>
-                </div>
-            </div>
-        @endforeach
-    @endif
 
     <!-- 1. Top 5 SaaS Metric Cards Row -->
     <div class="saas-metric-grid">
@@ -372,11 +339,11 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between p-3 bg-white rounded-3 border gap-2 shadow-xs">
         <div class="d-flex align-items-center gap-2 small">
             <span class="badge bg-primary text-white px-2 py-1">Operations</span>
-            <span class="text-secondary">Current Duty Shift: <strong>{{ $currentShift ? $currentShift->name : 'Off Shift' }}</strong> (<span id="footnoteTodayVisitors">{{ $stats['today_total'] }}</span> visitors logged today)</span>
+            <span class="text-secondary">Today's Activity: <strong><span id="footnoteTodayVisitors">{{ $stats['today_total'] }}</span> visitors</strong> logged today</span>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('shift_queue') }}" class="btn btn-sm btn-outline-primary px-3 fw-semibold">
-                <i class="bi bi-clock-history me-1"></i> Today's Live Shift Queue
+                <i class="bi bi-clock-history me-1"></i> Today's Live Visitor Queue
             </a>
             <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary px-3 fw-semibold">
                 <i class="bi bi-person-plus-fill me-1"></i> Register New Visitor

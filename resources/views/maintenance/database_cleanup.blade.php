@@ -5,7 +5,7 @@
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
-        <form method="POST" action="{{ route('database_cleanup.reseed') }}" onsubmit="return confirm('Restore & Re-seed Default Data?\n\nThis will re-run database seeders to populate default plants, shifts, feedback questions, and demo credentials if tables were cleared.');">
+        <form method="POST" action="{{ route('database_cleanup.reseed') }}" onsubmit="return confirm('Restore & Re-seed Default Data?\n\nThis will re-run database seeders to populate default plants, feedback questions, and demo credentials if tables were cleared.');">
             @csrf
             <button type="submit" class="btn btn-outline-success btn-sm fw-semibold shadow-xs">
                 <i class="bi bi-arrow-clockwise me-1"></i> Re-seed Default Data

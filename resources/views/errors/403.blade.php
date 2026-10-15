@@ -20,7 +20,7 @@
 
 @section('tips')
     <strong><i class="fa-solid fa-key" style="color: #dc2626;"></i> Security Note:</strong>
-    If you are an authorized plant tour organizer or shift engineer, please log in with your staff credentials. Visitors can use the public feedback terminal.
+    If you are an authorized plant tour organizer or staff engineer, please log in with your staff credentials. Visitors can use the public feedback terminal.
 @endsection
 
 @section('primary_url', '/organizer/login')

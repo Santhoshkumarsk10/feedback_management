@@ -23,7 +23,6 @@ class RoleAndPermissionSeeder extends Seeder
             'access-mobile-app',
             'manage-users',
             'manage-roles',
-            'manage-shifts',
             'manage-plants',
             'manage-questions',
             'manage-company',
@@ -53,14 +52,13 @@ class RoleAndPermissionSeeder extends Seeder
             ],
             'admin' => [
                 'display_name' => 'Plant Admin',
-                'description' => 'Plant-level administrator managing visitors, team members, shifts, and questionnaires',
+                'description' => 'Plant-level administrator managing visitors, team members, and questionnaires',
                 'is_system' => true,
                 'permissions' => [
                     'access-web-panel',
                     'access-mobile-app',
                     'manage-users',
                     'manage-roles',
-                    'manage-shifts',
                     'manage-plants',
                     'manage-questions',
                     'manage-company',

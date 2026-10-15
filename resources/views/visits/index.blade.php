@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Plant Visitors Log')
 @section('page_title', 'Plant Visitor Directory')
-@section('page_subtitle', 'Browse all plant visitors, assigned shift operations, and feedback statuses')
+@section('page_subtitle', 'Browse all plant visitors, escort assignments, and feedback statuses')
 
 @section('content')
 <!-- Filter Tabs & Controls Card -->
@@ -50,16 +50,6 @@
                 header-title="Visitor Directory Suggestions"
             />
 
-            <x-custom-select 
-                name="shift_id" 
-                :value="request('shift_id')" 
-                placeholder="All Shifts" 
-                search-placeholder="Search shift..." 
-                icon="bi-clock-history" 
-                min-width="170px" 
-                :options="collect([['value' => '', 'label' => 'All Shifts']])->concat($shifts->map(fn($s) => ['value' => $s->id, 'label' => $s->name . ' (' . $s->start_time_short . '–' . $s->end_time_short . ')']))" 
-                auto-submit
-            />
 
             <x-custom-select 
                 name="organizer_id" 
@@ -86,7 +76,7 @@
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['q', 'shift_id', 'organizer_id', 'from', 'to', 'tab']))
+            @if(request()->hasAny(['q', 'organizer_id', 'from', 'to', 'tab']))
                 <a href="{{ route('visits.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Reset Filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -124,7 +114,6 @@
             <thead>
                 <tr>
                     <th>Visit Date</th>
-                    <th>Shift</th>
                     <th>Visitor Information & ID</th>
                     <th>Assigned Staff</th>
                     <th>Purpose of Visit</th>
@@ -143,24 +132,7 @@
                             <span class="small text-muted">{{ $v->visit_date->format('Y') }}</span>
                         </div>
                     </td>
-                    <td>
-                        @if($v->shift)
-                            @php
-                                $shiftBadgeColor = match($v->shift->code) {
-                                    'SHIFT-A' => 'badge-indigo',
-                                    'SHIFT-B' => 'badge-amber',
-                                    'SHIFT-C' => 'badge-purple',
-                                    default => 'badge-slate'
-                                };
-                            @endphp
-                            <span class="badge-modern {{ $shiftBadgeColor }}">
-                                <i class="bi bi-clock"></i> {{ $v->shift->name }}
-                            </span>
-                            <div class="text-muted small mt-1" style="font-size: 0.72rem;">{{ $v->shift->formatted_24h_range }}</div>
-                        @else
-                            <span class="text-muted small">—</span>
-                        @endif
-                    </td>
+
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>

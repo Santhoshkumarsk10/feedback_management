@@ -49,16 +49,6 @@
                 <input type="hidden" name="tier" value="{{ request('tier') }}">
             @endif
 
-            <x-custom-select 
-                name="shift_id" 
-                :value="request('shift_id')" 
-                placeholder="All Shifts" 
-                search-placeholder="Search shifts..." 
-                icon="bi-clock-history" 
-                min-width="170px" 
-                :options="collect([['value' => '', 'label' => 'All Shifts']])->concat($shifts->map(fn($s) => ['value' => $s->id, 'label' => $s->name . ' (' . $s->start_time_short . '–' . $s->end_time_short . ')']))" 
-                auto-submit
-            />
 
             <x-custom-select 
                 name="organizer_id" 
@@ -102,7 +92,7 @@
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['organizer_id', 'shift_id', 'rating', 'from', 'to', 'tier']))
+            @if(request()->hasAny(['organizer_id', 'rating', 'from', 'to', 'tier']))
                 <a href="{{ route('feedbacks.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Reset Filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
@@ -139,19 +129,7 @@
                     <td style="white-space: nowrap;">
                         <div class="small fw-bold text-dark">{{ $f->submitted_at->format('d M Y') }}</div>
                         <div class="small text-muted" style="font-size: 0.72rem;">{{ $f->submitted_at->format('H:i A') }}</div>
-                        @if($f->visit?->shift)
-                            @php
-                                $shiftBadgeColor = match($f->visit->shift->code) {
-                                    'SHIFT-A' => 'badge-indigo',
-                                    'SHIFT-B' => 'badge-amber',
-                                    'SHIFT-C' => 'badge-purple',
-                                    default => 'badge-slate'
-                                };
-                            @endphp
-                            <span class="badge-modern {{ $shiftBadgeColor }} mt-1" style="font-size: 0.68rem;" title="{{ $f->visit->shift->formatted_24h_range }}">
-                                <i class="bi bi-clock"></i> {{ $f->visit->shift->name }}
-                            </span>
-                        @endif
+
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">

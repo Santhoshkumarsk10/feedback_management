@@ -212,7 +212,7 @@
                     <ul class="small text-muted ps-3 mb-3">
                         <li class="mb-1"><strong>Staff:</strong> Restrict to viewing/managing visitors, gathering reviews, and tablet mobile app.</li>
                         <li class="mb-1"><strong>Supervisor:</strong> Grant analytics reports, export, and visitor history. Avoid granting system master controls.</li>
-                        <li class="mb-1"><strong>Admin:</strong> Responsible for plant operations, user provisioning, shifts, and questionnaires.</li>
+                        <li class="mb-1"><strong>Admin:</strong> Responsible for plant operations, user provisioning, and questionnaires.</li>
                     </ul>
 
                     <div class="alert alert-info py-2 px-3 small mb-0">

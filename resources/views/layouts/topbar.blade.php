@@ -24,10 +24,9 @@
         }
     }
 
-    $activeShiftAlerts = $topbarShiftAlerts ?? ($shiftAlerts ?? []);
     $pendingFeedbackCount = $topbarPendingCount ?? ($todayCounts['pending'] ?? 0);
     $escalatedFeedbackCount = $topbarEscalatedCount ?? 0;
-    $hasNotifications = count($activeShiftAlerts) > 0 || $pendingFeedbackCount > 0 || $escalatedFeedbackCount > 0;
+    $hasNotifications = $pendingFeedbackCount > 0 || $escalatedFeedbackCount > 0;
 @endphp
 
 <header class="app-topbar-clean">
@@ -111,7 +110,7 @@
 
         <!-- 3. Dynamic Notification Bell Dropdown -->
         <div class="dropdown">
-            <button class="topbar-icon-btn position-relative" type="button" id="topbarNotificationsBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications & Shift Operations">
+            <button class="topbar-icon-btn position-relative" type="button" id="topbarNotificationsBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
                 <i class="bi bi-bell text-secondary fs-5"></i>
                 @if($hasNotifications)
                     <span class="notification-indicator-dot animate-pulse"></span>
@@ -131,24 +130,6 @@
                 </div>
 
                 <div class="py-1" style="max-height: 360px; overflow-y: auto;">
-                    <!-- Active Shift Deadline Alerts -->
-                    @if(!empty($activeShiftAlerts))
-                        @foreach($activeShiftAlerts as $alert)
-                            <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $alert['shift_id']]) }}" class="notification-row-item bg-danger-subtle bg-opacity-25 border-start border-danger border-4">
-                                <div class="notification-icon-wrap bg-danger text-white">
-                                    <i class="bi bi-alarm-fill"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="fw-bold text-danger small">Shift Deadline Alert</div>
-                                        <span class="badge bg-danger text-white" style="font-size: 0.65rem;">{{ $alert['remaining_text'] }}</span>
-                                    </div>
-                                    <div class="small text-dark mt-1"><strong>{{ $alert['shift_name'] }}</strong>: {{ $alert['pending_count'] }} visitor(s) awaiting feedback.</div>
-                                </div>
-                            </a>
-                        @endforeach
-                    @endif
-
                     <!-- Pending Visitors Today Notification -->
                     @if($pendingFeedbackCount > 0)
                         <a href="{{ route('shift_queue', ['today_tab' => 'pending']) }}" class="notification-row-item">
@@ -189,14 +170,14 @@
                         <div class="text-center py-4 px-3 text-muted">
                             <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-2"></i>
                             <div class="fw-semibold text-dark small">All caught up!</div>
-                            <div class="small text-muted" style="font-size: 0.75rem;">No overdue feedback or active shift alerts right now.</div>
+                            <div class="small text-muted" style="font-size: 0.75rem;">No overdue feedback right now.</div>
                         </div>
                     @endif
                 </div>
 
                 <div class="p-2 border-top bg-light">
                     <a href="{{ route('shift_queue') }}" class="btn btn-sm btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-1">
-                        <span>Open Shift Operations Queue</span>
+                        <span>Open Today's Visitor Queue</span>
                         <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>

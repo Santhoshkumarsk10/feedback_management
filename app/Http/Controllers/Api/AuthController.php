@@ -43,14 +43,10 @@ class AuthController extends Controller
 
         $user = $this->guard()->user();
 
-        // Section 6.6 Requirement 4:
-        // "Only available (current shift) staff can log in to take assisted feedback; others get a message 'Not in current shift' (Admin/Manager exempt)."
-        if (!$user->isOnDuty()) {
+        if (!$user->is_active) {
             $this->guard()->logout();
-            $myShift = $user->getCurrentRosteredShift();
-            $shiftName = $myShift ? $myShift->name : 'another shift';
             throw ValidationException::withMessages([
-                'login' => ["Not in current shift. You are scheduled for {$shiftName}."],
+                'login' => ['Your account has been deactivated. Please contact an administrator.'],
             ]);
         }
 
@@ -214,13 +210,6 @@ class AuthController extends Controller
     private function userPayload(User $user): array
     {
         $payload = $user->only('id', 'name', 'email', 'mobile', 'role', 'department');
-        $shift = $user->getCurrentRosteredShift();
-        $payload['shift'] = $shift ? [
-            'id' => $shift->id,
-            'name' => $shift->name,
-            'code' => $shift->code,
-            'range' => $shift->formatted_24h_range,
-        ] : null;
         $payload['is_on_duty'] = $user->isOnDuty();
         return $payload;
     }
