@@ -37,6 +37,7 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
     Route::get('shift-queue', [DashboardController::class, 'shiftQueue'])->name('shift_queue');
     Route::get('shift-queue/export-pending', [DashboardController::class, 'exportPending'])->name('shift_queue.export_pending');
     Route::get('dashboard/live-feed', [DashboardController::class, 'liveFeed'])->name('dashboard.live_feed');
+    Route::get('dashboard/global-search', [DashboardController::class, 'globalSearch'])->name('dashboard.global_search');
     Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 
     // Account Security: Change Password & Profile Details

@@ -156,9 +156,9 @@
             <div class="saas-panel-card">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Rating Distribution</h5>
-                    <select class="saas-select-pill">
-                        <option>Last 30 Days</option>
-                    </select>
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Filtered period">
+                        <i class="bi bi-calendar3 me-1 text-primary"></i>{{ $rangeLabel }}
+                    </span>
                 </div>
                 <div class="row align-items-center g-3 my-auto">
                     <div class="col-12 col-sm-6 text-center">
@@ -187,42 +187,57 @@
         </div>
     </div>
 
-    <!-- 3. Bottom Grid: Feedback by Category, Top Locations, Recent Feedbacks -->
+    <!-- 3. Bottom Grid: Feedback by Category, Top Departments, Recent Feedbacks -->
     <div class="row g-3 mb-4">
         <!-- 1. Feedback by Category -->
         <div class="col-12 col-md-6 col-xl-4">
             <div class="saas-panel-card">
                 <div class="saas-panel-header">
-                    <h5 class="saas-panel-title">Feedback by Category</h5>
-                    <select class="saas-select-pill">
-                        <option>Last 30 Days</option>
-                    </select>
+                    <div>
+                        <h5 class="saas-panel-title">Feedback by Category</h5>
+                        <div class="text-muted small" style="font-size: 0.72rem;">Technical Centre Facilities (Section 4)</div>
+                    </div>
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Questionnaire Section 4 Facilities Rating">
+                        <i class="bi bi-star-fill text-warning me-1"></i>Rating 1-5
+                    </span>
                 </div>
                 <div class="d-flex flex-column gap-1 my-auto">
-                    @foreach($categoryFeedback as $cat)
+                    @forelse($categoryFeedback as $cat)
                         <div class="saas-progress-row">
                             <span class="saas-progress-name" title="{{ $cat['name'] }}">{{ $cat['name'] }}</span>
                             <div class="saas-progress-track">
                                 <div class="saas-progress-bar" style="width: {{ $cat['percent'] }}%; background: {{ $cat['color'] }};"></div>
                             </div>
-                            <span class="saas-progress-val">{{ $cat['count'] }}</span>
+                            <div class="d-flex align-items-center gap-1 justify-content-end" style="min-width: 45px;">
+                                @if(isset($cat['avg']) && $cat['avg'] > 0)
+                                    <span class="fw-bold text-dark small" style="font-size: 0.78rem;">{{ number_format($cat['avg'], 1) }}★</span>
+                                    <span class="text-muted" style="font-size: 0.68rem;">({{ $cat['count'] }})</span>
+                                @else
+                                    <span class="saas-progress-val">0</span>
+                                @endif
+                            </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="text-center py-4 text-muted small">No facility rating questions configured in Section 4.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
 
-        <!-- 2. Top Locations -->
+        <!-- 2. Top Departments Visited -->
         <div class="col-12 col-md-6 col-xl-4">
             <div class="saas-panel-card">
                 <div class="saas-panel-header">
-                    <h5 class="saas-panel-title">Top Locations</h5>
-                    <select class="saas-select-pill">
-                        <option>Last 30 Days</option>
-                    </select>
+                    <div>
+                        <h5 class="saas-panel-title">Top Departments Visited</h5>
+                        <div class="text-muted small" style="font-size: 0.72rem;">Visitor volume by Plant Department</div>
+                    </div>
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Visits by Department for {{ $rangeLabel }}">
+                        <i class="bi bi-diagram-3 me-1 text-primary"></i>{{ $rangeLabel }}
+                    </span>
                 </div>
                 <div class="d-flex flex-column gap-1 my-auto">
-                    @foreach($topLocations as $loc)
+                    @forelse($topLocations as $loc)
                         <div class="saas-rank-row">
                             <span class="saas-rank-num">{{ $loc['rank'] }}</span>
                             <span class="saas-rank-name" title="{{ $loc['name'] }}">{{ $loc['name'] }}</span>
@@ -232,7 +247,9 @@
                             <span class="saas-rank-pct">{{ $loc['percent'] }}%</span>
                             <span class="saas-rank-cnt">{{ $loc['count'] }}</span>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="text-center py-4 text-muted small">No department visits recorded in this period.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -243,7 +260,7 @@
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Recent Feedbacks</h5>
                     <a href="{{ route('feedbacks.index') }}" class="small fw-semibold text-primary text-decoration-none">
-                        View All
+                        View All <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
                 <div class="d-flex flex-column">
@@ -257,11 +274,11 @@
                                     <span class="saas-feedback-name">{{ $rf['name'] }}</span>
                                     <span class="saas-feedback-stars">
                                         @for($i = 1; $i <= 5; $i++)
-                                            <i class="bi {{ $i <= $rf['rating'] ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                            <i class="bi {{ $i <= $rf['rating'] ? 'bi-star-fill text-warning' : 'bi-star text-muted' }}"></i>
                                         @endfor
                                     </span>
                                 </div>
-                                <div class="saas-feedback-time">{{ $rf['date_time'] }}</div>
+                                <div class="saas-feedback-time" title="{{ $rf['full_date'] ?? '' }}">{{ $rf['date_time'] }}</div>
                                 <div class="saas-feedback-comment">{{ $rf['comment'] }}</div>
                             </div>
                             <i class="bi bi-chevron-right saas-feedback-arrow ms-2"></i>
@@ -285,9 +302,9 @@
             <div class="saas-panel-card">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Visitor Type</h5>
-                    <select class="saas-select-pill">
-                        <option>Last 30 Days</option>
-                    </select>
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium">
+                        <i class="bi bi-pie-chart me-1 text-primary"></i>{{ $rangeLabel }}
+                    </span>
                 </div>
                 <div class="row align-items-center g-3 my-auto">
                     <div class="col-12 col-sm-5 text-center">
@@ -320,9 +337,9 @@
             <div class="saas-panel-card">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Status</h5>
-                    <select class="saas-select-pill">
-                        <option>Last 30 Days</option>
-                    </select>
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium">
+                        <i class="bi bi-check2-circle me-1 text-primary"></i>{{ $rangeLabel }}
+                    </span>
                 </div>
                 <div class="row align-items-center g-3 my-auto">
                     <div class="col-12 col-sm-5 text-center">
@@ -355,7 +372,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between p-3 bg-white rounded-3 border gap-2 shadow-xs">
         <div class="d-flex align-items-center gap-2 small">
             <span class="badge bg-primary text-white px-2 py-1">Operations</span>
-            <span class="text-secondary">Current Duty Shift: <strong>{{ $currentShift ? $currentShift->name : 'Off Shift' }}</strong> ({{ $stats['today_total'] }} visitors logged today)</span>
+            <span class="text-secondary">Current Duty Shift: <strong>{{ $currentShift ? $currentShift->name : 'Off Shift' }}</strong> (<span id="footnoteTodayVisitors">{{ $stats['today_total'] }}</span> visitors logged today)</span>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('shift_queue') }}" class="btn btn-sm btn-outline-primary px-3 fw-semibold">
@@ -373,8 +390,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Dual-Line Feedback Trends Chart
+    // 1. Dual-Line Feedback Trends Chart with dynamic switching (30, 14, 7 days)
     const trendsCtx = document.getElementById('feedbackTrendsChart');
+    let feedbackTrendsChartInstance = null;
+    const allTrendsData = @json($allTrends ?? ['30' => $trendsData, '14' => $trendsData, '7' => $trendsData]);
+
     if (trendsCtx) {
         const ctx2d = trendsCtx.getContext('2d');
         
@@ -388,16 +408,16 @@ document.addEventListener('DOMContentLoaded', function() {
         greenGrad.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
         greenGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
 
-        const trendsData = @json($trendsData);
+        const initialTrends = allTrendsData['30'] || @json($trendsData);
 
-        new Chart(trendsCtx, {
+        feedbackTrendsChartInstance = new Chart(trendsCtx, {
             type: 'line',
             data: {
-                labels: trendsData.labels,
+                labels: initialTrends.labels,
                 datasets: [
                     {
                         label: 'Total Feedbacks',
-                        data: trendsData.total,
+                        data: initialTrends.total,
                         borderColor: '#2563eb',
                         backgroundColor: blueGrad,
                         borderWidth: 2.5,
@@ -411,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     {
                         label: 'Positive Feedbacks',
-                        data: trendsData.positive,
+                        data: initialTrends.positive,
                         borderColor: '#10b981',
                         backgroundColor: greenGrad,
                         borderWidth: 2.5,
@@ -456,6 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             color: '#f8fafc'
                         },
                         ticks: {
+                            precision: 0,
                             font: { size: 11 },
                             color: '#94a3b8'
                         }
@@ -464,6 +485,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Dynamic Period Switcher for Trends Chart
+    window.updateTrendsPeriod = function(period) {
+        if (!feedbackTrendsChartInstance || !allTrendsData[period]) return;
+        const target = allTrendsData[period];
+        feedbackTrendsChartInstance.data.labels = target.labels;
+        feedbackTrendsChartInstance.data.datasets[0].data = target.total;
+        feedbackTrendsChartInstance.data.datasets[1].data = target.positive;
+        feedbackTrendsChartInstance.update();
+    };
 
     // Common Donut Options
     const commonDonutOptions = {
@@ -484,18 +515,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const ratingDonutCtx = document.getElementById('ratingDistributionDonut');
     if (ratingDonutCtx) {
         const ratingItems = @json($ratingDist['items']);
+        const hasRatingData = ratingItems.some(i => i.count > 0);
         new Chart(ratingDonutCtx, {
             type: 'doughnut',
             data: {
-                labels: ratingItems.map(i => i.label),
+                labels: hasRatingData ? ratingItems.map(i => i.label) : ['No Feedbacks Yet'],
                 datasets: [{
-                    data: ratingItems.map(i => i.count),
-                    backgroundColor: ratingItems.map(i => i.color),
+                    data: hasRatingData ? ratingItems.map(i => i.count) : [1],
+                    backgroundColor: hasRatingData ? ratingItems.map(i => i.color) : ['#e2e8f0'],
                     borderWidth: 0,
-                    hoverOffset: 3
+                    hoverOffset: hasRatingData ? 3 : 0
                 }]
             },
-            options: commonDonutOptions
+            options: {
+                ...commonDonutOptions,
+                plugins: {
+                    ...commonDonutOptions.plugins,
+                    tooltip: {
+                        enabled: hasRatingData
+                    }
+                }
+            }
         });
     }
 
@@ -503,18 +543,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const visitorTypeCtx = document.getElementById('visitorTypeDonut');
     if (visitorTypeCtx) {
         const vtItems = @json($visitorTypes['items']);
+        const hasVtData = vtItems.some(i => i.count > 0);
         new Chart(visitorTypeCtx, {
             type: 'doughnut',
             data: {
-                labels: vtItems.map(i => i.label),
+                labels: hasVtData ? vtItems.map(i => i.label) : ['No Visitors Recorded'],
                 datasets: [{
-                    data: vtItems.map(i => i.count),
-                    backgroundColor: vtItems.map(i => i.color),
+                    data: hasVtData ? vtItems.map(i => i.count) : [1],
+                    backgroundColor: hasVtData ? vtItems.map(i => i.color) : ['#e2e8f0'],
                     borderWidth: 0,
-                    hoverOffset: 3
+                    hoverOffset: hasVtData ? 3 : 0
                 }]
             },
-            options: commonDonutOptions
+            options: {
+                ...commonDonutOptions,
+                plugins: {
+                    ...commonDonutOptions.plugins,
+                    tooltip: {
+                        enabled: hasVtData
+                    }
+                }
+            }
         });
     }
 
@@ -522,40 +571,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const feedbackStatusCtx = document.getElementById('feedbackStatusDonut');
     if (feedbackStatusCtx) {
         const fsItems = @json($feedbackStatuses['items']);
+        const hasFsData = fsItems.some(i => i.count > 0);
         new Chart(feedbackStatusCtx, {
             type: 'doughnut',
             data: {
-                labels: fsItems.map(i => i.label),
+                labels: hasFsData ? fsItems.map(i => i.label) : ['No Records'],
                 datasets: [{
-                    data: fsItems.map(i => i.count),
-                    backgroundColor: fsItems.map(i => i.color),
+                    data: hasFsData ? fsItems.map(i => i.count) : [1],
+                    backgroundColor: hasFsData ? fsItems.map(i => i.color) : ['#e2e8f0'],
                     borderWidth: 0,
-                    hoverOffset: 3
+                    hoverOffset: hasFsData ? 3 : 0
                 }]
             },
-            options: commonDonutOptions
+            options: {
+                ...commonDonutOptions,
+                plugins: {
+                    ...commonDonutOptions.plugins,
+                    tooltip: {
+                        enabled: hasFsData
+                    }
+                }
+            }
         });
     }
 
-    // Interactive date filter label helper
-    window.setDateRange = function(range) {
-        const labelEl = document.getElementById('currentDateRangeLabel');
-        if (!labelEl) return;
-        const now = new Date();
-        if (range === 'today') {
-            labelEl.textContent = now.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        } else if (range === '7days') {
-            const past7 = new Date();
-            past7.setDate(now.getDate() - 7);
-            labelEl.textContent = past7.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) + ' - ' + now.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        } else if (range === 'month') {
-            labelEl.textContent = '01 ' + now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ' - ' + now.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        } else if (range === '30days') {
-            const past30 = new Date();
-            past30.setDate(now.getDate() - 30);
-            labelEl.textContent = past30.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) + ' - ' + now.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-    };
+    // 5. Live Feed Real-Time Background Heartbeat (every 30s)
+    setInterval(function() {
+        fetch('{{ route("dashboard.live_feed") }}', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.success) return;
+            const footnoteEl = document.getElementById('footnoteTodayVisitors');
+            if (footnoteEl && data.counts && data.counts.all !== undefined) {
+                footnoteEl.textContent = data.counts.all;
+            }
+        })
+        .catch(err => {
+            // Idle background poll
+        });
+    }, 30000);
 });
 </script>
 @endpush
