@@ -392,6 +392,20 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     min-height: 100vh;
 }
 
+/* Page Content Container - Left & Right Margins for All Screens */
+.page-container {
+    flex: 1 0 auto;
+    width: 100%;
+    padding: 1.5rem 1.75rem 2.5rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+    .page-container {
+        padding: 1.75rem 2.25rem 3rem;
+    }
+}
+
 /* Top Navigation Bar Clean */
 .app-topbar,
 .app-topbar-clean {
@@ -406,6 +420,13 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     top: 0;
     z-index: 1020;
     width: 100%;
+}
+
+@media (min-width: 1400px) {
+    .app-topbar,
+    .app-topbar-clean {
+        padding: 0 2.25rem;
+    }
 }
 
 .topbar-left,
@@ -597,7 +618,7 @@ h1, h2, h3, h4, h5, h6, .heading-font {
    Modern SaaS Clean Dashboard Theme Styles
    ========================================================================== */
 .saas-dashboard-container {
-    padding: 1.5rem 1.75rem 2.5rem;
+    padding: 0;
 }
 
 /* 5 Hero Metric Cards Row */
@@ -1168,6 +1189,52 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 .table-modern tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* Pagination Footer Container */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.15rem 0.25rem 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.pagination-container .pagination {
+    margin-bottom: 0;
+    gap: 0.25rem;
+}
+
+.pagination-container .page-item .page-link {
+    border-radius: 8px;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-700);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.4rem 0.75rem;
+    background: #ffffff;
+    transition: all 0.15s ease;
+}
+
+.pagination-container .page-item .page-link:hover {
+    background: #f1f5f9;
+    color: var(--shibaura-blue);
+    border-color: var(--slate-300);
+}
+
+.pagination-container .page-item.active .page-link {
+    background: var(--shibaura-blue);
+    border-color: var(--shibaura-blue);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(6, 83, 157, 0.25);
+}
+
+.pagination-container .page-item.disabled .page-link {
+    background: #f8fafc;
+    color: var(--slate-400);
+    border-color: var(--slate-200);
 }
 
 /* User avatar chip in table */
@@ -2345,6 +2412,11 @@ textarea.form-control-modern {
 
     .mobile-nav-toggle {
         display: inline-flex;
+    }
+
+    .app-topbar,
+    .app-topbar-clean {
+        padding: 0 1rem;
     }
 
     .page-container {
