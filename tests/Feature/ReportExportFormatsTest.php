@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Feedback;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use Illuminate\Support\Facades\Hash;

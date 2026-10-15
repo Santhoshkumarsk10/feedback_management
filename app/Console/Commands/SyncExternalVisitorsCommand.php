@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class SyncExternalVisitorsCommand extends Command
 {
     protected $signature = 'visitors:sync-external {--date= : The date to sync visitors for (YYYY-MM-DD)} {--organizer= : Default organizer/staff ID to assign}';
-    protected $description = 'Poll & sync plant visitor data from external 3rd-party API into visitor records and shift feed.';
+    protected $description = 'Poll & sync plant visitor data from external 3rd-party API into visitor records and today queue.';
 
     public function handle(ExternalVisitorSyncService $syncService): int
     {
@@ -21,10 +21,6 @@ class SyncExternalVisitorsCommand extends Command
 
         $this->info($result['message']);
         $this->line("Synced: {$result['synced_visitors']} | New visits: {$result['created_visits']} | Existing: {$result['existing_visits']}");
-
-        if (!empty($result['active_shift'])) {
-            $this->comment("Associated Active Shift: {$result['active_shift']}");
-        }
 
         return Command::SUCCESS;
     }

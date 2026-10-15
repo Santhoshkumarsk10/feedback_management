@@ -41,10 +41,6 @@
                 <i class="bi bi-key-fill"></i>
                 <span>Permission Master</span>
             </a>
-            <a class="nav-item-link {{ request()->routeIs('shifts.*') ? 'active' : '' }}" href="{{ route('shifts.index') }}">
-                <i class="bi bi-clock-history"></i>
-                <span>Shift Master</span>
-            </a>
             <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
                 <i class="bi bi-people-fill"></i>
                 <span>User Directory</span>
@@ -59,7 +55,7 @@
         <div class="menu-category">Operations & Visits</div>
         <a class="nav-item-link {{ request()->routeIs('shift_queue*') ? 'active' : '' }}" href="{{ route('shift_queue') }}">
             <i class="bi bi-calendar2-day-fill"></i>
-            <span>Today's Shift Queue</span>
+            <span>Today's Visitor Queue</span>
         </a>
         <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}" href="{{ route('visits.index') }}">
             <i class="bi bi-person-badge-fill"></i>

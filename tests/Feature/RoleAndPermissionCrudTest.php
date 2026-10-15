@@ -78,11 +78,11 @@ class RoleAndPermissionCrudTest extends TestCase
             'slug' => 'test_custom_role',
             'description' => 'Updated shift description',
             'is_active' => '1',
-            'permissions' => ['view-visits', 'manage-shifts'],
+            'permissions' => ['view-visits', 'manage-plants'],
         ]);
 
         $response->assertRedirect(route('roles.index'));
-        $this->assertTrue($role->fresh()->hasPermissionTo('manage-shifts'));
+        $this->assertTrue($role->fresh()->hasPermissionTo('manage-plants'));
         $this->assertFalse($role->fresh()->hasPermissionTo('submit-feedback'));
     }
 
@@ -94,7 +94,7 @@ class RoleAndPermissionCrudTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Capability Permissions Directory');
         $response->assertSee('access-web-panel');
-        $response->assertSee('manage-shifts');
+        $response->assertSee('manage-plants');
     }
 
     public function test_create_and_store_new_custom_permission(): void

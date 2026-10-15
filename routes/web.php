@@ -10,7 +10,6 @@ use App\Http\Controllers\Web\QuestionController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\PermissionController;
-use App\Http\Controllers\Web\ShiftController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
 use App\Http\Controllers\Web\AuditLogController;
@@ -73,10 +72,6 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
 
         // Permission Master Routes
         Route::resource('permissions', PermissionController::class)->except('show');
-
-        // Shift Master Routes
-        Route::resource('shifts', ShiftController::class)->except('show');
-        Route::patch('shifts/{shift}/toggle', [ShiftController::class, 'toggle'])->name('shifts.toggle');
 
         // User Management
         Route::resource('users', UserController::class)->except('show');

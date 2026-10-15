@@ -197,7 +197,6 @@ class PermissionController extends Controller
             'access-mobile-app',
             'manage-users',
             'manage-roles',
-            'manage-shifts',
             'manage-plants',
             'manage-questions',
             'view-visits',

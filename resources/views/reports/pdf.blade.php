@@ -158,7 +158,6 @@
             <td style="width: 30%; text-align: right; vertical-align: middle;">
                 <div style="font-size: 9px; font-weight: bold; color: #06539d;">EXECUTIVE REPORT</div>
                 <div style="font-size: 8.5px; color: #64748b;">Date: {{ now()->format('d M Y') }}</div>
-                <div style="font-size: 8.5px; color: #64748b;">Shift: <strong>{{ $shiftLabel }}</strong></div>
             </td>
         </tr>
     </table>
@@ -166,19 +165,15 @@
     <!-- Meta Details Block -->
     <table class="meta-table" cellpadding="0" cellspacing="0">
         <tr>
-            <td style="width: 25%;">
+            <td style="width: 35%;">
                 <div class="meta-label">Filter Period:</div>
                 <div class="meta-val">{{ $periodLabel }}</div>
             </td>
-            <td style="width: 25%;">
-                <div class="meta-label">Duty Shift:</div>
-                <div class="meta-val">{{ $shiftLabel }}</div>
-            </td>
-            <td style="width: 25%;">
+            <td style="width: 30%;">
                 <div class="meta-label">Total Records:</div>
                 <div class="meta-val">{{ $totalCount }}</div>
             </td>
-            <td style="width: 25%; text-align: right;">
+            <td style="width: 35%; text-align: right;">
                 <div class="meta-label">Report Category:</div>
                 <div class="meta-val">{{ ucfirst(str_replace('_', ' ', $type)) }}</div>
             </td>
@@ -232,7 +227,6 @@
                     <th style="width: 25px;" class="text-center">#</th>
                     <th>Staff / Organizer</th>
                     <th>Department</th>
-                    <th>Shift Filter</th>
                     <th class="text-center">Tours</th>
                     <th class="text-center">Feedback</th>
                     <th class="text-center">Response %</th>
@@ -248,7 +242,6 @@
                         <td class="text-center">{{ $idx + 1 }}</td>
                         <td class="text-bold">{{ $r->name }}</td>
                         <td>{{ $r->department ?: 'General Operations' }}</td>
-                        <td>{{ $shiftLabel }}</td>
                         <td class="text-center">{{ $r->visits_count }}</td>
                         <td class="text-center">{{ $r->feedbacks_count }}</td>
                         <td class="text-center text-bold">{{ $respPct }}%</td>
@@ -264,7 +257,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center" style="padding: 15px; color: #64748b;">No staff tour performance data found for the selected period.</td>
+                        <td colspan="7" class="text-center" style="padding: 15px; color: #64748b;">No staff tour performance data found for the selected period.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -281,7 +274,6 @@
                     <th>Visitor Name</th>
                     <th>Company</th>
                     <th>Host Staff</th>
-                    <th>Shift</th>
                     <th>Mode</th>
                     <th style="width: 32%;">Feedback Comments / Remarks</th>
                 </tr>
@@ -297,7 +289,6 @@
                         <td class="text-bold">{{ $f->visit?->visitor_name ?? '—' }}</td>
                         <td>{{ $f->visit?->visitor_company ?: '—' }}</td>
                         <td>{{ $f->organizer?->name ?? 'Unassigned' }}</td>
-                        <td>{{ $f->visit?->shift?->name ?: '—' }}</td>
                         <td>{{ $f->is_staff_assisted ? 'Assisted' : 'Direct' }}</td>
                         <td style="color: #991b1b; font-style: italic;">
                             {{ $f->comments ?: 'No written feedback comments' }}
@@ -305,7 +296,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center" style="padding: 15px; color: #64748b;">No low-rating reviews (≤ 2 Stars) recorded for this period. Excellent performance!</td>
+                        <td colspan="8" class="text-center" style="padding: 15px; color: #64748b;">No low-rating reviews (≤ 2 Stars) recorded for this period. Excellent performance!</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -322,7 +313,6 @@
                     <th>Visitor Name</th>
                     <th>Company</th>
                     <th>Mobile</th>
-                    <th>Shift</th>
                     <th>Host Staff</th>
                     <th class="text-center">Status</th>
                     <th>Time Since Exit</th>
@@ -337,7 +327,6 @@
                         <td class="text-bold">{{ $v->visitor_name }}</td>
                         <td>{{ $v->visitor_company ?: '—' }}</td>
                         <td>{{ $v->visitor_mobile ?: '—' }}</td>
-                        <td>{{ $v->shift?->name ?: '—' }}</td>
                         <td>{{ $v->organizer?->name ?? 'Unassigned' }}</td>
                         <td class="text-center">
                             <span class="badge {{ $v->out_time ? 'badge-info' : 'badge-success' }}">
@@ -348,7 +337,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="text-center" style="padding: 15px; color: #64748b;">All visitors in this period have submitted their evaluation feedback. Queue is clear!</td>
+                        <td colspan="9" class="text-center" style="padding: 15px; color: #64748b;">All visitors in this period have submitted their evaluation feedback. Queue is clear!</td>
                     </tr>
                 @endforelse
             </tbody>

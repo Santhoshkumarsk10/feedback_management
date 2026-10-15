@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\AuditLog;
-use App\Models\Shift;
 use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Http;
@@ -57,13 +56,12 @@ class ExternalVisitorSyncService
     }
 
     /**
-     * Ingest/Sync visitors into visitors table & visits feed for today's active shift.
+     * Ingest/Sync visitors into visitors table & visits feed for today.
      */
     public function syncVisitors(?string $date = null, ?int $organizerId = null): array
     {
         $targetDate = $date ?: today()->toDateString();
         $externalData = $this->fetchFromExternalApi($targetDate);
-        $currentShift = Shift::current();
 
         $syncedVisitors = 0;
         $createdVisits = 0;
@@ -115,7 +113,6 @@ class ExternalVisitorSyncService
                     'out_time' => $outTime,
                     'purpose' => $item['purpose'] ?? 'Plant & Facility Tour',
                     'department' => $department,
-                    'shift_id' => $currentShift?->id,
                     'organizer_id' => $organizerId ?: ($item['organizer_id'] ?? null),
                 ]);
                 $createdVisits++;
@@ -147,18 +144,16 @@ class ExternalVisitorSyncService
                 'synced_count' => $syncedVisitors,
                 'new_visits' => $createdVisits,
                 'existing_visits' => $existingVisits,
-                'active_shift' => $currentShift?->name,
             ],
             auth()->user()
         );
 
         return [
             'success' => true,
-            'message' => "Successfully synced {$syncedVisitors} visitors ({$createdVisits} new visits added to today's shift feed).",
+            'message' => "Successfully synced {$syncedVisitors} visitors ({$createdVisits} new visits added to today's queue).",
             'synced_visitors' => $syncedVisitors,
             'created_visits' => $createdVisits,
             'existing_visits' => $existingVisits,
-            'active_shift' => $currentShift?->name,
             'visitors' => $processedList,
         ];
     }

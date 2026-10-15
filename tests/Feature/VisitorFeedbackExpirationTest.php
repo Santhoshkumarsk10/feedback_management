@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Question;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -14,25 +13,15 @@ class VisitorFeedbackExpirationTest extends TestCase
     use DatabaseTransactions;
 
     private User $staff;
-    private Shift $shift;
     private Question $question;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->shift = Shift::create([
-            'name' => 'General Day Shift',
-            'code' => 'SHIFT-GEN',
-            'start_time' => '08:00:00',
-            'end_time' => '17:00:00',
-            'is_active' => true,
-        ]);
-
         $this->staff = User::factory()->create([
             'role' => 'staff',
             'is_active' => true,
-            'shift_id' => $this->shift->id,
         ]);
 
         $this->question = Question::create([
@@ -45,13 +34,20 @@ class VisitorFeedbackExpirationTest extends TestCase
         ]);
     }
 
+    private function getValidAnswers(string $rating = '5'): array
+    {
+        return Question::active()->where('is_required', true)->get()->map(fn ($q) => [
+            'question_id' => $q->id,
+            'answer' => $q->type === 'rating' ? $rating : 'Yes',
+        ])->toArray();
+    }
+
     public function test_visit_model_correctly_identifies_expired_feedback(): void
     {
         $todayVisit = Visit::create([
             'visitor_name' => 'Alice Today',
             'visitor_company' => 'Modern Tech',
             'visitor_mobile' => '9876543210',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today(),
         ]);
@@ -60,7 +56,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Bob Yesterday',
             'visitor_company' => 'Ancient Tools',
             'visitor_mobile' => '9876543211',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDay(),
         ]);
@@ -78,7 +73,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Charlie Past',
             'visitor_company' => 'Old Co',
             'visitor_mobile' => '9876543212',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDays(2),
         ]);
@@ -95,7 +89,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Diana Expired',
             'visitor_company' => 'Past Logistics',
             'visitor_mobile' => '9876543213',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDay(),
         ]);
@@ -103,9 +96,7 @@ class VisitorFeedbackExpirationTest extends TestCase
         $response = $this->actingAs($this->staff)->post(route('visits.feedback.store', $pastVisit), [
             'overall_rating' => 5,
             'comments' => 'Late submission attempt',
-            'answers' => [
-                ['question_id' => $this->question->id, 'answer' => '5'],
-            ],
+            'answers' => $this->getValidAnswers('5'),
         ]);
 
         $response->assertRedirect(route('shift_queue'));
@@ -123,7 +114,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Evan Today',
             'visitor_company' => 'Current Co',
             'visitor_mobile' => '9876543214',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today(),
         ]);
@@ -131,9 +121,7 @@ class VisitorFeedbackExpirationTest extends TestCase
         $response = $this->actingAs($this->staff)->post(route('visits.feedback.store', $todayVisit), [
             'overall_rating' => 5,
             'comments' => 'Great tour today!',
-            'answers' => [
-                ['question_id' => $this->question->id, 'answer' => '5'],
-            ],
+            'answers' => $this->getValidAnswers('5'),
         ]);
 
         $response->assertRedirect(route('dashboard'));
@@ -152,7 +140,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_code' => 'VIS-PAST-01',
             'visitor_company' => 'Yesterday Ltd',
             'visitor_mobile' => '9876543215',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDay(),
         ]);
@@ -163,9 +150,7 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Fiona Past',
             'visitor_mobile' => '9876543215',
             'overall_rating' => 4,
-            'answers' => [
-                ['question_id' => $this->question->id, 'answer' => '4'],
-            ],
+            'answers' => $this->getValidAnswers('4'),
         ]);
 
         $response->assertStatus(422);
@@ -179,7 +164,6 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_code' => 'VIS-PAST-02',
             'visitor_company' => 'Late Corp',
             'visitor_mobile' => '9876543216',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDays(3),
         ]);
@@ -189,9 +173,7 @@ class VisitorFeedbackExpirationTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson("/api/organizer/visits/{$pastVisit->id}/feedback", [
                 'overall_rating' => 4,
-                'answers' => [
-                    ['question_id' => $this->question->id, 'answer' => '4'],
-                ],
+                'answers' => $this->getValidAnswers('4'),
             ]);
 
         $response->assertStatus(422);
@@ -204,12 +186,11 @@ class VisitorFeedbackExpirationTest extends TestCase
             'visitor_name' => 'Harry Past',
             'visitor_company' => 'Past Industrial',
             'visitor_mobile' => '9876543217',
-            'shift_id' => $this->shift->id,
             'organizer_id' => $this->staff->id,
             'visit_date' => today()->subDay(),
         ]);
 
-        $response = $this->actingAs($this->staff)->get(route('visits.index'));
+        $response = $this->actingAs($this->staff)->get(route('visits.index', ['q' => 'Harry Past']));
 
         $response->assertOk();
         $response->assertSee('Expired (Day Ended)');

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 
 use App\Models\Company;
-use App\Models\Shift;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,12 +41,10 @@ class AppServiceProvider extends ServiceProvider
         View::composer(['layouts.topbar', 'layouts.app'], function ($view) {
             try {
                 if (auth()->check()) {
-                    $shiftAlerts = [];
                     $pendingToday = 0;
                     $escalatedCount = 0;
 
-                    if (Schema::hasTable('shifts') && Schema::hasTable('visits')) {
-                        $shiftAlerts = Shift::getFeedbackCloseAlerts(30);
+                    if (Schema::hasTable('visits')) {
                         $pendingToday = \App\Models\Visit::whereDate('visit_date', today())->doesntHave('feedback')->count();
                     }
 
@@ -58,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
                     }
 
                     $view->with([
-                        'topbarShiftAlerts' => $shiftAlerts,
+                        'topbarShiftAlerts' => [],
                         'topbarPendingCount' => $pendingToday,
                         'topbarEscalatedCount' => $escalatedCount,
                     ]);

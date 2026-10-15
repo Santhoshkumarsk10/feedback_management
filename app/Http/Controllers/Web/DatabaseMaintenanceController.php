@@ -89,14 +89,6 @@ class DatabaseMaintenanceController extends Controller
             'description' => 'Registered visitor identity records and company links.',
             'category' => 'Operational Logs',
         ],
-        'shift_rosters' => [
-            'description' => 'Daily staff schedule assignments and active roster dates.',
-            'category' => 'Shift Operations',
-        ],
-        'shifts' => [
-            'description' => 'Configured operational work shifts (Shift A, Shift B, General Shift).',
-            'category' => 'Configuration',
-        ],
         'plants' => [
             'description' => 'Manufacturing plants, technical centres, and machine divisions.',
             'category' => 'Configuration',
@@ -289,7 +281,7 @@ class DatabaseMaintenanceController extends Controller
                 ['action' => 'db:seed']
             );
 
-            return back()->with('success', 'Master data has been successfully re-seeded and restored! Default plants, shifts, questions, and accounts are ready.');
+            return back()->with('success', 'Master data has been successfully re-seeded and restored! Default plants, questions, and accounts are ready.');
         } catch (\Throwable $e) {
             return back()->with('error', 'Re-seed operation failed: ' . $e->getMessage());
         }

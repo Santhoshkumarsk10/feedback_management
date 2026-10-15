@@ -6,7 +6,6 @@ use App\Http\Controllers\Web\DatabaseMaintenanceController;
 use App\Models\AuditLog;
 use App\Models\Feedback;
 use App\Models\Role;
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\Visit;
 use Illuminate\Foundation\Testing\RefreshDatabase;

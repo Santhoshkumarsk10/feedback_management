@@ -234,11 +234,9 @@ class ValidationAndPhoneRuleTest extends TestCase
 
     public function test_visit_registration_form_enforces_strict_validation_and_phone_rules()
     {
-        $shift = \App\Models\Shift::first() ?? \App\Models\Shift::factory()->create();
-
         // 1. Missing required fields
         $res = $this->actingAs($this->admin)->post(route('visits.store'), []);
-        $res->assertSessionHasErrors(['visitor_name', 'visitor_company', 'shift_id']);
+        $res->assertSessionHasErrors(['visitor_name', 'visitor_company']);
 
         // 2. Valid submission
         $validData = [
@@ -248,7 +246,6 @@ class ValidationAndPhoneRuleTest extends TestCase
             'visitor_email' => 'ramanathan@tatamotors.com',
             'visitor_designation' => 'Principal Die Engineer',
             'purpose' => 'High Precision Machinery Inspection',
-            'shift_id' => $shift->id,
             'visit_date' => today()->toDateString(),
         ];
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $validData);
@@ -261,7 +258,6 @@ class ValidationAndPhoneRuleTest extends TestCase
         $visitor = \App\Models\Visitor::where('mobile', '9840123456')->first();
         $this->assertDatabaseHas('visits', [
             'visitor_id' => $visitor->id,
-            'shift_id' => $shift->id,
         ]);
 
         // 3. Invalid phone starting with 4
@@ -288,11 +284,7 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidName);
         $res->assertSessionHasErrors('visitor_name');
 
-        // 7. Invalid shift_id
-        $invalidShift = $validData;
-        $invalidShift['shift_id'] = 9999999;
-        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidShift);
-        $res->assertSessionHasErrors('shift_id');
+
     }
 
     public function test_banner_validation_rules()

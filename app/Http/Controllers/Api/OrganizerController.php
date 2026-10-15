@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Feedback;
 use App\Models\Question;
-use App\Models\Shift;
 use App\Models\Visit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +18,6 @@ class OrganizerController extends Controller
         $id = auth('api')->id();
         $feedback = fn () => Feedback::where('organizer_id', $id);
 
-        $currentShift = Shift::current();
-
         $todayBase = Visit::where(function ($q) use ($id) {
             $q->where('organizer_id', $id)->orWhereNull('organizer_id');
         })->whereDate('visit_date', today());
@@ -32,7 +29,7 @@ class OrganizerController extends Controller
         ];
 
         $todayVisitors = (clone $todayBase)
-            ->with(['shift', 'feedback'])
+            ->with(['feedback'])
             ->latest('id')
             ->get()
             ->map(function ($v) {
@@ -44,8 +41,6 @@ class OrganizerController extends Controller
                     'mobile' => $v->visitor_mobile,
                     'email' => $v->visitor_email,
                     'purpose' => $v->purpose,
-                    'shift_name' => $v->shift?->name,
-                    'shift_range' => $v->shift?->formatted_24h_range,
                     'visitor_code' => $v->visitor_code,
                     'status' => $v->feedback ? 'completed' : 'pending',
                     'is_completed' => ! is_null($v->feedback),
@@ -55,15 +50,6 @@ class OrganizerController extends Controller
             });
 
         return [
-            'current_shift' => $currentShift ? [
-                'id' => $currentShift->id,
-                'name' => $currentShift->name,
-                'code' => $currentShift->code,
-                'start_time' => $currentShift->start_time_short,
-                'end_time' => $currentShift->end_time_short,
-                'formatted_range' => $currentShift->formatted_24h_range,
-                'progress' => $currentShift->shift_progress,
-            ] : null,
             'today_counts' => $todayCounts,
             'today_visitors' => $todayVisitors,
             'total_visitors' => Visit::where('organizer_id', $id)->count(),
@@ -102,7 +88,6 @@ class OrganizerController extends Controller
             })
             ->with([
                 'feedback:id,visit_id,overall_rating,submitted_at',
-                'shift:id,name,code,start_time,end_time',
             ])
             ->when($isToday, fn ($q) => $q->whereDate('visit_date', today()))
             ->when(! $isToday && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
@@ -133,9 +118,8 @@ class OrganizerController extends Controller
     {
         return Feedback::where('organizer_id', auth('api')->id())
             ->with([
-                'visit:id,visitor_id,visitor_code,visit_date,purpose,shift_id',
+                'visit:id,visitor_id,visitor_code,visit_date,purpose',
                 'visit.visitor',
-                'visit.shift:id,name,code,start_time,end_time',
                 'answers.question:id,question,type',
             ])->findOrFail($id);
     }
@@ -162,8 +146,8 @@ class OrganizerController extends Controller
 
         $organizer = auth('api')->user();
 
-        if (!$organizer->isOnDuty()) {
-            abort(403, 'Not in current shift. You cannot submit assisted feedback while off duty.');
+        if (!$organizer->is_active) {
+            abort(403, 'Your staff account is inactive.');
         }
 
         $feedback = DB::transaction(function () use ($data, $visit, $organizer) {

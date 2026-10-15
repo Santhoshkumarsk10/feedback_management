@@ -35,7 +35,6 @@ class RoleAndAuthenticationTest extends TestCase
         $this->actingAs($super)->get(route('dashboard'))->assertStatus(200);
         $this->actingAs($super)->get(route('plants.index'))->assertStatus(200);
         $this->actingAs($super)->get(route('roles.index'))->assertStatus(200);
-        $this->actingAs($super)->get(route('shifts.index'))->assertStatus(200);
         $this->actingAs($super)->get(route('users.index'))->assertStatus(200);
         $this->actingAs($super)->get(route('reports.index'))->assertStatus(200);
         $this->actingAs($super)->get(route('visits.index'))->assertStatus(200);
@@ -53,7 +52,6 @@ class RoleAndAuthenticationTest extends TestCase
         $loginResponse->assertRedirect(route('dashboard'));
 
         $this->actingAs($admin)->get(route('dashboard'))->assertStatus(200);
-        $this->actingAs($admin)->get(route('shifts.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('plants.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.index'))->assertStatus(200);
     }
@@ -78,7 +76,6 @@ class RoleAndAuthenticationTest extends TestCase
         // FORBIDDEN (403) from System Masters
         $this->actingAs($supervisor)->get(route('plants.index'))->assertStatus(403);
         $this->actingAs($supervisor)->get(route('roles.index'))->assertStatus(403);
-        $this->actingAs($supervisor)->get(route('shifts.index'))->assertStatus(403);
         $this->actingAs($supervisor)->get(route('users.index'))->assertStatus(403);
     }
 
@@ -101,7 +98,6 @@ class RoleAndAuthenticationTest extends TestCase
         // FORBIDDEN (403) from reports and system masters
         $this->actingAs($staff)->get(route('reports.index'))->assertStatus(403);
         $this->actingAs($staff)->get(route('plants.index'))->assertStatus(403);
-        $this->actingAs($staff)->get(route('shifts.index'))->assertStatus(403);
         $this->actingAs($staff)->get(route('users.index'))->assertStatus(403);
     }
 

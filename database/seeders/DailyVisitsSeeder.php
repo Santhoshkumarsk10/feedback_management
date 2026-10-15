@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Shift;
 use App\Models\Visit;
 use App\Models\Visitor;
 use Illuminate\Database\Seeder;
@@ -17,7 +16,6 @@ class DailyVisitsSeeder extends Seeder
     public function run(): void
     {
         $today = today()->toDateString();
-        $currentShift = Shift::current() ?? Shift::first();
 
         // 1. Remove duplicate/unrealistic test visits created today that have no real feedback
         $unwantedCodes = [
@@ -191,7 +189,6 @@ class DailyVisitsSeeder extends Seeder
                     'visitor_id' => $visitor->id,
                     'visitor_code' => $visitor->visitor_id,
                     'organizer_id' => null, // Left unassigned so visitor selects their host organizer
-                    'shift_id' => $currentShift?->id,
                     'visit_date' => $today,
                     'in_time' => \Carbon\Carbon::parse($today . ' ' . $item['in_time']),
                     'out_time' => null,
@@ -203,7 +200,6 @@ class DailyVisitsSeeder extends Seeder
                     'visitor_code' => $visitor->visitor_id,
                     'purpose' => $item['purpose'],
                     'department' => $item['department'],
-                    'shift_id' => $currentShift?->id,
                 ]);
             }
         }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', "Live Shift Queue")
-@section('page_title', "Live Shift Queue")
+@section('title', "Today's Live Queue")
+@section('page_title', "Today's Live Queue")
 @section('page_subtitle', "Real-time visitor queue & feedback status")
 
 @section('topbar_actions')
@@ -17,46 +17,7 @@
 @endsection
 
 @section('content')
-    <!-- Shift Feedback Deadline Alert Notification for Staff (30m Before Shift Close) -->
-    <div id="shiftCloseAlertWrapper">
-        @if(!empty($shiftAlerts))
-            @foreach($shiftAlerts as $alert)
-                <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
-                     style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
-                     role="alert">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="alert-icon-pulse bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 44px; height: 44px;">
-                            <i class="bi bi-alarm-fill fs-5"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <h6 class="fw-bold text-danger mb-0 fs-6">
-                                    ⚠️ Staff Alert: {{ $alert['shift_name'] }} Feedback Due
-                                </h6>
-                                <span class="badge bg-danger text-white fw-bold px-2 py-1">
-                                    <i class="bi bi-clock-history me-1"></i> {{ $alert['remaining_text'] }}
-                                </span>
-                                <span class="badge bg-light text-danger border border-danger-subtle fw-semibold">
-                                    Shift Closes: {{ $alert['end_time_12h'] }}
-                                </span>
-                            </div>
-                            <div class="text-dark small mt-1">
-                                <strong>{{ $alert['pending_count'] }} visitor(s)</strong> in {{ $alert['shift_name'] }} have not filled feedback within the shift time limit. Please collect feedback before shift handover!
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('shift_queue', ['today_tab' => 'pending', 'shift_id' => $alert['shift_id']]) }}" 
-                           class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
-                            <i class="bi bi-person-exclamation me-1"></i> View {{ $alert['shift_name'] }} Pending ({{ $alert['pending_count'] }})
-                        </a>
-                    </div>
-                </div>
-            @endforeach
-        @endif
-    </div>
-
-    <!-- Live Duty Shift Tracker & Active Shift Monitor -->
+    <!-- Live Daily Operations & Staff Monitor -->
     <div class="card-modern mb-4"
         style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
         <div class="card-body p-3 p-md-4">
@@ -67,7 +28,7 @@
                             class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
                             <span class="spinner-grow spinner-grow-sm text-success" style="width: 0.65rem; height: 0.65rem;"
                                 role="status"></span>
-                            LIVE DUTY SHIFT TRACKER
+                            LIVE VISITOR OPERATIONS
                         </span>
                         <span class="small text-muted" id="liveClockDisplay">
                             <i class="bi bi-clock me-1"></i>
@@ -77,41 +38,21 @@
 
                     <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
                         <h4 class="fw-bold text-dark mb-0">
-                            {{ $currentShift ? $currentShift->name : 'Off Shift Operations' }}
+                            Today's Plant Operations
                         </h4>
-                        @if ($currentShift)
-                            <span class="badge bg-primary text-white fs-6 px-3 py-1">
-                                {{ $currentShift->formatted_24h_range }}
-                            </span>
-                            <span class="text-secondary small fw-semibold">
-                                ({{ $currentShift->formatted_12h_range }})
-                            </span>
-                        @endif
+                        <span class="badge bg-primary text-white fs-6 px-3 py-1">
+                            {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y') }}
+                        </span>
                     </div>
 
-                    @if ($currentShift)
-                        @php
-                            $prog = $currentShift->shift_progress;
-                        @endphp
-                        <div class="mb-2" style="max-width: 520px;">
-                            <div class="d-flex justify-content-between align-items-center mb-1 small">
-                                <span class="text-muted fw-semibold">Shift Progress: {{ $prog['percent'] }}% Elapsed</span>
-                                <span class="fw-bold text-primary"><i class="bi bi-hourglass-split"></i>
-                                    {{ $prog['remaining_formatted'] }}</span>
-                            </div>
-                            <div class="progress-modern" style="height: 8px;">
-                                <div class="progress-bar-emerald"
-                                    style="width: {{ $prog['percent'] }}%; height: 100%; background: linear-gradient(90deg, #38bdf8, #06539d);">
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
                     <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
-                        <span><i class="bi bi-person-badge text-primary"></i> On Duty Staff:
+                        <span><i class="bi bi-person-badge text-primary"></i> Logged Staff:
                             <strong>{{ $currentUser->name }}</strong> ({{ ucfirst($currentUser->role) }})</span>
                         @if ($currentUser->department)
                             <span><i class="bi bi-building text-secondary"></i> {{ $currentUser->department }}</span>
+                        @endif
+                        @if ($currentUser->plant)
+                            <span><i class="bi bi-geo-alt text-secondary"></i> {{ $currentUser->plant->name }}</span>
                         @endif
                     </div>
                 </div>
@@ -135,7 +76,7 @@
         </div>
     </div>
 
-    <!-- Section: Today's Shift Feedback Metrics (5 Cards from Screenshot) -->
+    <!-- Section: Today's Feedback Metrics -->
     <div class="row g-3 mb-4">
         <!-- Visitors Today -->
         <div class="col-6 col-md-4 col-xl">
@@ -199,7 +140,7 @@
                     @if($stats['today_avg'])<span class="fs-5 text-muted fw-normal">/5</span>@endif
                 </div>
                 <span class="stat-pill-trend {{ ($stats['today_avg'] ?? 0) >= 4 ? 'up' : 'neutral' }}">
-                    <i class="bi bi-award"></i> Shift Sentiment
+                    <i class="bi bi-award"></i> Today's Sentiment
                 </span>
             </div>
         </div>
@@ -231,7 +172,7 @@
                     <i class="bi bi-calendar2-day-fill text-primary"></i>
                     <span>Today's Plant Visitors & Feedback Queue</span>
                 </div>
-                <div class="text-muted small mt-1">Track visitor feedback status for today's shift and submit evaluations on behalf of visitors</div>
+                <div class="text-muted small mt-1">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <!-- Scope toggle: All Visitors vs My Visitors -->
@@ -244,34 +185,6 @@
                         class="btn {{ ($scope ?? '') === 'my' ? 'btn-primary' : 'btn-outline-secondary' }}">
                         My Visitors ({{ $todayCounts['scope_my'] }})
                     </a>
-                </div>
-
-                <!-- Shift Filter Dropdown -->
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-clock me-1"></i>
-                        @if($shiftFilter)
-                            {{ $shifts->firstWhere('id', $shiftFilter)?->name ?? 'Shift' }}
-                        @else
-                            All Shifts
-                        @endif
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <a class="dropdown-item {{ !$shiftFilter ? 'active' : '' }}"
-                               href="{{ route('shift_queue', array_merge(request()->except('shift_id'))) }}">
-                               All Shifts
-                            </a>
-                        </li>
-                        @foreach($shifts as $s)
-                            <li>
-                                <a class="dropdown-item {{ $shiftFilter == $s->id ? 'active' : '' }}"
-                                   href="{{ route('shift_queue', array_merge(request()->query(), ['shift_id' => $s->id])) }}">
-                                   {{ $s->name }} ({{ $s->formatted_24h_range }})
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
                 </div>
 
                 <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="btn btn-sm btn-outline-secondary" title="Export today pending list to CSV">
@@ -340,9 +253,6 @@
                 @if(request('scope'))
                     <input type="hidden" name="scope" value="{{ request('scope') }}">
                 @endif
-                @if(request('shift_id'))
-                    <input type="hidden" name="shift_id" value="{{ request('shift_id') }}">
-                @endif
 
                 <div class="col-12 col-md-5">
                     <div class="input-group input-group-sm">
@@ -359,14 +269,11 @@
                     @endif
                 </div>
 
-                @if(request('search') || request('shift_id') || (request('scope') && request('scope') !== 'all'))
+                @if(request('search') || (request('scope') && request('scope') !== 'all'))
                     <div class="col-12 text-muted small mt-1">
                         <span>Active filters:</span>
                         @if(request('search'))
                             <span class="badge bg-light text-dark border me-1">Search: {{ request('search') }}</span>
-                        @endif
-                        @if(request('shift_id'))
-                            <span class="badge bg-light text-dark border me-1">Shift: {{ $shifts->firstWhere('id', request('shift_id'))?->name }}</span>
                         @endif
                         @if(request('scope') === 'my')
                             <span class="badge bg-light text-dark border me-1">Scope: My Visitors</span>
@@ -383,7 +290,7 @@
                     <tr>
                         <th>Visitor Information</th>
                         <th>In / Out Time & Gate Status</th>
-                        <th>Duty Shift & Dept</th>
+                        <th>Department / Purpose</th>
                         <th>Assigned Staff</th>
                         <th>Status</th>
                         <th class="text-end">Action</th>
@@ -440,12 +347,6 @@
                                                 <i class="bi bi-exclamation-triangle-fill"></i> >2h Post-Exit Alert
                                             </span>
                                         @endif
-
-                                        @if ($v->is_shift_closing_soon_alert)
-                                            <span class="badge bg-danger text-white px-2 py-0 ms-1 fw-bold shadow-xs animate-pulse-subtle" style="font-size: 0.70rem;" title="Shift closing within 30m without feedback! {{ $v->shift_close_alert_text }}">
-                                                <i class="bi bi-alarm-fill"></i> {{ $v->shift_close_alert_text }}
-                                            </span>
-                                        @endif
                                     </div>
 
                                     <div class="small text-muted" style="font-size: 0.75rem;">
@@ -464,28 +365,18 @@
                                 </div>
                             </td>
                             <td>
-                                @if ($v->shift)
-                                    @php
-                                        $shiftBadgeColor = match ($v->shift->code) {
-                                            'SHIFT-A' => 'badge-indigo',
-                                            'SHIFT-B' => 'badge-amber',
-                                            'SHIFT-C' => 'badge-purple',
-                                            default => 'badge-slate',
-                                        };
-                                    @endphp
-                                    <span class="badge-modern {{ $shiftBadgeColor }}">
-                                        <i class="bi bi-clock"></i> {{ $v->shift->name }}
-                                    </span>
-                                    <div class="text-muted small mt-1" style="font-size: 0.72rem;">
-                                        {{ $v->shift->formatted_24h_range }}
+                                @if ($v->department)
+                                    <div class="fw-semibold text-dark small">
+                                        <i class="bi bi-building me-1 text-primary"></i> {{ $v->department }}
                                     </div>
-                                @else
-                                    <span class="text-muted small">—</span>
                                 @endif
-                                @if ($v->department || $v->purpose)
-                                    <div class="small text-secondary mt-1" style="font-size: 0.72rem;">
-                                        <i class="bi bi-compass"></i> {{ $v->department ?: $v->purpose }}
+                                @if ($v->purpose)
+                                    <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                        <i class="bi bi-compass me-1"></i> {{ $v->purpose }}
                                     </div>
+                                @endif
+                                @if (!$v->department && !$v->purpose)
+                                    <span class="text-muted small">—</span>
                                 @endif
                             </td>
                             <td>
@@ -550,7 +441,7 @@
                                 <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success opacity-75"></i>
                                 @if (($todayTab ?? 'pending') === 'pending')
                                     <div class="fw-bold text-dark fs-6">No Pending Feedback for Today!</div>
-                                    <div class="small">All registered visitors for today's shifts have submitted their evaluation.</div>
+                                    <div class="small">All registered visitors for today have submitted their evaluation.</div>
                                 @elseif (($todayTab ?? '') === 'completed')
                                     <div class="fw-bold text-dark fs-6">No Completed Feedback Yet Today.</div>
                                     <div class="small">Evaluations will appear here once submitted.</div>
@@ -572,7 +463,7 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Live Duty Shift Clock
+            // Live Clock
             function updateLiveClock() {
                 const el = document.getElementById('liveClockDisplay');
                 if (el) {
@@ -613,50 +504,6 @@
                         if (badgeComp) badgeComp.innerText = data.counts.completed;
                         if (badgeAll) badgeAll.innerText = data.counts.all;
                         if (syncEl && data.last_sync_formatted) syncEl.innerText = data.last_sync_formatted;
-
-                        // Dynamically update Shift Deadline Alerts if returned
-                        if (data.shift_alerts) {
-                            const alertWrap = document.getElementById('shiftCloseAlertWrapper');
-                            if (alertWrap) {
-                                if (data.shift_alerts.length > 0) {
-                                    alertWrap.innerHTML = data.shift_alerts.map(alert => `
-                                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 p-3 d-flex flex-wrap align-items-center justify-content-between gap-3 animate-pulse-subtle" 
-                                             style="background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%); border-left: 5px solid #dc2626 !important;"
-                                             role="alert">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="alert-icon-pulse bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 44px; height: 44px;">
-                                                    <i class="bi bi-alarm-fill fs-5"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                        <h6 class="fw-bold text-danger mb-0 fs-6">
-                                                            ⚠️ Staff Alert: \${alert.shift_name} Feedback Due
-                                                        </h6>
-                                                        <span class="badge bg-danger text-white fw-bold px-2 py-1">
-                                                            <i class="bi bi-clock-history me-1"></i> \${alert.remaining_text}
-                                                        </span>
-                                                        <span class="badge bg-light text-danger border border-danger-subtle fw-semibold">
-                                                            Shift Closes: \${alert.end_time_12h}
-                                                        </span>
-                                                    </div>
-                                                    <div class="text-dark small mt-1">
-                                                        <strong>\${alert.pending_count} visitor(s)</strong> in \${alert.shift_name} have not filled feedback within the shift time limit. Please collect feedback before shift handover!
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="{{ route('shift_queue') }}?today_tab=pending&shift_id=\${alert.shift_id}" 
-                                                   class="btn btn-sm btn-danger fw-semibold px-3 shadow-xs">
-                                                    <i class="bi bi-person-exclamation me-1"></i> View \${alert.shift_name} Pending (\${alert.pending_count})
-                                                </a>
-                                            </div>
-                                        </div>
-                                    `).join('');
-                                } else {
-                                    alertWrap.innerHTML = '';
-                                }
-                            }
-                        }
                     }
                 })
                 .catch(() => {});
