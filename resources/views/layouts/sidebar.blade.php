@@ -99,8 +99,8 @@
                 <span>Audit Logs</span>
             </a>
             <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}" href="{{ route('database_cleanup.index') }}">
-                <i class="bi bi-database-dash-fill text-warning"></i>
-                <span>Table Data Cleanup</span>
+                <i class="bi bi-database-fill-gear"></i>
+                <span>Database Maintenance</span>
             </a>
         @endif
 

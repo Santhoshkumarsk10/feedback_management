@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'Database Table Cleanup & Maintenance')
-@section('page_title', 'Database Table Cleanup')
-@section('page_subtitle', 'Safely clear table data with strict protection on authentication, roles, sessions, and audit schemas')
+@section('title', 'Database Maintenance - Table Cleanup')
+@section('page_title', 'Database Maintenance')
+@section('page_subtitle', 'Database Table Cleanup — Safely clear unshielded table data with strict protection on authentication, roles, sessions, and audit schemas')
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
