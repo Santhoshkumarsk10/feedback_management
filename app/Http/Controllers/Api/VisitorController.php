@@ -56,6 +56,8 @@ class VisitorController extends Controller
                 'mobile' => $v->visitor_mobile ?? $v->visitor?->mobile ?? '',
                 'email' => $v->visitor_email ?? $v->visitor?->email ?? '',
                 'purpose' => $v->purpose ?? 'Plant & Facility Tour',
+                'plant_id' => $v->plant_id,
+                'plant_name' => $v->plant?->name,
                 'organizer_id' => $v->organizer_id,
                 'organizer_name' => $v->organizer?->name,
                 'has_feedback' => !is_null($v->feedback),
