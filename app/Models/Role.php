@@ -25,6 +25,15 @@ class Role extends SpatieRole
         'is_active' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Role $role) {
+            if (empty($role->slug) && !empty($role->name)) {
+                $role->slug = \Illuminate\Support\Str::slug($role->name);
+            }
+        });
+    }
+
     /**
      * Display label for UI representation.
      */

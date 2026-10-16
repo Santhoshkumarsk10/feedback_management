@@ -4,10 +4,12 @@
 @section('page_subtitle', 'Manage administrators, supervisors, and plant tour organizers')
 
 @section('topbar_actions')
-    <a href="{{ route('users.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-person-plus-fill"></i>
-        <span>Add New User</span>
-    </a>
+    @can('userdirectory.create')
+        <a href="{{ route('users.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Add User</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
@@ -103,7 +105,15 @@
             <i class="bi bi-people-fill text-primary"></i>
             <span>Registered Team Members</span>
         </div>
-        <span class="badge-modern badge-slate">{{ $users->total() }} Users Found</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-modern badge-slate">{{ $users->total() }} Users Found</span>
+            @can('userdirectory.create')
+                <a href="{{ route('users.create') }}" class="btn-modern-primary btn-sm">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Add User</span>
+                </a>
+            @endcan
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table-modern">
@@ -165,25 +175,38 @@
                         @endif
                     </td>
                     <td class="text-end text-nowrap">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('users.edit', $u) }}" class="btn-action-icon edit" title="Edit user">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            @if($u->id !== auth()->id())
-                                <form method="POST" action="{{ route('users.toggle', $u) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button class="btn-action-icon" type="submit" title="{{ $u->is_active ? 'Deactivate user' : 'Activate user' }}">
-                                        <i class="bi {{ $u->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('users.destroy', $u) }}" class="d-inline"
-                                      onsubmit="return confirm('Are you sure you want to delete {{ $u->name }}?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn-action-icon delete" type="submit" title="Delete user">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                </form>
-                            @endif
+                        <div class="d-inline-flex gap-1 align-items-center">
+                            @can('userdirectory.edit')
+                                <a href="{{ route('users.edit', $u) }}" class="btn-action-icon edit" title="Edit user">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                @if($u->id !== auth()->id())
+                                    <form method="POST" action="{{ route('users.toggle', $u) }}" class="d-inline">
+                                        @csrf @method('PATCH')
+                                        <button class="btn-action-icon" type="submit" title="{{ $u->is_active ? 'Deactivate user' : 'Activate user' }}">
+                                            <i class="bi {{ $u->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endcan
+
+                            @can('userdirectory.delete')
+                                @if($u->id !== auth()->id())
+                                    <form method="POST" action="{{ route('users.destroy', $u) }}" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete {{ $u->name }}?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn-action-icon delete" type="submit" title="Delete user">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endcan
+
+                            @cannot('userdirectory.edit')
+                                @cannot('userdirectory.delete')
+                                    <span class="badge-modern badge-slate"><i class="bi bi-eye"></i> View Only</span>
+                                @endcannot
+                            @endcannot
                         </div>
                     </td>
                 </tr>
@@ -191,7 +214,12 @@
                 <tr>
                     <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-search fs-2 d-block mb-2 text-slate-300"></i>
-                        No users found matching your search.
+                        <p class="mb-3">No users found matching your search.</p>
+                        @can('userdirectory.create')
+                            <a href="{{ route('users.create') }}" class="btn-modern-primary btn-sm">
+                                <i class="bi bi-person-plus-fill"></i> Add User
+                            </a>
+                        @endcan
                     </td>
                 </tr>
             @endforelse

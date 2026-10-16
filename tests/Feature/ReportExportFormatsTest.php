@@ -14,6 +14,8 @@ class ReportExportFormatsTest extends TestCase
     {
         $supervisor = User::where('role', 'supervisor')->first();
         if (!$supervisor) {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'supervisor'], ['guard_name' => 'web', 'display_name' => 'Supervisor', 'is_system' => false]);
+            $role->givePermissionTo(['reportsexports.export', 'reportsexports.view']);
             $supervisor = User::factory()->create([
                 'name' => 'Supervisor Export Test',
                 'email' => 'supervisor_export@plant.test',
@@ -21,6 +23,10 @@ class ReportExportFormatsTest extends TestCase
                 'password' => Hash::make('password'),
                 'is_active' => true,
             ]);
+            $supervisor->syncRoles(['supervisor']);
+        } else {
+            $role = \App\Models\Role::firstOrCreate(['name' => 'supervisor'], ['guard_name' => 'web', 'display_name' => 'Supervisor', 'is_system' => false]);
+            $role->givePermissionTo(['reportsexports.export', 'reportsexports.view']);
             $supervisor->syncRoles(['supervisor']);
         }
         return $supervisor;
@@ -107,5 +113,22 @@ class ReportExportFormatsTest extends TestCase
         $response->assertSee('format=pdf');
         $response->assertSee('Excel (.xlsx)');
         $response->assertSee('PDF Document (.pdf)');
+    }
+
+    public function test_reports_pending_feedback_queue_tab_renders_without_route_not_found(): void
+    {
+        $supervisor = $this->getSupervisor();
+
+        // 1. Visit reports with pending queue tab
+        $response = $this->actingAs($supervisor)->get(route('reports.index', ['report_tab' => 'pending']));
+        $response->assertStatus(200);
+        $response->assertSee('Pending Feedback Queue');
+
+        // 2. visits.show route exists and handles redirection properly
+        $visit = Visit::first();
+        if ($visit) {
+            $showResponse = $this->actingAs($supervisor)->get(route('visits.show', $visit));
+            $showResponse->assertRedirect();
+        }
     }
 }

@@ -3,51 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\Plant;
-use App\Models\Role;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class MasterSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Roles Master
-        $roles = [
-            [
-                'name' => 'Super Admin',
-                'slug' => 'superadmin',
-                'description' => 'Full administrative access to all plants, master settings, questionnaires, and user security',
-                'is_system' => true,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Plant Admin',
-                'slug' => 'admin',
-                'description' => 'Plant-level supervisor managing local visitors, tour organizers, and feedback analytics',
-                'is_system' => true,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Tour Organizer',
-                'slug' => 'organizer',
-                'description' => 'SMI plant engineer escorting visitors and collecting customer evaluation reviews',
-                'is_system' => true,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Quality Supervisor',
-                'slug' => 'quality_supervisor',
-                'description' => 'Audits customer satisfaction scores, NPS ratings, and qualitative visit feedback',
-                'is_system' => false,
-                'is_active' => true,
-            ],
-        ];
-
-        foreach ($roles as $r) {
-            Role::updateOrCreate(['slug' => $r['slug']], $r);
-        }
-
-        // 2. Plants Master
+        // 1. Plants Master
         $plants = [
             [
                 'name' => 'Plant 1 — Machine Tools Division',
@@ -91,44 +53,7 @@ class MasterSeeder extends Seeder
             Plant::updateOrCreate(['code' => $p['code']], $p);
         }
 
-        // 3. Link existing Users to Roles and Plants
-        $roleSuper = Role::where('slug', 'superadmin')->first();
-        $roleAdmin = Role::where('slug', 'admin')->first();
-        $roleOrganizer = Role::where('slug', 'organizer')->first();
-
-        // Superadmin & Admin
-        User::where('email', 'superadmin@plant.test')->update([
-            'role_id' => $roleSuper?->id,
-        ]);
-
-        User::where('email', 'admin@plant.test')->update([
-            'role_id' => $roleAdmin?->id,
-        ]);
-
-        // Organizers
-        User::where('email', 'ravi@plant.test')->update([
-            'role_id' => $roleOrganizer?->id,
-        ]);
-
-        User::where('email', 'priya@plant.test')->update([
-            'role_id' => $roleOrganizer?->id,
-        ]);
-
-        User::where('email', 'karthik@plant.test')->update([
-            'role_id' => $roleOrganizer?->id,
-        ]);
-
-        User::where('email', 'suresh@plant.test')->update([
-            'role_id' => $roleOrganizer?->id,
-        ]);
-
-        // Default any remaining users
-        User::whereNull('role_id')->where('role', 'organizer')->update([
-            'role_id' => $roleOrganizer?->id,
-        ]);
-
-        // 4. Spatie Roles & Permissions
+        // 2. Roles, Permissions & User Accounts
         $this->call(RoleAndPermissionSeeder::class);
     }
 }
-

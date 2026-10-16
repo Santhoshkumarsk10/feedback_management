@@ -4,10 +4,12 @@
 @section('page_subtitle', 'Section-wise configuration of customer evaluation criteria and survey questions')
 
 @section('topbar_actions')
-    <a href="{{ route('questions.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-plus-circle-fill"></i>
-        <span>Add Question</span>
-    </a>
+    @can('feedbackform.create')
+        <a href="{{ route('questions.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Add Question</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
@@ -223,17 +225,28 @@
                             @endif
                         </td>
                         <td class="text-end text-nowrap">
-                            <div class="d-inline-flex gap-1">
-                                <a href="{{ route('questions.edit', $q) }}" class="btn-action-icon edit" title="Edit Question">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                                <form method="POST" action="{{ route('questions.destroy', $q) }}" class="d-inline"
-                                      onsubmit="return confirm('Deactivate or delete this question?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-action-icon delete" title="Delete Question">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                </form>
+                            <div class="d-inline-flex gap-1 align-items-center">
+                                @can('feedbackform.edit')
+                                    <a href="{{ route('questions.edit', $q) }}" class="btn-action-icon edit" title="Edit Question">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                @endcan
+
+                                @can('feedbackform.delete')
+                                    <form method="POST" action="{{ route('questions.destroy', $q) }}" class="d-inline"
+                                          onsubmit="return confirm('Deactivate or delete this question?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-action-icon delete" title="Delete Question">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                @endcan
+
+                                @cannot('feedbackform.edit')
+                                    @cannot('feedbackform.delete')
+                                        <span class="badge-modern badge-slate"><i class="bi bi-eye"></i> View Only</span>
+                                    @endcannot
+                                @endcannot
                             </div>
                         </td>
                     </tr>

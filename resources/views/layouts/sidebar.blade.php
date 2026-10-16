@@ -20,35 +20,58 @@
 
         @php
             $currentUser = auth()->user();
-            $isAdminOrSuper = $currentUser && ($currentUser->hasAnyRole(['superadmin', 'admin']) || in_array($currentUser->role, ['superadmin', 'admin'], true));
-            $isSupervisor = $currentUser && ($currentUser->hasRole('supervisor') || $currentUser->role === 'supervisor');
-            $canViewReports = $isAdminOrSuper || $isSupervisor;
-            $isStaff = $currentUser && ($currentUser->hasAnyRole(['staff', 'organizer']) || in_array($currentUser->role, ['staff', 'organizer'], true));
+
+            // Module permissions driven strictly by standard Laravel Gates / Roles & Permissions
+            $canPlantMaster = $currentUser && $currentUser->can('plantmaster.view');
+            $canRoleMaster = $currentUser && $currentUser->can('rolemaster.view');
+            $canPermissionMaster = $currentUser && $currentUser->can('permissionmaster.view');
+            $canUserDirectory = $currentUser && $currentUser->can('userdirectory.view');
+            $canFeedbackForm = $currentUser && $currentUser->can('feedbackform.view');
+            $hasSystemMasters = $canPlantMaster || $canRoleMaster || $canPermissionMaster || $canUserDirectory || $canFeedbackForm;
+
+            $canCompany = $currentUser && $currentUser->can('companyprofile.view');
+            $canBanner = $currentUser && $currentUser->can('bannercms.view');
+            $hasBrandCMS = $canCompany || $canBanner;
+
+            $canFeedbackLogs = $currentUser && $currentUser->can('feedbacklogs.view');
+            $canViewReports = $currentUser && $currentUser->can('reportsexports.view');
+            $canAuditLogs = $currentUser && $currentUser->can('auditlogs.view');
+            $canDatabaseCleanup = $currentUser && $currentUser->can('tabledatacleanup.view');
         @endphp
 
-        {{-- Masters & Configuration: SuperAdmin & Admin Only --}}
-        @if($isAdminOrSuper)
+        {{-- Masters & Configuration --}}
+        @if($hasSystemMasters)
             <div class="menu-category">System Masters</div>
-            <a class="nav-item-link {{ request()->routeIs('plants.*') ? 'active' : '' }}" href="{{ route('plants.index') }}">
-                <i class="bi bi-buildings-fill"></i>
-                <span>Plant Master</span>
-            </a>
-            <a class="nav-item-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">
-                <i class="bi bi-shield-lock-fill"></i>
-                <span>Role Master</span>
-            </a>
-            <a class="nav-item-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}" href="{{ route('permissions.index') }}">
-                <i class="bi bi-key-fill"></i>
-                <span>Permission Master</span>
-            </a>
-            <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                <i class="bi bi-people-fill"></i>
-                <span>User Directory</span>
-            </a>
-            <a class="nav-item-link {{ request()->routeIs('questions.*') ? 'active' : '' }}" href="{{ route('questions.index') }}">
-                <i class="bi bi-patch-question-fill"></i>
-                <span>Feedback Form</span>
-            </a>
+            @if($canPlantMaster)
+                <a class="nav-item-link {{ request()->routeIs('plants.*') ? 'active' : '' }}" href="{{ route('plants.index') }}">
+                    <i class="bi bi-buildings-fill"></i>
+                    <span>Plant Master</span>
+                </a>
+            @endif
+            @if($canRoleMaster)
+                <a class="nav-item-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Role Master</span>
+                </a>
+            @endif
+            @if($canPermissionMaster)
+                <a class="nav-item-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}" href="{{ route('permissions.index') }}">
+                    <i class="bi bi-key-fill"></i>
+                    <span>Permission Master</span>
+                </a>
+            @endif
+            @if($canUserDirectory)
+                <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>User Directory</span>
+                </a>
+            @endif
+            @if($canFeedbackForm)
+                <a class="nav-item-link {{ request()->routeIs('questions.*') ? 'active' : '' }}" href="{{ route('questions.index') }}">
+                    <i class="bi bi-patch-question-fill"></i>
+                    <span>Feedback Form</span>
+                </a>
+            @endif
         @endif
 
         {{-- Operations: All Authenticated Roles --}}
@@ -62,25 +85,31 @@
             <span>Plant Visitors</span>
         </a>
 
-        {{-- Brand & CMS: SuperAdmin & Admin Only --}}
-        @if($isAdminOrSuper)
+        {{-- Brand & CMS --}}
+        @if($hasBrandCMS)
             <div class="menu-category">Brand & Content CMS</div>
-            <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}" href="{{ route('company.edit') }}">
-                <i class="bi bi-building-gear"></i>
-                <span>Company Profile</span>
-            </a>
-            <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}" href="{{ route('banners.index') }}">
-                <i class="bi bi-images"></i>
-                <span>Banner CMS</span>
-            </a>
+            @if($canCompany)
+                <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}" href="{{ route('company.edit') }}">
+                    <i class="bi bi-building-gear"></i>
+                    <span>Company Profile</span>
+                </a>
+            @endif
+            @if($canBanner)
+                <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}" href="{{ route('banners.index') }}">
+                    <i class="bi bi-images"></i>
+                    <span>Banner CMS</span>
+                </a>
+            @endif
         @endif
 
         {{-- Insights & Logs --}}
         <div class="menu-category">Insights & Logs</div>
-        <a class="nav-item-link {{ request()->routeIs('feedbacks.*') ? 'active' : '' }}" href="{{ route('feedbacks.index') }}">
-            <i class="bi bi-chat-square-heart-fill"></i>
-            <span>Feedback Logs</span>
-        </a>
+        @if($canFeedbackLogs)
+            <a class="nav-item-link {{ request()->routeIs('feedbacks.*') ? 'active' : '' }}" href="{{ route('feedbacks.index') }}">
+                <i class="bi bi-chat-square-heart-fill"></i>
+                <span>Feedback Logs</span>
+            </a>
+        @endif
 
         @if($canViewReports)
             <a class="nav-item-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}">
@@ -89,11 +118,14 @@
             </a>
         @endif
 
-        @if($isAdminOrSuper)
+        @if($canAuditLogs)
             <a class="nav-item-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" href="{{ route('audit-logs.index') }}">
                 <i class="bi bi-clock-history"></i>
                 <span>Audit Logs</span>
             </a>
+        @endif
+
+        @if($canDatabaseCleanup)
             <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}" href="{{ route('database_cleanup.index') }}">
                 <i class="bi bi-database-fill-gear"></i>
                 <span>Database Maintenance</span>

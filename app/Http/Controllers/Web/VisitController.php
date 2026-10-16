@@ -146,6 +146,21 @@ class VisitController extends Controller
         return redirect()->route('dashboard')->with('success', "Visitor {$visit->visitor_name} ({$visit->visitor_company}) successfully registered!");
     }
 
+    public function show(Visit $visit)
+    {
+        $visit->load(['organizer', 'feedback']);
+
+        if ($visit->feedback) {
+            return redirect()->route('feedbacks.show', $visit->feedback);
+        }
+
+        if (! $visit->is_feedback_expired) {
+            return redirect()->route('visits.feedback.create', $visit);
+        }
+
+        return redirect()->route('visits.index', ['q' => $visit->visitor_code ?: $visit->id]);
+    }
+
     public function createFeedback(Visit $visit)
     {
         if ($visit->feedback) {

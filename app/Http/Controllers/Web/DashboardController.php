@@ -428,13 +428,13 @@ class DashboardController extends Controller
                 'results' => [
                     'visitors' => [],
                     'feedbacks' => [],
-                    'staff' => [],
+                    'coordinators' => [],
                 ],
                 'total' => 0,
             ]);
         }
 
-        // 1. Visitors & Visits
+        // 1. Visitors List (Plant Visitors & Visits)
         $visits = Visit::with(['visitor', 'feedback'])
             ->where(function ($q) use ($term) {
                 $q->where('visitor_code', 'like', "%{$term}%")
@@ -444,19 +444,21 @@ class DashboardController extends Controller
                       $vq->where('name', 'like', "%{$term}%")
                          ->orWhere('company', 'like', "%{$term}%")
                          ->orWhere('mobile', 'like', "%{$term}%")
-                         ->orWhere('email', 'like', "%{$term}%");
+                         ->orWhere('email', 'like', "%{$term}%")
+                         ->orWhere('visitor_id', 'like', "%{$term}%");
                   });
             })
-            ->latest('id')
+            ->latest('visit_date')
             ->limit(5)
             ->get()
             ->map(function ($v) {
                 $hasFeedback = $v->feedback()->exists();
-                $name = $v->visitor_name ?? ('Visitor #' . $v->id);
+                $name = $v->visitor?->name ?? $v->visitor_name ?? ('Visitor #' . $v->id);
+                $company = $v->visitor?->company ?? $v->visitor_company ?? 'Company —';
                 return [
                     'id' => $v->id,
                     'title' => $name,
-                    'company' => $v->visitor_company ?: 'Company —',
+                    'company' => $company,
                     'code' => $v->visitor_code,
                     'department' => $v->department ?: '—',
                     'date' => $v->visit_date ? $v->visit_date->format('d M Y') : '—',
@@ -468,34 +470,47 @@ class DashboardController extends Controller
                 ];
             });
 
-        // 2. Feedbacks
-        $feedbacks = Feedback::with('visit.visitor')
+        // 2. Feedback List (Customer Feedbacks & Ratings)
+        $feedbacks = Feedback::with(['visit.visitor', 'organizer'])
             ->where(function ($q) use ($term) {
                 $q->where('comments', 'like', "%{$term}%")
+                  ->orWhere('submitted_mode', 'like', "%{$term}%")
                   ->orWhereHas('visit.visitor', function ($vq) use ($term) {
                       $vq->where('name', 'like', "%{$term}%")
-                         ->orWhere('company', 'like', "%{$term}%");
+                         ->orWhere('company', 'like', "%{$term}%")
+                         ->orWhere('visitor_id', 'like', "%{$term}%");
+                  })
+                  ->orWhereHas('organizer', function ($oq) use ($term) {
+                      $oq->where('name', 'like', "%{$term}%");
                   });
             })
             ->latest('submitted_at')
             ->limit(5)
             ->get()
             ->map(function ($f) {
+                $visitorName = $f->visit?->visitor?->name ?? $f->visit?->visitor_name ?? 'Guest Feedback';
                 return [
                     'id' => $f->id,
-                    'title' => $f->visit?->visitor_name ?? 'Guest Feedback',
+                    'title' => $visitorName,
                     'rating' => (int) $f->overall_rating,
-                    'comments' => Str::limit($f->comments ?? 'No comments provided', 50),
+                    'comments' => Str::limit($f->comments ?? 'No comments provided', 55),
                     'date' => $f->submitted_at ? $f->submitted_at->format('d M Y') : 'Recently',
                     'url' => route('feedbacks.show', $f->id),
                 ];
             });
 
-        // 3. Staff / Hosts
-        $staff = User::where(function ($q) use ($term) {
+        // 3. Coordinator List (Coordinators & Tour Organizers)
+        $coordinators = User::where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
                   ->orWhere('email', 'like', "%{$term}%")
+                  ->orWhere('mobile', 'like', "%{$term}%")
                   ->orWhere('department', 'like', "%{$term}%");
+            })
+            ->where(function ($q) {
+                $q->whereIn('role', ['coordinator', 'organizer'])
+                  ->orWhereHas('roles', function ($rq) {
+                      $rq->whereIn('name', ['coordinator', 'organizer']);
+                  });
             })
             ->limit(4)
             ->get()
@@ -503,21 +518,21 @@ class DashboardController extends Controller
                 return [
                     'id' => $u->id,
                     'title' => $u->name,
-                    'department' => $u->department ?? 'Staff',
-                    'role' => ucfirst($u->role ?? 'User'),
+                    'department' => $u->department ?? 'Operations',
+                    'role' => 'Coordinator',
                     'email' => $u->email,
-                    'url' => route('users.index', ['search' => $u->name]),
+                    'url' => route('users.index', ['q' => $u->name]),
                 ];
             });
 
-        $totalCount = $visits->count() + $feedbacks->count() + $staff->count();
+        $totalCount = $visits->count() + $feedbacks->count() + $coordinators->count();
 
         return response()->json([
             'success' => true,
             'results' => [
                 'visitors' => $visits,
                 'feedbacks' => $feedbacks,
-                'staff' => $staff,
+                'coordinators' => $coordinators,
             ],
             'total' => $totalCount,
         ]);

@@ -141,16 +141,23 @@
                                 $isAssigned = $isSuper || in_array($r->id, old('roles', $assignedRoleIds ?? []));
                             @endphp
                             <div class="col-md-6">
-                                <div class="p-3 rounded-3 border bg-light-subtle d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <div class="fw-semibold text-dark">{{ $r->display_name ?: $r->name }}</div>
+                                <label for="role_toggle_{{ $r->id }}" 
+                                       class="p-3 rounded-3 border d-flex align-items-center justify-content-between h-100 transition-all select-none {{ $isSuper ? 'bg-primary-subtle border-primary-subtle' : 'bg-light-subtle' }}"
+                                       style="cursor: {{ $isSuper ? 'default' : 'pointer' }}; transition: all 0.15s ease;">
+                                    <div class="pe-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-semibold text-dark">{{ $r->display_name ?: $r->name }}</span>
+                                            @if($isSuper)
+                                                <span class="badge bg-primary text-white" style="font-size: 0.65rem;">Inherited</span>
+                                            @endif
+                                        </div>
                                         <code class="fs-xs text-muted">{{ $r->name }}</code>
                                     </div>
-                                    <div class="form-check form-switch fs-5 m-0">
+                                    <div class="form-check form-switch fs-5 m-0 flex-shrink-0" style="min-width: 48px; text-align: right;">
                                         @if($isSuper)
-                                            <input class="form-check-input" type="checkbox" checked disabled title="SuperAdmin inherently possesses all permissions">
+                                            <input class="form-check-input" type="checkbox" checked disabled title="SuperAdmin inherently possesses all system capabilities">
                                         @else
-                                            <input class="form-check-input" 
+                                            <input class="form-check-input cursor-pointer" 
                                                    type="checkbox" 
                                                    name="roles[]" 
                                                    value="{{ $r->id }}" 
@@ -158,7 +165,7 @@
                                                    @checked($isAssigned)>
                                         @endif
                                     </div>
-                                </div>
+                                </label>
                             </div>
                         @endforeach
                     </div>

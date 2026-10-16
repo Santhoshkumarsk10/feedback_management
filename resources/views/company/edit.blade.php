@@ -323,13 +323,17 @@
                     <span>Updates instantly apply across all client portals</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="reset" class="btn-modern-secondary px-3" onclick="resetLivePreview()">
-                        <i class="bi bi-arrow-counterclockwise"></i> Reset
-                    </button>
-                    <button type="submit" class="btn-modern-primary px-4 shadow-sm" id="btnSaveCompany">
-                        <i class="bi bi-check2-circle fs-6"></i>
-                        <span>Save Company Profile</span>
-                    </button>
+                    @can('companyprofile.edit')
+                        <button type="reset" class="btn-modern-secondary px-3" onclick="resetLivePreview()">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                        <button type="submit" class="btn-modern-primary px-4 shadow-sm" id="btnSaveCompany">
+                            <i class="bi bi-check2-circle fs-6"></i>
+                            <span>Save Company Profile</span>
+                        </button>
+                    @else
+                        <span class="badge-modern badge-slate"><i class="bi bi-lock-fill"></i> Read Only Mode</span>
+                    @endcan
                 </div>
             </div>
 

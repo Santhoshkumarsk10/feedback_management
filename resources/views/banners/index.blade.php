@@ -4,10 +4,12 @@
 @section('page_subtitle', 'Manage interactive promotional banners, marketing visual sliders, and target device displays')
 
 @section('topbar_actions')
-    <a href="{{ route('banners.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-cloud-arrow-up-fill"></i>
-        <span>Upload New Banner</span>
-    </a>
+    @can('bannercms.create')
+        <a href="{{ route('banners.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            <span>Upload New Banner</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
@@ -164,27 +166,43 @@
                             @endif
                         </td>
                         <td>
-                            <form action="{{ route('banners.toggle', $banner) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="badge-status-btn {{ $banner->is_active ? 'active' : 'inactive' }}" title="Click to toggle status">
-                                    <i class="bi {{ $banner->is_active ? 'bi-check-circle-fill' : 'bi-dash-circle-fill' }}"></i>
-                                    <span>{{ $banner->is_active ? 'Active' : 'Disabled' }}</span>
-                                </button>
-                            </form>
+                            @can('bannercms.edit')
+                                <form action="{{ route('banners.toggle', $banner) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="badge-status-btn {{ $banner->is_active ? 'active' : 'inactive' }}" title="Click to toggle status">
+                                        <i class="bi {{ $banner->is_active ? 'bi-check-circle-fill' : 'bi-dash-circle-fill' }}"></i>
+                                        <span>{{ $banner->is_active ? 'Active' : 'Disabled' }}</span>
+                                    </button>
+                                </form>
+                            @else
+                                <span class="badge-modern {{ $banner->is_active ? 'badge-emerald' : 'badge-slate' }}">
+                                    <span class="status-dot {{ $banner->is_active ? 'active' : 'inactive' }}"></span>
+                                    {{ $banner->is_active ? 'Active' : 'Disabled' }}
+                                </span>
+                            @endcan
                         </td>
                         <td class="text-end">
                             <div class="d-flex align-items-center justify-content-end gap-1">
-                                <a href="{{ route('banners.edit', $banner) }}" class="btn-action-icon text-primary" title="Edit banner">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <form action="{{ route('banners.destroy', $banner) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this banner?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-action-icon text-danger border-0 bg-transparent" title="Delete banner">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </form>
+                                @can('bannercms.edit')
+                                    <a href="{{ route('banners.edit', $banner) }}" class="btn-action-icon text-primary" title="Edit banner">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                @endcan
+                                @can('bannercms.delete')
+                                    <form action="{{ route('banners.destroy', $banner) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this banner?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-action-icon text-danger border-0 bg-transparent" title="Delete banner">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                @endcan
+                                @cannot('bannercms.edit')
+                                    @cannot('bannercms.delete')
+                                        <span class="badge-modern badge-slate"><i class="bi bi-eye"></i> View Only</span>
+                                    @endcannot
+                                @endcannot
                             </div>
                         </td>
                     </tr>
@@ -195,9 +213,11 @@
                                 <i class="bi bi-images text-muted display-4 d-block mb-3 opacity-50"></i>
                                 <h5 class="fw-bold text-dark">No Banners Found</h5>
                                 <p class="text-muted small">No promotional banners matched your criteria or none have been uploaded yet.</p>
-                                <a href="{{ route('banners.create') }}" class="btn-modern-primary btn-sm mt-2">
-                                    <i class="bi bi-cloud-arrow-up-fill"></i> Upload First Banner
-                                </a>
+                                @can('bannercms.create')
+                                    <a href="{{ route('banners.create') }}" class="btn-modern-primary btn-sm mt-2">
+                                        <i class="bi bi-cloud-arrow-up-fill"></i> Upload First Banner
+                                    </a>
+                                @endcan
                             </div>
                         </td>
                     </tr>

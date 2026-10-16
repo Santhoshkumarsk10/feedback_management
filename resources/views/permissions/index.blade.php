@@ -4,66 +4,67 @@
 @section('page_subtitle', 'Manage granular system authorizations, module capabilities, and role mappings')
 
 @section('topbar_actions')
-    <a href="{{ route('permissions.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-key-fill"></i>
-        <span>Register New Permission</span>
-    </a>
-    <a href="{{ route('roles.index') }}" class="btn-modern-secondary btn-sm">
-        <i class="bi bi-shield-lock-fill text-primary"></i>
-        <span>Role Master</span>
-    </a>
+    @can('permissionmaster.edit')
+        <a href="{{ route('permissions.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-key-fill"></i>
+            <span>Add Permission</span>
+        </a>
+    @endcan
+    @can('rolemaster.view')
+        <a href="{{ route('roles.index') }}" class="btn-modern-secondary btn-sm">
+            <i class="bi bi-shield-lock-fill text-primary"></i>
+            <span>Role Master</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
-<!-- Filter Tabs & Controls Card -->
+<!-- Filter Controls Card -->
 <div class="filter-card-wrapper">
-    <!-- Filter Tabs Header -->
-    <div class="filter-tabs-header">
-        <div class="filter-tabs-nav">
-            <a href="{{ route('permissions.index', array_merge(request()->except(['module', 'page']))) }}"
-               class="filter-tab-btn {{ ($currentModule ?? 'all') === 'all' ? 'active' : '' }}">
-                <i class="bi bi-key-fill"></i>
-                <span>All Capabilities</span>
-                <span class="filter-tab-badge">{{ $totalCount }}</span>
-            </a>
-            @foreach($allModules as $mod)
-                <a href="{{ route('permissions.index', array_merge(request()->except(['page']), ['module' => $mod])) }}"
-                   class="filter-tab-btn {{ ($currentModule ?? '') === $mod ? 'active' : '' }}">
-                    <span>{{ $mod }}</span>
-                </a>
-            @endforeach
-        </div>
-
-        <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 15 per page
-            </span>
-        </div>
-    </div>
-
-    <!-- Filter Controls Bar -->
-    <div class="filter-controls-body">
+    <div class="filter-controls-body rounded-3">
         <form method="GET" action="{{ route('permissions.index') }}" class="d-flex flex-wrap align-items-center gap-2">
-            @if(request('module'))
-                <input type="hidden" name="module" value="{{ request('module') }}">
-            @endif
-
             <x-search-suggest 
                 name="q" 
-                placeholder="Search capability title, permission slug key, module, or description..." 
+                placeholder="Search capability title, permission slug key, or description..." 
                 :suggestions="$permissionSuggestions ?? []"
                 header-title="Permission Directory Suggestions"
+            />
+
+            <x-custom-select 
+                name="module" 
+                :value="request('module')" 
+                placeholder="All Modules" 
+                search-placeholder="Filter by module..." 
+                icon="bi-folder2-open" 
+                min-width="230px" 
+                :options="collect($allModules)->map(fn($m) => [
+                    'value' => $m, 
+                    'label' => $m,
+                    'sub' => ($moduleCounts[$m] ?? 0) . ' perms',
+                ])->all()" 
+                auto-submit
             />
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
 
-            @if(request()->hasAny(['q', 'module']))
+            @if(request()->filled('q') || request()->filled('module'))
                 <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Clear all filters">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
             @endif
+
+            <div class="ms-auto d-none d-md-flex align-items-center gap-2">
+                @if(request()->filled('module'))
+                    <span class="badge-modern badge-shibaura">
+                        <i class="bi bi-folder2-open me-1"></i> {{ request('module') }}
+                    </span>
+                @endif
+                <span class="badge-modern badge-slate">
+                    <i class="bi bi-key-fill text-primary me-1"></i> {{ $permissions->total() }} of {{ $totalCount }} Capabilities
+                </span>
+            </div>
         </form>
     </div>
 </div>
@@ -74,8 +75,21 @@
         <div class="card-title">
             <i class="bi bi-shield-check text-primary"></i>
             <span>System Capability Permissions</span>
+            @if(request()->filled('module'))
+                <span class="badge-modern badge-shibaura ms-2" style="font-size: 0.78rem;">
+                    {{ request('module') }}
+                </span>
+            @endif
         </div>
-        <span class="badge-modern badge-slate">{{ $permissions->total() }} Permissions Listed</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-modern badge-slate">{{ $permissions->total() }} Permissions Listed</span>
+            @can('permissionmaster.edit')
+                <a href="{{ route('permissions.create') }}" class="btn-modern-primary btn-sm">
+                    <i class="bi bi-key-fill"></i>
+                    <span>Add Permission</span>
+                </a>
+            @endcan
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -122,17 +136,25 @@
                         </div>
                     </td>
                     <td class="text-end text-nowrap">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('permissions.edit', $p) }}" class="btn-action-icon edit" title="Edit permission">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            <form method="POST" action="{{ route('permissions.destroy', $p) }}" class="d-inline"
-                                  onsubmit="return confirm('Are you sure you want to delete permission: {{ $p->title }} ({{ $p->name }})?')">
-                                @csrf @method('DELETE')
-                                <button class="btn-action-icon delete" type="submit" title="Delete permission">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </form>
+                        <div class="d-inline-flex gap-1 align-items-center">
+                            @can('permissionmaster.edit')
+                                <a href="{{ route('permissions.edit', $p) }}" class="btn-action-icon edit" title="Edit permission">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                @if(!$p->is_system)
+                                    <form method="POST" action="{{ route('permissions.destroy', $p) }}" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete permission: {{ $p->title }} ({{ $p->name }})?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn-action-icon delete" type="submit" title="Delete permission">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @else
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye"></i> View Only
+                                </span>
+                            @endcan
                         </div>
                     </td>
                 </tr>
@@ -140,7 +162,12 @@
                 <tr>
                     <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-key fs-2 d-block mb-2 text-slate-300"></i>
-                        No capability permissions match the selected criteria.
+                        <p class="mb-3">No capability permissions match the selected criteria.</p>
+                        @can('permissionmaster.edit')
+                            <a href="{{ route('permissions.create') }}" class="btn-modern-primary btn-sm">
+                                <i class="bi bi-key-fill"></i> Add Permission
+                            </a>
+                        @endcan
                     </td>
                 </tr>
             @endforelse
