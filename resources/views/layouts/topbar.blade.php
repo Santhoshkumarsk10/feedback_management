@@ -41,53 +41,61 @@
     </div>
 
     <div class="topbar-right-clean">
-        <!-- 1. Dynamic Date Range Filter Pill -->
-        <div class="dropdown">
-            <button class="topbar-pill-btn dropdown-toggle" type="button" id="dateRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Filter analytics date range">
-                <i class="bi bi-calendar3 text-primary"></i>
-                <span id="currentDateRangeLabel" class="fw-semibold">{{ $displayRangeLabel }}</span>
-                <i class="bi bi-chevron-down small text-muted ms-1"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1" aria-labelledby="dateRangeDropdown" style="font-size: 0.85rem; min-width: 220px;">
-                <li class="px-3 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Quick Presets</li>
-                <li>
-                    <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'today' ? 'active' : '' }}" 
-                       href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'today'])) }}">
-                        <span><i class="bi bi-clock me-2 text-muted"></i>Today</span>
-                        @if($currentRangeKey === 'today') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === '7days' ? 'active' : '' }}" 
-                       href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => '7days'])) }}">
-                        <span><i class="bi bi-calendar-week me-2 text-muted"></i>Last 7 Days</span>
-                        @if($currentRangeKey === '7days') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'month' ? 'active' : '' }}" 
-                       href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'month'])) }}">
-                        <span><i class="bi bi-calendar-month me-2 text-muted"></i>This Month ({{ now()->format('M Y') }})</span>
-                        @if($currentRangeKey === 'month') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === '30days' ? 'active' : '' }}" 
-                       href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => '30days'])) }}">
-                        <span><i class="bi bi-calendar3-range me-2 text-muted"></i>Last 30 Days</span>
-                        @if($currentRangeKey === '30days') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider my-1"></li>
-                <li>
-                    <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'all' ? 'active' : '' }}" 
-                       href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'all'])) }}">
-                        <span><i class="bi bi-database me-2 text-muted"></i>All Time Records</span>
-                        @if($currentRangeKey === 'all') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
-                    </a>
-                </li>
-            </ul>
-        </div>
+        @if(View::hasSection('topbar_actions'))
+            <div class="topbar-actions-group d-flex align-items-center gap-2 me-1">
+                @yield('topbar_actions')
+            </div>
+        @endif
+
+        <!-- 1. Dynamic Date Range Filter Pill (Dashboard & Analytics) -->
+        @if(request()->routeIs('dashboard*') || request()->routeIs('reports*'))
+            <div class="dropdown flex-shrink-0">
+                <button class="topbar-pill-btn dropdown-toggle" type="button" id="dateRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Filter analytics date range">
+                    <i class="bi bi-calendar3 text-primary"></i>
+                    <span id="currentDateRangeLabel" class="fw-semibold">{{ $displayRangeLabel }}</span>
+                    <i class="bi bi-chevron-down small text-muted ms-1"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1" aria-labelledby="dateRangeDropdown" style="font-size: 0.85rem; min-width: 220px;">
+                    <li class="px-3 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Quick Presets</li>
+                    <li>
+                        <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'today' ? 'active' : '' }}" 
+                           href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'today'])) }}">
+                            <span><i class="bi bi-clock me-2 text-muted"></i>Today</span>
+                            @if($currentRangeKey === 'today') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === '7days' ? 'active' : '' }}" 
+                           href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => '7days'])) }}">
+                            <span><i class="bi bi-calendar-week me-2 text-muted"></i>Last 7 Days</span>
+                            @if($currentRangeKey === '7days') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'month' ? 'active' : '' }}" 
+                           href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'month'])) }}">
+                            <span><i class="bi bi-calendar-month me-2 text-muted"></i>This Month ({{ now()->format('M Y') }})</span>
+                            @if($currentRangeKey === 'month') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === '30days' ? 'active' : '' }}" 
+                           href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => '30days'])) }}">
+                            <span><i class="bi bi-calendar3-range me-2 text-muted"></i>Last 30 Days</span>
+                            @if($currentRangeKey === '30days') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li>
+                        <a class="dropdown-item py-2 fw-medium d-flex align-items-center justify-content-between {{ $currentRangeKey === 'all' ? 'active' : '' }}" 
+                           href="{{ route('dashboard', array_merge(request()->except(['page', 'from', 'to']), ['range' => 'all'])) }}">
+                            <span><i class="bi bi-database me-2 text-muted"></i>All Time Records</span>
+                            @if($currentRangeKey === 'all') <i class="bi bi-check2 text-primary fw-bold"></i> @endif
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        @endif
 
         <!-- 2. Global Live Search Pill -->
         <div class="topbar-search-wrapper position-relative">
@@ -95,7 +103,7 @@
             <input type="text" 
                    class="topbar-search-input" 
                    id="globalTopSearch" 
-                   placeholder="Search visitors, hosts or feedback..." 
+                   placeholder="Search visitors, coordinators or feedback..." 
                    autocomplete="off">
             <span id="globalSearchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute" style="right: 14px; display: none;" role="status"></span>
             
@@ -103,7 +111,7 @@
             <div id="globalSearchDropdown" class="topbar-search-dropdown shadow-lg" style="display: none;">
                 <div id="globalSearchResults"></div>
                 <div class="p-2 border-top text-center bg-light rounded-bottom small" style="font-size: 0.75rem;">
-                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to view all results in Visitor Operations</span>
+                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to search in Visitors &amp; Plant Visits</span>
                 </div>
             </div>
         </div>
@@ -276,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             const query = this.value.trim();
             if (query.length > 0) {
-                window.location.href = `{{ route('visits.index') }}?search=${encodeURIComponent(query)}`;
+                window.location.href = `{{ route('visits.index') }}?q=${encodeURIComponent(query)}`;
             }
         } else if (e.key === 'Escape') {
             searchDropdown.style.display = 'none';
@@ -288,8 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
             searchResults.innerHTML = `
                 <div class="text-center py-4 px-3 text-muted">
                     <i class="bi bi-search fs-3 text-secondary opacity-50 d-block mb-2"></i>
-                    <div class="fw-semibold small text-dark">No records found</div>
-                    <div class="small text-muted" style="font-size: 0.75rem;">No visitors, feedbacks, or staff matching "${escapeHtml(query)}"</div>
+                    <div class="fw-semibold small text-dark">No records found regarding your search</div>
+                    <div class="small text-muted mt-1" style="font-size: 0.76rem;">No matching results found for "<strong>${escapeHtml(query)}</strong>" in visitors list, coordinator list, or feedback list.</div>
                 </div>
             `;
             searchDropdown.style.display = 'block';
@@ -298,9 +306,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '';
 
-        // 1. Visitors & Visits
+        // 1. Visitors List
         if (data.results.visitors && data.results.visitors.length > 0) {
-            html += `<div class="search-section-header"><i class="bi bi-person-badge me-1 text-primary"></i> Visitors & Plant Visits</div>`;
+            html += `<div class="search-section-header"><i class="bi bi-person-badge me-1 text-primary"></i> Visitors List</div>`;
             data.results.visitors.forEach(v => {
                 html += `
                     <a href="${v.url}" class="search-result-item">
@@ -323,9 +331,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // 2. Feedbacks
+        // 2. Feedback List
         if (data.results.feedbacks && data.results.feedbacks.length > 0) {
-            html += `<div class="search-section-header mt-2"><i class="bi bi-chat-quote me-1 text-success"></i> Customer Feedbacks</div>`;
+            html += `<div class="search-section-header mt-2"><i class="bi bi-chat-quote me-1 text-success"></i> Feedback List</div>`;
             data.results.feedbacks.forEach(f => {
                 let stars = '';
                 for (let i = 1; i <= 5; i++) {
@@ -351,10 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // 3. Staff / Hosts
-        if (data.results.staff && data.results.staff.length > 0) {
-            html += `<div class="search-section-header mt-2"><i class="bi bi-people me-1 text-info"></i> Plant Hosts & Staff</div>`;
-            data.results.staff.forEach(s => {
+        // 3. Coordinator List
+        if (data.results.coordinators && data.results.coordinators.length > 0) {
+            html += `<div class="search-section-header mt-2"><i class="bi bi-person-badge-fill me-1 text-info"></i> Coordinator List</div>`;
+            data.results.coordinators.forEach(s => {
                 html += `
                     <a href="${s.url}" class="search-result-item">
                         <div class="d-flex align-items-center gap-2 overflow-hidden">
@@ -363,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="overflow-hidden">
                                 <div class="fw-bold text-dark small text-truncate">${escapeHtml(s.title)}</div>
-                                <div class="text-muted small text-truncate" style="font-size: 0.75rem;">${escapeHtml(s.department)} • ${escapeHtml(s.role)}</div>
+                                <div class="text-muted small text-truncate" style="font-size: 0.75rem;">${escapeHtml(s.department)} • Coordinator</div>
                             </div>
                         </div>
                         <i class="bi bi-chevron-right text-muted small ms-2"></i>

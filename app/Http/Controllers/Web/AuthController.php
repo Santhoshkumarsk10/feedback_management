@@ -46,12 +46,12 @@ class AuthController extends Controller
 
             $isWebAuthorized = false;
             try {
-                if ($user->hasAnyRole(['superadmin', 'admin', 'supervisor', 'staff', 'organizer']) || $user->can('access-web-panel')) {
+                if ($user->hasAnyRole(['superadmin', 'admin', 'coordinator', 'supervisor', 'staff', 'organizer']) || $user->can('access-web-panel')) {
                     $isWebAuthorized = true;
                 }
             } catch (\Throwable $e) {}
 
-            if (!$isWebAuthorized && in_array($user->role, ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'], true)) {
+            if (!$isWebAuthorized && in_array($user->role, ['superadmin', 'admin', 'coordinator', 'supervisor', 'staff', 'organizer'], true)) {
                 $isWebAuthorized = true;
             }
 

@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Gate;
 
 use App\Models\Company;
 
@@ -27,6 +28,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        Gate::before(function ($user, $ability) {
+            if ($user->hasRole('superadmin') || $user->role === 'superadmin') {
+                return true;
+            }
+        });
 
         View::composer('*', function ($view) {
             try {

@@ -4,10 +4,12 @@
 @section('page_subtitle', 'Manage Shibaura Machine manufacturing plant details, locations, and operational facilities')
 
 @section('topbar_actions')
-    <a href="{{ route('plants.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-building-add"></i>
-        <span>Register New Plant</span>
-    </a>
+    @can('plantmaster.create')
+        <a href="{{ route('plants.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-building-add"></i>
+            <span>Register New Plant</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
@@ -83,7 +85,15 @@
             <i class="bi bi-building-gear text-primary"></i>
             <span>Plant Directory</span>
         </div>
-        <span class="badge-modern badge-slate">{{ $plants->total() }} Plants Listed</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-modern badge-slate">{{ $plants->total() }} Plants Listed</span>
+            @can('plantmaster.create')
+                <a href="{{ route('plants.create') }}" class="btn-modern-primary btn-sm">
+                    <i class="bi bi-building-add"></i>
+                    <span>Add Plant</span>
+                </a>
+            @endcan
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -156,23 +166,32 @@
                         @endif
                     </td>
                     <td class="text-end text-nowrap">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('plants.edit', $p) }}" class="btn-action-icon edit" title="Edit plant">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            <form method="POST" action="{{ route('plants.toggle', $p) }}" class="d-inline">
-                                @csrf @method('PATCH')
-                                <button class="btn-action-icon" type="submit" title="{{ $p->is_active ? 'Deactivate plant' : 'Activate plant' }}">
-                                    <i class="bi {{ $p->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('plants.destroy', $p) }}" class="d-inline"
-                                  onsubmit="return confirm('Are you sure you want to delete {{ $p->name }}?')">
-                                @csrf @method('DELETE')
-                                <button class="btn-action-icon delete" type="submit" title="Delete plant" @disabled($p->users_count > 0)>
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </form>
+                        <div class="d-inline-flex gap-1 align-items-center">
+                            @can('plantmaster.edit')
+                                <a href="{{ route('plants.edit', $p) }}" class="btn-action-icon edit" title="Edit plant">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <form method="POST" action="{{ route('plants.toggle', $p) }}" class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button class="btn-action-icon" type="submit" title="{{ $p->is_active ? 'Deactivate plant' : 'Activate plant' }}">
+                                        <i class="bi {{ $p->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
+                                    </button>
+                                </form>
+                            @endcan
+                            @can('plantmaster.delete')
+                                <form method="POST" action="{{ route('plants.destroy', $p) }}" class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to delete {{ $p->name }}?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn-action-icon delete" type="submit" title="Delete plant" @disabled($p->users_count > 0)>
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            @endcan
+                            @if(!auth()->user()->can('plantmaster.edit') && !auth()->user()->can('plantmaster.delete'))
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye"></i> View Only
+                                </span>
+                            @endif
                         </div>
                     </td>
                 </tr>

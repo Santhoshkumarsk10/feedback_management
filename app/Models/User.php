@@ -13,7 +13,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 
-    public const ROLES = ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'];
+    public const ROLES = ['superadmin', 'admin', 'coordinator', 'supervisor', 'staff', 'organizer'];
 
     protected $fillable = [
         'name', 'email', 'mobile', 'password', 'role', 'role_id', 'department', 'is_active',
@@ -38,6 +38,8 @@ class User extends Authenticatable implements JWTSubject
                 try {
                     if (Role::where('name', $spatieRole)->exists() && !$user->hasRole($spatieRole)) {
                         $user->syncRoles([$spatieRole]);
+                    } elseif (Role::where('name', $user->role)->exists() && !$user->hasRole($user->role)) {
+                        $user->syncRoles([$user->role]);
                     }
                 } catch (\Throwable $e) {
                     // Ignore during migration or uninitialized tables

@@ -17,7 +17,13 @@ class RoleAndAuthenticationTest extends TestCase
                 'password' => Hash::make('password'),
                 'is_active' => true,
             ]);
-            $user->syncRoles([$role === 'organizer' ? 'staff' : $role]);
+            $targetRole = $role === 'organizer' ? 'staff' : $role;
+            \App\Models\Role::firstOrCreate(['name' => $targetRole], [
+                'display_name' => ucfirst($targetRole),
+                'guard_name' => 'web',
+                'is_system' => false,
+            ]);
+            $user->syncRoles([$targetRole]);
         }
         return $user;
     }

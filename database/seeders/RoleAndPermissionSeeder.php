@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Plant;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Permission;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -14,198 +14,218 @@ class RoleAndPermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset cached roles and permissions
+        // 1. Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1. Define Permissions
-        $permissions = [
-            'access-web-panel',
-            'access-mobile-app',
-            'manage-users',
-            'manage-roles',
-            'manage-plants',
-            'manage-questions',
-            'manage-company',
-            'manage-banners',
-            'view-reports',
-            'export-reports',
-            'view-visits',
-            'manage-visits',
-            'view-feedbacks',
-            'submit-feedback',
-            'view-audit-logs',
-        ];
-
-        foreach ($permissions as $perm) {
-            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
-        }
+        // 2. Clean all old users, roles, and permissions
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('model_has_permissions')->truncate();
+        DB::table('model_has_roles')->truncate();
+        DB::table('role_has_permissions')->truncate();
+        Permission::query()->delete();
+        Role::query()->delete();
+        User::query()->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Define Roles
-        $roleDefinitions = [
-            'superadmin' => [
-                'display_name' => 'Super Admin',
-                'description' => 'Full administrative access across all plants, system settings, and security audits',
-                'is_system' => true,
-                'permissions' => $permissions,
-            ],
-            'admin' => [
-                'display_name' => 'Plant Admin',
-                'description' => 'Plant-level administrator managing visitors, team members, and questionnaires',
-                'is_system' => true,
-                'permissions' => [
-                    'access-web-panel',
-                    'access-mobile-app',
-                    'manage-users',
-                    'manage-roles',
-                    'manage-plants',
-                    'manage-questions',
-                    'manage-company',
-                    'manage-banners',
-                    'view-reports',
-                    'export-reports',
-                    'view-visits',
-                    'manage-visits',
-                    'view-feedbacks',
-                    'submit-feedback',
-                    'view-audit-logs',
-                ],
-            ],
-            'supervisor' => [
-                'display_name' => 'Operations Supervisor',
-                'description' => 'Supervises staff, audits plant visits, feedback logs, and performance analytics',
-                'is_system' => true,
-                'permissions' => [
-                    'access-web-panel',
-                    'view-reports',
-                    'export-reports',
-                    'view-visits',
-                    'view-feedbacks',
-                ],
-            ],
-            'staff' => [
-                'display_name' => 'Shift Staff',
-                'description' => 'Shift employee on duty assisting visitors, logging tours, and gathering reviews',
-                'is_system' => true,
-                'permissions' => [
-                    'access-web-panel',
-                    'access-mobile-app',
-                    'view-visits',
-                    'manage-visits',
-                    'view-feedbacks',
-                    'submit-feedback',
-                ],
-            ],
-            'organizer' => [
-                'display_name' => 'Tour Organizer',
-                'description' => 'Legacy tour organizer role mapped to shift staff',
-                'is_system' => true,
-                'permissions' => [
-                    'access-web-panel',
-                    'access-mobile-app',
-                    'view-visits',
-                    'manage-visits',
-                    'view-feedbacks',
-                    'submit-feedback',
-                ],
-            ],
+        // 3. Define the 14 Modules and their 5 permissions (view, create, edit, delete, export)
+        $modules = [
+            'dashboard' => 'Dashboard',
+            'plantmaster' => 'Plant Master',
+            'feedbackform' => 'Feedback Form',
+            'plantvisitors' => 'Plant Visitors',
+            'companyprofile' => 'Company Profile',
+            'bannercms' => 'Banner CMS',
+            'feedbacklogs' => 'Feedback Logs',
+            'reportsexports' => 'Reports & exports',
+            'auditlogs' => 'Audit Logs',
+            'userdirectory' => 'User Directory',
+            'rolemaster' => 'Role Master',
+            'permissionmaster' => 'Permission Master',
+            'userprofile' => 'User Profile',
+            'tabledatacleanup' => 'Table Data Cleanup',
         ];
 
-        foreach ($roleDefinitions as $roleKey => $meta) {
-            $role = Role::where('slug', $roleKey)->first() ?? Role::where('name', $roleKey)->first();
-            if (!$role) {
-                $role = Role::create([
-                    'name' => $roleKey,
-                    'slug' => $roleKey,
+        $actions = ['view', 'create', 'edit', 'delete', 'export'];
+
+        foreach ($modules as $slug => $label) {
+            foreach ($actions as $action) {
+                $permKey = "{$slug}.{$action}";
+                $displayAction = ucfirst($action);
+                Permission::create([
+                    'name' => $permKey,
                     'guard_name' => 'web',
-                    'display_name' => $meta['display_name'],
-                    'description' => $meta['description'],
-                    'is_system' => $meta['is_system'],
-                    'is_active' => true,
-                ]);
-            } else {
-                $role->update([
-                    'name' => $roleKey,
-                    'slug' => $roleKey,
-                    'guard_name' => 'web',
-                    'display_name' => $meta['display_name'],
-                    'description' => $meta['description'],
-                    'is_system' => $meta['is_system'],
-                    'is_active' => true,
+                    'display_name' => "{$label} — {$displayAction}",
+                    'module' => $label,
+                    'description' => "Grants {$action} access on {$label} module",
                 ]);
             }
+        }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // 4. Permission Mappings for Superadmin, Admin, and Coordinator based on Reference Matrices
+        $superadminPermissions = [
+            // Dashboard: View, Export
+            'dashboard.view', 'dashboard.export',
+            // Plant Master: View, Create, Edit, Delete, Export
+            'plantmaster.view', 'plantmaster.create', 'plantmaster.edit', 'plantmaster.delete', 'plantmaster.export',
+            // Feedback Form: View, Create, Edit, Delete
+            'feedbackform.view', 'feedbackform.create', 'feedbackform.edit', 'feedbackform.delete',
+            // Plant Visitors: View, Create, Edit, Delete, Export
+            'plantvisitors.view', 'plantvisitors.create', 'plantvisitors.edit', 'plantvisitors.delete', 'plantvisitors.export',
+            // Company Profile: View, Edit
+            'companyprofile.view', 'companyprofile.edit',
+            // Banner CMS: View, Create, Edit
+            'bannercms.view', 'bannercms.create', 'bannercms.edit',
+            // Feedback Logs: View, Delete, Export
+            'feedbacklogs.view', 'feedbacklogs.delete', 'feedbacklogs.export',
+            // Reports & exports: View, Export
+            'reportsexports.view', 'reportsexports.export',
+            // Audit Logs: View, Export
+            'auditlogs.view', 'auditlogs.export',
+            // User Directory: View, Create, Edit, Delete, Export
+            'userdirectory.view', 'userdirectory.create', 'userdirectory.edit', 'userdirectory.delete', 'userdirectory.export',
+            // Role Master: View, Create, Edit, Delete
+            'rolemaster.view', 'rolemaster.create', 'rolemaster.edit', 'rolemaster.delete',
+            // Permission Master: View, Edit
+            'permissionmaster.view', 'permissionmaster.edit',
+            // User Profile: View, Edit
+            'userprofile.view', 'userprofile.edit',
+            // Table Data Cleanup: View, Delete
+            'tabledatacleanup.view', 'tabledatacleanup.delete',
+        ];
+
+        $adminPermissions = [
+            // Dashboard: View, Export
+            'dashboard.view', 'dashboard.export',
+            // Plant Master: View, Create, Edit, Export
+            'plantmaster.view', 'plantmaster.create', 'plantmaster.edit', 'plantmaster.export',
+            // Feedback Form: View, Create, Edit
+            'feedbackform.view', 'feedbackform.create', 'feedbackform.edit',
+            // Plant Visitors: View, Create, Edit, Export
+            'plantvisitors.view', 'plantvisitors.create', 'plantvisitors.edit', 'plantvisitors.export',
+            // Company Profile: View, Edit
+            'companyprofile.view', 'companyprofile.edit',
+            // Banner CMS: View, Create, Edit, Delete
+            'bannercms.view', 'bannercms.create', 'bannercms.edit', 'bannercms.delete',
+            // Feedback Logs: View, Export
+            'feedbacklogs.view', 'feedbacklogs.export',
+            // Reports & exports: View, Export
+            'reportsexports.view', 'reportsexports.export',
+            // Audit Logs: View, Export
+            'auditlogs.view', 'auditlogs.export',
+            // User Directory: View, Create, Edit, Export
+            'userdirectory.view', 'userdirectory.create', 'userdirectory.edit', 'userdirectory.export',
+            // Role Master: View
+            'rolemaster.view',
+            // Permission Master: View
+            'permissionmaster.view',
+            // User Profile: View, Edit
+            'userprofile.view', 'userprofile.edit',
+        ];
+
+        $coordinatorPermissions = [
+            // Dashboard: View
+            'dashboard.view',
+            // Plant Master: View
+            'plantmaster.view',
+            // Feedback Form: View, Create
+            'feedbackform.view', 'feedbackform.create',
+            // Plant Visitors: View
+            'plantvisitors.view',
+            // Company Profile: View
+            'companyprofile.view',
+            // Reports & exports: View
+            'reportsexports.view',
+            // User Profile: View, Edit
+            'userprofile.view', 'userprofile.edit',
+        ];
+
+        // 5. Create the 3 Roles (superadmin, admin, coordinator)
+        $roleDefinitions = [
+            'superadmin' => [
+                'display_name' => 'Superadmin',
+                'description' => 'Full administrative control across all system operational modules and configurations',
+                'is_system' => true,
+                'permissions' => $superadminPermissions,
+            ],
+            'admin' => [
+                'display_name' => 'Admin',
+                'description' => 'Administrative role managing plant facilities, visitor operations, and reporting',
+                'is_system' => true,
+                'permissions' => $adminPermissions,
+            ],
+            'coordinator' => [
+                'display_name' => 'Coordinator',
+                'description' => 'Operations coordinator facilitating visitor experiences, evaluation forms, and analytics',
+                'is_system' => true,
+                'permissions' => $coordinatorPermissions,
+            ],
+        ];
+
+        $createdRoles = [];
+        foreach ($roleDefinitions as $roleKey => $meta) {
+            $role = Role::create([
+                'name' => $roleKey,
+                'slug' => $roleKey,
+                'guard_name' => 'web',
+                'display_name' => $meta['display_name'],
+                'description' => $meta['description'],
+                'is_system' => $meta['is_system'],
+                'is_active' => true,
+            ]);
 
             $role->syncPermissions($meta['permissions']);
+            $createdRoles[$roleKey] = $role;
         }
 
-        // 3. Link Existing & Demo Users
-        $roleSuper = Role::where('name', 'superadmin')->first();
-        $roleAdmin = Role::where('name', 'admin')->first();
-        $roleSupervisor = Role::where('name', 'supervisor')->first();
-        $roleStaff = Role::where('name', 'staff')->first();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 1) Super Admin
-        $super = User::updateOrCreate(
-            ['email' => 'superadmin@plant.test'],
-            [
-                'name' => 'Super Administrator',
-                'password' => Hash::make('password'),
-                'role' => 'superadmin',
-                'role_id' => $roleSuper?->id,
-                'is_active' => true,
-            ]
-        );
-        $super->syncRoles(['superadmin']);
+        // 6. Create Users and Assign Roles
+        // 1) Superadmin User
+        $superUser = User::create([
+            'name' => 'Superadmin',
+            'email' => 'superadmin@plant.test',
+            'mobile' => '9844000001',
+            'password' => Hash::make('password'),
+            'role' => 'superadmin',
+            'role_id' => $createdRoles['superadmin']->id,
+            'department' => 'Management',
+            'is_active' => true,
+        ]);
+        $superUser->syncRoles(['superadmin']);
 
-        // 2) Admin
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@plant.test'],
-            [
-                'name' => 'Plant Administrator',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'role_id' => $roleAdmin?->id,
-                'is_active' => true,
-            ]
-        );
-        $admin->syncRoles(['admin']);
+        // 2) Admin User
+        $adminUser = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@plant.test',
+            'mobile' => '9844000002',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'role_id' => $createdRoles['admin']->id,
+            'department' => 'Plant Operations',
+            'is_active' => true,
+        ]);
+        $adminUser->syncRoles(['admin']);
 
-        // 3) Supervisor
-        $supervisor = User::updateOrCreate(
-            ['email' => 'supervisor@plant.test'],
-            [
-                'name' => 'Plant Supervisor',
-                'password' => Hash::make('password'),
-                'role' => 'supervisor',
-                'role_id' => $roleSupervisor?->id,
-                'department' => 'Quality & Operations',
-                'is_active' => true,
-            ]
-        );
-        $supervisor->syncRoles(['supervisor']);
+        // 3) Coordinator User
+        $coordUser = User::create([
+            'name' => 'Coordinator',
+            'email' => 'coordinator@plant.test',
+            'mobile' => '9844000003',
+            'password' => Hash::make('password'),
+            'role' => 'coordinator',
+            'role_id' => $createdRoles['coordinator']->id,
+            'department' => 'Customer Relations & Tours',
+            'is_active' => true,
+        ]);
+        $coordUser->syncRoles(['coordinator']);
 
-        // 4) Staff
-        $staffUser = User::updateOrCreate(
-            ['email' => 'staff@plant.test'],
-            [
-                'name' => 'Shift Staff Engineer',
-                'password' => Hash::make('password'),
-                'role' => 'staff',
-                'role_id' => $roleStaff?->id,
-                'department' => 'Machine Tools Assembly',
-                'is_active' => true,
-            ]
-        );
-        $staffUser->syncRoles(['staff']);
-
-        // 5) Sync existing organizers to 'staff' Spatie role
-        $existingStaff = User::whereIn('role', ['organizer', 'staff'])->get();
-        foreach ($existingStaff as $u) {
-            $u->update([
-                'role_id' => $roleStaff?->id,
-            ]);
-            $u->syncRoles(['staff']);
-        }
+        // Re-link existing operational records if any exist in the database
+        DB::table('visits')->update(['organizer_id' => $coordUser->id]);
+        DB::table('feedbacks')->update(['organizer_id' => $coordUser->id]);
+        DB::table('audit_logs')->whereNotNull('user_id')->update(['user_id' => $superUser->id]);
     }
 }

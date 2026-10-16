@@ -4,47 +4,49 @@
 @section('page_subtitle', 'Comprehensive aggregated feedback reports by tour organizer, department, and survey criteria')
 
 @section('topbar_actions')
-    <div class="dropdown">
-        <button class="btn-modern-primary btn-sm dropdown-toggle d-flex align-items-center gap-1 shadow-xs" 
-                type="button" id="topbarExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download"></i>
-            <span>Export Report</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="topbarExportDropdown" style="min-width: 215px;">
-            <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Select Export Format</li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}">
-                    <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">Excel (.xlsx)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet</div>
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank">
-                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Printable executive report</div>
-                    </div>
-                </a>
-            </li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}">
-                    <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">CSV File (.csv)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Raw table records</div>
-                    </div>
-                </a>
-            </li>
-        </ul>
-    </div>
+    @can('reportsexports.export')
+        <div class="dropdown">
+            <button class="btn-modern-primary btn-sm dropdown-toggle d-flex align-items-center gap-1 shadow-xs" 
+                    type="button" id="topbarExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i>
+                <span>Export Report</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="topbarExportDropdown" style="min-width: 215px;">
+                <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Select Export Format</li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}">
+                        <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Excel (.xlsx)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Printable executive report</div>
+                        </div>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}">
+                        <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">CSV File (.csv)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Raw table records</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    @endcan
 @endsection
 
 @section('content')
@@ -207,47 +209,49 @@
         </a>
     </div>
 
-    <div class="dropdown">
-        <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-3 shadow-xs" 
-                type="button" id="tabExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-download"></i>
-            <span>Export Report</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="tabExportDropdown" style="min-width: 220px;">
-            <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Available Formats</li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}" id="btnExportExcel">
-                    <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">Excel (.xlsx)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet with styles</div>
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank" id="btnExportPdf">
-                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Printable executive format</div>
-                    </div>
-                </a>
-            </li>
-            <li><hr class="dropdown-divider my-1"></li>
-            <li>
-                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
-                   href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}" id="btnExportCsv">
-                    <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
-                    <div>
-                        <div class="fw-semibold text-dark">CSV (.csv)</div>
-                        <div class="small text-muted" style="font-size: 0.72rem;">Raw comma-separated data</div>
-                    </div>
-                </a>
-            </li>
-        </ul>
-    </div>
+    @can('reportsexports.export')
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-3 shadow-xs" 
+                    type="button" id="tabExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i>
+                <span>Export Report</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" aria-labelledby="tabExportDropdown" style="min-width: 220px;">
+                <li class="dropdown-header small text-uppercase fw-bold text-muted px-3">Available Formats</li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'excel'])) }}" id="btnExportExcel">
+                        <i class="bi bi-file-earmark-excel-fill text-success fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Excel (.xlsx)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Formatted spreadsheet with styles</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'pdf'])) }}" target="_blank" id="btnExportPdf">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">PDF Document (.pdf)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Printable executive format</div>
+                        </div>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3" 
+                       href="{{ route('reports.export', array_merge(request()->query(), ['type' => $reportTab, 'format' => 'csv'])) }}" id="btnExportCsv">
+                        <i class="bi bi-file-earmark-spreadsheet-fill text-primary fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">CSV (.csv)</div>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Raw comma-separated data</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    @endcan
 </div>
 
 @if($reportTab === 'staff')
@@ -259,9 +263,11 @@
                 <i class="bi bi-person-lines-fill text-primary"></i>
                 <span>Staff & Organizer Performance Review</span>
             </div>
-            <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'staff'])) }}" class="btn-modern-secondary btn-sm py-1 px-2" title="Download spreadsheet">
-                <i class="bi bi-download"></i> CSV
-            </a>
+            @can('reportsexports.export')
+                <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'staff'])) }}" class="btn-modern-secondary btn-sm py-1 px-2" title="Download spreadsheet">
+                    <i class="bi bi-download"></i> CSV
+                </a>
+            @endcan
         </div>
 
         <div class="table-responsive">
@@ -413,9 +419,11 @@
                     Critical feedback requiring operational investigation, root-cause analysis, and management follow-up (BRS Section 6.8).
                 </div>
             </div>
-            <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'low_rating'])) }}" class="btn-modern-danger btn-sm py-1 px-3">
-                <i class="bi bi-download"></i> Export Incidents CSV
-            </a>
+            @can('reportsexports.export')
+                <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'low_rating'])) }}" class="btn-modern-danger btn-sm py-1 px-3">
+                    <i class="bi bi-download"></i> Export Incidents CSV
+                </a>
+            @endcan
         </div>
 
         <div class="table-responsive">
@@ -511,9 +519,11 @@
                     Complete listing of all registered plant visitors who have not submitted feedback yet (BRS Section 6.5 & 6.8).
                 </div>
             </div>
-            <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'pending'])) }}" class="btn-modern-primary btn-sm py-1 px-3">
-                <i class="bi bi-download"></i> Export Pending CSV
-            </a>
+            @can('reportsexports.export')
+                <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'pending'])) }}" class="btn-modern-primary btn-sm py-1 px-3">
+                    <i class="bi bi-download"></i> Export Pending CSV
+                </a>
+            @endcan
         </div>
 
         <div class="table-responsive">
@@ -587,10 +597,20 @@
                                 <span class="text-muted small">—</span>
                             @endif
                         </td>
-                        <td class="text-end">
-                            <a href="{{ route('visits.show', $v) }}" class="btn btn-sm btn-outline-primary" title="View Visit">
-                                <i class="bi bi-eye"></i> View
-                            </a>
+                        <td class="text-end text-nowrap">
+                            @if($v->feedback)
+                                <a href="{{ route('feedbacks.show', $v->feedback) }}" class="btn btn-sm btn-outline-primary" title="View Submitted Feedback">
+                                    <i class="bi bi-eye"></i> View Feedback
+                                </a>
+                            @elseif($v->is_feedback_expired)
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" title="Feedback collection expired because visit date has passed">
+                                    <i class="bi bi-lock-fill me-1"></i> Closed
+                                </span>
+                            @else
+                                <a href="{{ route('visits.feedback.create', $v) }}" class="btn btn-sm btn-warning text-dark fw-bold shadow-sm" title="Submit feedback on behalf of visitor">
+                                    <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
+                                </a>
+                            @endif
                         </td>
                     </tr>
                 @empty

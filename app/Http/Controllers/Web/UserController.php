@@ -19,7 +19,7 @@ class UserController extends Controller
     {
         return auth()->user()->role === 'superadmin'
             ? Role::pluck('slug')->all()
-            : ['supervisor', 'staff', 'organizer'];
+            : ['coordinator', 'supervisor', 'staff', 'organizer'];
     }
 
     private function authorizeTarget(User $user): void
@@ -86,10 +86,10 @@ class UserController extends Controller
         $manageableSlugs = $this->manageableSlugs();
         $roles = Role::whereIn('slug', $manageableSlugs)->where('is_active', true)->orderBy('name')->get();
 
-        $defaultRole = Role::where('slug', 'organizer')->first();
+        $defaultRole = Role::where('slug', 'coordinator')->first() ?? Role::where('slug', 'organizer')->first();
 
         return view('users.form', [
-            'user' => new User(['is_active' => true, 'role' => 'organizer', 'role_id' => $defaultRole?->id]),
+            'user' => new User(['is_active' => true, 'role' => $defaultRole?->slug ?? 'coordinator', 'role_id' => $defaultRole?->id]),
             'roles' => $roles,
         ]);
     }
@@ -201,9 +201,9 @@ class UserController extends Controller
         ]);
 
         $roleObj = Role::find($data['role_id']);
-        $data['role'] = in_array($roleObj?->slug, ['superadmin', 'admin', 'supervisor', 'staff', 'organizer'], true) 
+        $data['role'] = in_array($roleObj?->slug, ['superadmin', 'admin', 'coordinator', 'supervisor', 'staff', 'organizer'], true) 
             ? $roleObj->slug 
-            : ($roleObj?->name ?? 'staff');
+            : ($roleObj?->name ?? 'coordinator');
         $data['is_active'] = $request->boolean('is_active');
 
         return $data;

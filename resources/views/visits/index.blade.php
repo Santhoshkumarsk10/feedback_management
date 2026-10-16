@@ -96,15 +96,17 @@
             @endif
         </div>
         <div class="d-flex align-items-center gap-2">
-            <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                    <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
-                </button>
-            </form>
-            <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary">
-                <i class="bi bi-person-plus-fill me-1"></i> Register Visitor
-            </a>
+            @can('plantvisitors.create')
+                <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                        <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
+                    </button>
+                </form>
+                <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-person-plus-fill me-1"></i> Register Visitor
+                </a>
+            @endcan
             <span class="badge-modern badge-slate">{{ $visits->total() }} Visits Total</span>
         </div>
     </div>

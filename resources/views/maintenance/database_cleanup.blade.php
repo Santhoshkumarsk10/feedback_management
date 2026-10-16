@@ -1,17 +1,18 @@
 @extends('layouts.app')
 @section('title', 'Database Maintenance - Table Cleanup')
 @section('page_title', 'Database Maintenance')
-@section('page_subtitle', 'Database Table Cleanup — Safely clear unshielded table data with strict protection on authentication, roles, sessions, and audit schemas')
+@section('page_subtitle', 'Database Table Cleanup — Safely clear unshielded tables with strict protection on auth, roles, and audit schemas')
 
 @section('topbar_actions')
-    <div class="d-flex align-items-center gap-2">
-        <form method="POST" action="{{ route('database_cleanup.reseed') }}" onsubmit="return confirm('Restore & Re-seed Default Data?\n\nThis will re-run database seeders to populate default plants, feedback questions, and demo credentials if tables were cleared.');">
+    @can('tabledatacleanup.delete')
+        <form method="POST" action="{{ route('database_cleanup.reseed') }}" class="m-0" onsubmit="return confirm('Restore & Re-seed Default Data?\n\nThis will re-run database seeders to populate default plants, feedback questions, and demo credentials if tables were cleared.');">
             @csrf
-            <button type="submit" class="btn btn-outline-success btn-sm fw-semibold shadow-xs">
-                <i class="bi bi-arrow-clockwise me-1"></i> Re-seed Default Data
+            <button type="submit" class="btn-modern-emerald btn-sm shadow-xs text-nowrap" id="topbarReseedBtn">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Re-seed Default Data</span>
             </button>
         </form>
-    </div>
+    @endcan
 @endsection
 
 @section('content')
@@ -169,9 +170,11 @@
                     </span>
                 </div>
                 <div>
-                    <button type="button" id="openClearModalBtn" class="btn btn-danger px-4 py-2 fw-semibold shadow-sm" onclick="promptClearConfirmation()" disabled>
-                        <i class="bi bi-trash3-fill me-1"></i> Clear Selected Tables (<span id="clearBtnCount">0</span>)
-                    </button>
+                    @can('tabledatacleanup.delete')
+                        <button type="button" id="openClearModalBtn" class="btn btn-danger px-4 py-2 fw-semibold shadow-sm" onclick="promptClearConfirmation()" disabled>
+                            <i class="bi bi-trash3-fill me-1"></i> Clear Selected Tables (<span id="clearBtnCount">0</span>)
+                        </button>
+                    @endcan
                 </div>
             </div>
         </div>

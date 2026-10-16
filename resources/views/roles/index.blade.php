@@ -4,14 +4,18 @@
 @section('page_subtitle', 'Configure system roles, tour guide responsibilities, and operational access levels')
 
 @section('topbar_actions')
-    <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
-        <i class="bi bi-shield-plus"></i>
-        <span>Create New Role</span>
-    </a>
-    <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
-        <i class="bi bi-key-fill text-primary"></i>
-        <span>Permission Master</span>
-    </a>
+    @can('rolemaster.create')
+        <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
+            <i class="bi bi-shield-plus"></i>
+            <span>Add Role</span>
+        </a>
+    @endcan
+    @can('permissionmaster.view')
+        <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
+            <i class="bi bi-key-fill text-primary"></i>
+            <span>Permission Master</span>
+        </a>
+    @endcan
 @endsection
 
 @section('content')
@@ -81,7 +85,15 @@
             <i class="bi bi-shield-shaded text-primary"></i>
             <span>Defined System Roles</span>
         </div>
-        <span class="badge-modern badge-slate">{{ $roles->total() }} Roles Listed</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-modern badge-slate">{{ $roles->total() }} Roles Listed</span>
+            @can('rolemaster.create')
+                <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
+                    <i class="bi bi-shield-plus"></i>
+                    <span>Add Role</span>
+                </a>
+            @endcan
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -158,27 +170,39 @@
                         @endif
                     </td>
                     <td class="text-end text-nowrap">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('roles.edit', $r) }}" class="btn-action-icon edit" title="Edit role & permissions">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            @if(!$r->is_system)
-                                <form method="POST" action="{{ route('roles.toggle', $r) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button class="btn-action-icon" type="submit" title="{{ $r->is_active ? 'Deactivate role' : 'Activate role' }}">
-                                        <i class="bi {{ $r->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
-                                      onsubmit="return confirm('Are you sure you want to delete role {{ $r->display_name ?: $r->name }}?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn-action-icon delete" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                </form>
-                            @else
+                        <div class="d-inline-flex gap-1 align-items-center">
+                            @can('rolemaster.edit')
+                                <a href="{{ route('roles.edit', $r) }}" class="btn-action-icon edit" title="Edit role & permissions">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                @if(!$r->is_system)
+                                    <form method="POST" action="{{ route('roles.toggle', $r) }}" class="d-inline">
+                                        @csrf @method('PATCH')
+                                        <button class="btn-action-icon" type="submit" title="{{ $r->is_active ? 'Deactivate role' : 'Activate role' }}">
+                                            <i class="bi {{ $r->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endcan
+                            @can('rolemaster.delete')
+                                @if(!$r->is_system)
+                                    <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete role {{ $r->display_name ?: $r->name }}?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn-action-icon delete" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endcan
+                            @if($r->is_system && auth()->user()->can('rolemaster.edit'))
                                 <span class="d-inline-block px-2 text-muted" title="Core system roles are locked from deletion">
                                     <i class="bi bi-lock text-muted"></i>
+                                </span>
+                            @endif
+                            @if(!auth()->user()->can('rolemaster.edit') && !auth()->user()->can('rolemaster.delete'))
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye"></i> View Only
                                 </span>
                             @endif
                         </div>
@@ -188,7 +212,12 @@
                 <tr>
                     <td colspan="8" class="text-center text-muted py-5">
                         <i class="bi bi-shield fs-2 d-block mb-2 text-slate-300"></i>
-                        No roles match the selected filter.
+                        <p class="mb-3">No roles match the selected filter.</p>
+                        @can('rolemaster.create')
+                            <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
+                                <i class="bi bi-shield-plus"></i> Add Role
+                            </a>
+                        @endcan
                     </td>
                 </tr>
             @endforelse

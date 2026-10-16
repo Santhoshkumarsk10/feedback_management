@@ -181,21 +181,31 @@
         }
 
         .quick-demo-pill {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 0.75rem;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            border-radius: 9px;
+            padding: 5px 12px;
+            font-size: 0.78rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
         }
 
         .quick-demo-pill:hover {
-            background: rgba(6, 83, 157, 0.3);
-            border-color: rgba(56, 189, 248, 0.5);
-            color: #38bdf8;
+            background: rgba(6, 83, 157, 0.4);
+            border-color: rgba(56, 189, 248, 0.6);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(6, 83, 157, 0.3);
+        }
+
+        .quick-demo-pill:active {
+            transform: translateY(0);
         }
 
         @media (max-width: 768px) {
@@ -319,20 +329,26 @@
             </form>
 
             <!-- Quick Demo Credentials Box -->
-            <div class="p-3 rounded-3" style="background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255, 255, 255, 0.15);">
-                <div class="d-flex align-items-center gap-1 text-slate-400 small fw-semibold mb-2" style="color: #94a3b8; font-size: 0.75rem;">
-                    <i class="bi bi-lightning-charge-fill text-warning"></i> Quick Demo Login (Click to fill):
+            <div class="p-3 rounded-3" style="background: rgba(30, 41, 59, 0.45); border: 1px dashed rgba(255, 255, 255, 0.18);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-1 text-slate-300 small fw-semibold" style="color: #cbd5e1; font-size: 0.78rem;">
+                        <i class="bi bi-lightning-charge-fill text-warning"></i> <span>Quick Demo Login (Click to Login):</span>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-25" style="font-size: 0.65rem;">1-Click Access</span>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('superadmin@plant.test', 'password')">
+                    <button type="button" class="quick-demo-pill" onclick="quickLogin('superadmin@plant.test', 'password', 'Super Admin')" title="Super Admin: All 14 modules & 70 capabilities">
                         👑 <strong>Super Admin</strong>
                     </button>
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('admin@plant.test', 'password')">
+                    <button type="button" class="quick-demo-pill" onclick="quickLogin('admin@plant.test', 'password', 'Admin')" title="Admin: Plant masters, User directory, Audits & Reports">
                         🛡️ <strong>Admin</strong>
                     </button>
-                    <button type="button" class="quick-demo-pill" onclick="fillCredentials('ravi@plant.test', 'password')">
-                        🏭 <strong>Organizer</strong>
+                    <button type="button" class="quick-demo-pill" onclick="quickLogin('coordinator@plant.test', 'password', 'Coordinator')" title="Coordinator: Visitors, Feedback forms & Analytics">
+                        📋 <strong>Coordinator</strong>
                     </button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top border-white border-opacity-10 text-slate-400" style="font-size: 0.72rem; color: #94a3b8;">
+                    <span><i class="bi bi-info-circle me-1 text-info"></i> Click any role button above for instant 1-click login. Default password: <strong class="text-white">password</strong></span>
                 </div>
             </div>
         </div>
@@ -354,13 +370,44 @@ function togglePassVisibility() {
     }
 }
 
-function fillCredentials(login, password) {
+function quickLogin(login, password, label) {
     const loginInp = document.getElementById('loginInput');
     const passInp = document.getElementById('passwordInput');
+    const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+
     if (loginInp) loginInp.value = login;
     if (passInp) passInp.value = password;
     clearLoginLiveErr('loginInput');
     clearLoginLiveErr('passwordInput');
+
+    if (submitBtn) {
+        submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Signing in as ${label}...`;
+        submitBtn.style.opacity = '0.9';
+    }
+
+    const form = document.getElementById('loginForm');
+    if (form) {
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    }
+}
+
+function fillCredentials(login, password, autoSubmit = false) {
+    if (autoSubmit) {
+        quickLogin(login, password, 'Demo User');
+    } else {
+        const loginInp = document.getElementById('loginInput');
+        const passInp = document.getElementById('passwordInput');
+        if (loginInp) loginInp.value = login;
+        if (passInp) passInp.value = password;
+        clearLoginLiveErr('loginInput');
+        clearLoginLiveErr('passwordInput');
+        const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+        if (submitBtn) submitBtn.focus();
+    }
 }
 
 function showLoginLiveErr(id, msg, persistent = false) {

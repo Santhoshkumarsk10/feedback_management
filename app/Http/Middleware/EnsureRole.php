@@ -47,12 +47,15 @@ class EnsureRole
             $hasAccess = true;
         }
 
-        // 3. Organizer / Staff alias compatibility
+        // 3. Coordinator / Organizer alias compatibility
         if (! $hasAccess) {
-            if (in_array('staff', $allowedRoles, true) && in_array($user->role, ['staff', 'organizer'], true)) {
+            if (in_array('coordinator', $allowedRoles, true) && in_array($user->role, ['coordinator', 'organizer'], true)) {
                 $hasAccess = true;
             }
-            if (in_array('organizer', $allowedRoles, true) && in_array($user->role, ['staff', 'organizer'], true)) {
+            if (in_array('organizer', $allowedRoles, true) && in_array($user->role, ['coordinator', 'organizer'], true)) {
+                $hasAccess = true;
+            }
+            if (in_array('staff', $allowedRoles, true) && in_array($user->role, ['staff', 'organizer'], true)) {
                 $hasAccess = true;
             }
         }

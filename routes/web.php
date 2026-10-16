@@ -30,8 +30,8 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Operations web panel: superadmin, admin, supervisor, staff
-Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,staff,organizer'])->group(function () {
+// Operations web panel: superadmin, admin, coordinator, supervisor, staff
+Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,supervisor,staff,organizer'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('shift-queue', [DashboardController::class, 'shiftQueue'])->name('shift_queue');
     Route::get('shift-queue/export-pending', [DashboardController::class, 'exportPending'])->name('shift_queue.export_pending');
@@ -48,22 +48,37 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
     Route::get('visits', [VisitController::class, 'index'])->name('visits.index');
     Route::get('visits/create', [VisitController::class, 'create'])->name('visits.create');
     Route::post('visits', [VisitController::class, 'store'])->name('visits.store');
+    Route::get('visits/{visit}', [VisitController::class, 'show'])->name('visits.show');
     Route::get('visits/{visit}/feedback/create', [VisitController::class, 'createFeedback'])->name('visits.feedback.create');
     Route::post('visits/{visit}/feedback', [VisitController::class, 'storeFeedback'])->name('visits.feedback.store');
     Route::post('visits/sync', [VisitController::class, 'syncExternal'])->name('visits.sync');
     Route::get('feedbacks', [FeedbackController::class, 'index'])->name('feedbacks.index');
     Route::get('feedbacks/{feedback}', [FeedbackController::class, 'show'])->name('feedbacks.show');
 
-    // Analytics & Reports - superadmin, admin, supervisor
-    Route::middleware('role:superadmin,admin,supervisor')->group(function () {
+    // Analytics & Reports - superadmin, admin, coordinator, supervisor
+    Route::middleware('role:superadmin,admin,coordinator,supervisor')->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
     });
 
+    // Modules accessible to coordinator, admin, and superadmin (Plant Master view, Feedback Form, Company Profile)
+    Route::middleware('role:superadmin,admin,coordinator')->group(function () {
+        Route::get('plants', [PlantController::class, 'index'])->name('plants.index');
+        Route::get('questions', [QuestionController::class, 'index'])->name('questions.index');
+        Route::get('questions/create', [QuestionController::class, 'create'])->name('questions.create');
+        Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
+        Route::get('company', [CompanyController::class, 'edit'])->name('company.edit');
+        Route::put('company', [CompanyController::class, 'update'])->name('company.update');
+    });
+
     // Masters, User Directory & System Configuration - superadmin, admin
     Route::middleware('role:superadmin,admin')->group(function () {
-        // Plant Master Routes
-        Route::resource('plants', PlantController::class)->except('show');
+        // Plant Master Management Routes
+        Route::get('plants/create', [PlantController::class, 'create'])->name('plants.create');
+        Route::post('plants', [PlantController::class, 'store'])->name('plants.store');
+        Route::get('plants/{plant}/edit', [PlantController::class, 'edit'])->name('plants.edit');
+        Route::put('plants/{plant}', [PlantController::class, 'update'])->name('plants.update');
+        Route::delete('plants/{plant}', [PlantController::class, 'destroy'])->name('plants.destroy');
         Route::patch('plants/{plant}/toggle', [PlantController::class, 'toggle'])->name('plants.toggle');
 
         // Role Master Routes
@@ -77,15 +92,14 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,supervisor,st
         Route::resource('users', UserController::class)->except('show');
         Route::patch('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 
-        Route::resource('questions', QuestionController::class)->except('show');
+        // Feedback Form Edit & Delete
+        Route::get('questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
+        Route::put('questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
+        Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 
         // Audit Logs Trail
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
-
-        // Company Brand & Profile CMS
-        Route::get('company', [CompanyController::class, 'edit'])->name('company.edit');
-        Route::put('company', [CompanyController::class, 'update'])->name('company.update');
 
         // CMS Banners Management
         Route::resource('banners', BannerController::class)->except('show');

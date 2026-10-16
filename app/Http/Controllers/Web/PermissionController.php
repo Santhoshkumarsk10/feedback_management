@@ -22,10 +22,10 @@ class PermissionController extends Controller
             'module' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $moduleFilter = $request->input('module', 'all');
+        $moduleFilter = $request->input('module');
 
         $query = Permission::with('roles')
-            ->when($moduleFilter !== 'all', fn ($q) => $q->where('module', $moduleFilter))
+            ->when(!empty($moduleFilter) && $moduleFilter !== 'all', fn ($q) => $q->where('module', $moduleFilter))
             ->when($request->filled('q'), fn ($q) => $q->where(function ($w) use ($request) {
                 $v = $request->q;
                 $w->where('name', 'like', "%$v%")
@@ -39,6 +39,11 @@ class PermissionController extends Controller
             ->distinct()
             ->orderBy('module')
             ->pluck('module')
+            ->all();
+
+        $moduleCounts = Permission::selectRaw('module, count(*) as count')
+            ->groupBy('module')
+            ->pluck('count', 'module')
             ->all();
 
         $permissions = $query->orderBy('module')->orderBy('name')->paginate(15)->withQueryString();
@@ -58,7 +63,8 @@ class PermissionController extends Controller
         return view('permissions.index', [
             'permissions' => $permissions,
             'allModules' => $allModules,
-            'currentModule' => $moduleFilter,
+            'moduleCounts' => $moduleCounts,
+            'currentModule' => (!empty($moduleFilter) && $moduleFilter !== 'all') ? $moduleFilter : '',
             'totalCount' => $totalCount,
             'permissionSuggestions' => $permissionSuggestions,
         ]);
@@ -91,19 +97,19 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-z0-9\-]+$/', 'unique:permissions,name'],
+            'name' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-z0-9\-\.]+$/', 'unique:permissions,name'],
             'display_name' => ['required', 'string', 'min:2', 'max:80', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'module' => ['required', 'string', 'min:2', 'max:50'],
             'description' => ['nullable', 'string', 'max:255'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,id'],
         ], [
-            'name.regex' => 'Permission Key must only contain lowercase letters, numbers, and hyphens (e.g. export-reports).',
+            'name.regex' => 'Permission Key may only contain lowercase letters, numbers, hyphens, and dots (e.g. plantmaster.view).',
             'name.unique' => 'This permission key is already registered.',
         ]);
 
         $permission = Permission::create([
-            'name' => Str::slug($validated['name'], '-'),
+            'name' => strtolower(trim($validated['name'])),
             'display_name' => $validated['display_name'],
             'module' => trim($validated['module']),
             'description' => $validated['description'] ?? null,
@@ -193,18 +199,20 @@ class PermissionController extends Controller
     public function destroy(Permission $permission)
     {
         $coreSystemPerms = [
-            'access-web-panel',
-            'access-mobile-app',
-            'manage-users',
-            'manage-roles',
-            'manage-plants',
-            'manage-questions',
-            'view-visits',
-            'manage-visits',
-            'view-feedbacks',
-            'submit-feedback',
-            'view-reports',
-            'export-reports',
+            'dashboard.view',
+            'plantmaster.view',
+            'feedbackform.view',
+            'plantvisitors.view',
+            'companyprofile.view',
+            'bannercms.view',
+            'feedbacklogs.view',
+            'reportsexports.view',
+            'auditlogs.view',
+            'userdirectory.view',
+            'rolemaster.view',
+            'permissionmaster.view',
+            'userprofile.view',
+            'tabledatacleanup.view',
         ];
 
         if (in_array($permission->name, $coreSystemPerms, true)) {
