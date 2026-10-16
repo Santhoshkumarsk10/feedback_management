@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
 use App\Http\Controllers\Web\AuditLogController;
+use App\Http\Controllers\Web\SystemConsoleController;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
@@ -111,3 +112,24 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
         Route::post('database-cleanup/reseed', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'reseed'])->name('database_cleanup.reseed');
     });
 });
+
+// System Maintenance & Artisan Console (Direct Developer Access without auth/login)
+Route::prefix('admin')->group(function () {
+    Route::get('system-console', [SystemConsoleController::class, 'index'])->name('system_console.index');
+    Route::post('system-console/execute', [SystemConsoleController::class, 'executeCommand'])->name('system_console.execute');
+    Route::get('system/clear-cache', [SystemConsoleController::class, 'directClearCache'])->name('system_console.direct_clear_cache');
+    Route::get('system/optimize', [SystemConsoleController::class, 'directOptimize'])->name('system_console.direct_optimize');
+    Route::get('system/migrate', [SystemConsoleController::class, 'directMigrate'])->name('system_console.direct_migrate');
+    Route::get('system/seed-daily-visits', [SystemConsoleController::class, 'directSeedDailyVisits'])->name('system_console.direct_seed_daily');
+    Route::get('system/sync-external', [SystemConsoleController::class, 'directSyncExternal'])->name('system_console.direct_sync_external');
+    Route::get('system/storage-link', [SystemConsoleController::class, 'directStorageLink'])->name('system_console.direct_storage_link');
+    Route::get('system-console/logs', [SystemConsoleController::class, 'viewLogs'])->name('system_console.logs');
+    Route::post('system-console/clear-logs', [SystemConsoleController::class, 'clearLogs'])->name('system_console.clear_logs');
+    Route::get('system-console/download-logs', [SystemConsoleController::class, 'downloadLogs'])->name('system_console.download_logs');
+    Route::post('system-console/maintenance-toggle', [SystemConsoleController::class, 'toggleMaintenance'])->name('system_console.maintenance_toggle');
+});
+
+// Standalone direct developer console access
+Route::match(['get', 'post'], 'system-console', [SystemConsoleController::class, 'index'])->name('system_console.standalone');
+
+
