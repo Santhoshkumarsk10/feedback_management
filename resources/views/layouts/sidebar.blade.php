@@ -37,6 +37,7 @@
             $canViewReports = $currentUser && $currentUser->can('reportsexports.view');
             $canAuditLogs = $currentUser && $currentUser->can('auditlogs.view');
             $canDatabaseCleanup = $currentUser && $currentUser->can('tabledatacleanup.view');
+            $canSystemConsole = $currentUser && ($currentUser->can('tabledatacleanup.view') || (method_exists($currentUser, 'hasAnyRole') && $currentUser->hasAnyRole(['superadmin', 'admin'])) || in_array($currentUser->role ?? '', ['superadmin', 'admin'], true));
         @endphp
 
         {{-- Masters & Configuration --}}
@@ -129,6 +130,13 @@
             <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}" href="{{ route('database_cleanup.index') }}">
                 <i class="bi bi-database-fill-gear"></i>
                 <span>Database Maintenance</span>
+            </a>
+        @endif
+
+        @if($canSystemConsole)
+            <a class="nav-item-link {{ request()->routeIs('system_console.*') ? 'active' : '' }}" href="{{ route('system_console.index') }}">
+                <i class="bi bi-terminal-fill text-warning"></i>
+                <span>System Console & Tools</span>
             </a>
         @endif
 
