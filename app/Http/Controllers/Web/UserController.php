@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\AuditLog;
+use Illuminate\Support\Facades\Auth;
+
 
 /**
  * superadmin -> manages superadmin/admin/organizer and all custom roles
@@ -17,7 +19,7 @@ class UserController extends Controller
 {
     private function manageableSlugs(): array
     {
-        return auth()->user()->role === 'superadmin'
+        return Auth::user()->role === 'superadmin'
             ? Role::pluck('slug')->all()
             : ['coordinator', 'supervisor', 'staff', 'organizer'];
     }
@@ -132,7 +134,7 @@ class UserController extends Controller
             unset($data['password']);
         }
         // never let someone lock themselves out
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             unset($data['role'], $data['role_id'], $data['is_active']);
         }
         $user->update($data);
@@ -148,7 +150,7 @@ class UserController extends Controller
     public function toggle(User $user)
     {
         $this->authorizeTarget($user);
-        abort_if($user->id === auth()->id(), 422, 'You cannot deactivate yourself.');
+        abort_if($user->id === Auth::id(), 422, 'You cannot deactivate yourself.');
         $user->update(['is_active' => ! $user->is_active]);
         $status = $user->is_active ? 'activated' : 'deactivated';
 
@@ -160,7 +162,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $this->authorizeTarget($user);
-        abort_if($user->id === auth()->id(), 422, 'You cannot delete yourself.');
+        abort_if($user->id === Auth::id(), 422, 'You cannot delete yourself.');
         $name = $user->name;
         $role = $user->role;
         $user->delete();
