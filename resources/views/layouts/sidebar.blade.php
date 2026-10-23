@@ -140,16 +140,16 @@
             </a>
         @endif
 
-        <div class="menu-category">Account Security</div>
-        <a class="nav-item-link {{ request()->routeIs('password.change') ? 'active' : '' }}" href="{{ route('password.change') }}">
-            <i class="bi bi-shield-lock-fill text-info"></i>
-            <span>Change Password</span>
+        <div class="menu-category">My Account</div>
+        <a class="nav-item-link {{ request()->routeIs('profile') || request()->routeIs('myprofile') || request()->routeIs('password.change') ? 'active' : '' }}" href="{{ route('profile') }}">
+            <i class="bi bi-person-bounding-box text-info"></i>
+            <span>My Profile</span>
         </a>
     </div>
 
     <!-- Sidebar Footer / Auth Profile -->
     <div class="sidebar-footer">
-        <a href="{{ route('password.change') }}" class="user-profile-badge text-decoration-none" title="Change Password / Account Settings">
+        <a href="{{ route('profile') }}" class="user-profile-badge text-decoration-none" title="My Profile & Account Settings">
             <div class="user-avatar-initials">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
             </div>

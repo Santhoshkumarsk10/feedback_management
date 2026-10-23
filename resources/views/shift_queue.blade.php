@@ -80,99 +80,95 @@
     <div class="row g-3 mb-4">
         <!-- Visitors Today -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget cyan h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">VISITORS TODAY</span>
-                    <div class="stat-icon-bubble cyan">
-                        <i class="bi bi-people-fill"></i>
+            <div class="saas-stat-card">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/icons/visitors-today.svg" width="48" height="48" alt="Visitors Today">
+                        <div>
+                            <div class="saas-stat-value" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
+                            <div class="saas-stat-label">Visitors Today</div>
+                        </div>
                     </div>
+                    <span class="saas-stat-badge cyan">Arrivals</span>
                 </div>
-                <div class="stat-metric-number" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-calendar2-day"></i> Plant Arrivals
-                </span>
             </div>
         </div>
 
         <!-- Feedback Given -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget emerald h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">FEEDBACK GIVEN</span>
-                    <div class="stat-icon-bubble emerald">
-                        <i class="bi bi-check-circle-fill"></i>
+            <div class="saas-stat-card">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/icons/feedback-given.svg" width="48" height="48" alt="Feedback Given">
+                        <div>
+                            <div class="saas-stat-value" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
+                            <div class="saas-stat-label">Feedback Given</div>
+                        </div>
                     </div>
+                    <span class="saas-stat-badge emerald" id="cardTodayGivenPct">{{ $stats['today_given_pct'] }}% Done</span>
                 </div>
-                <div class="stat-metric-number" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
-                <span class="stat-pill-trend up" id="cardTodayGivenPct">
-                    <i class="bi bi-pie-chart-fill"></i> {{ $stats['today_given_pct'] }}% Completed
-                </span>
             </div>
         </div>
 
         <!-- Feedback Pending -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget amber h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">FEEDBACK PENDING</span>
-                    <div class="stat-icon-bubble amber">
-                        <i class="bi bi-hourglass-split"></i>
+            <div class="saas-stat-card">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/icons/feedback-pending.svg" width="48" height="48" alt="Feedback Pending">
+                        <div>
+                            <div class="saas-stat-value" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
+                            <div class="saas-stat-label">Feedback Pending</div>
+                        </div>
                     </div>
+                    <span class="saas-stat-badge amber" id="cardTodayPendingPct">{{ $stats['today_pending_pct'] }}% Pending</span>
                 </div>
-                <div class="stat-metric-number" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
-                <span class="stat-pill-trend {{ $stats['today_pending'] > 0 ? 'down' : 'up' }}" id="cardTodayPendingPct">
-                    <i class="bi bi-clock-history"></i> {{ $stats['today_pending_pct'] }}% Pending
-                </span>
             </div>
         </div>
 
         <!-- Today's Avg Rating -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget indigo h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">TODAY'S AVG RATING</span>
-                    <div class="stat-icon-bubble indigo">
-                        <i class="bi bi-star-fill"></i>
+            <div class="saas-stat-card">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/icons/average-rating.svg" width="48" height="48" alt="Sentiment">
+                        <div>
+                            <div class="saas-stat-value" id="cardTodayAvg">
+                                {{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) : '—' }}@if($stats['today_avg'])<span class="fs-6 text-muted fw-normal">/5</span>@endif
+                            </div>
+                            <div class="saas-stat-label">Today's Avg Rating</div>
+                        </div>
                     </div>
+                    <span class="saas-stat-badge indigo">Sentiment</span>
                 </div>
-                <div class="stat-metric-number" id="cardTodayAvg">
-                    {{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) : '—' }}
-                    @if($stats['today_avg'])<span class="fs-5 text-muted fw-normal">/5</span>@endif
-                </div>
-                <span class="stat-pill-trend {{ ($stats['today_avg'] ?? 0) >= 4 ? 'up' : 'neutral' }}">
-                    <i class="bi bi-award"></i> Today's Sentiment
-                </span>
             </div>
         </div>
 
         <!-- API Sync Time -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card-widget slate h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">API SYNC TIME</span>
-                    <div class="stat-icon-bubble slate">
-                        <i class="bi bi-arrow-repeat"></i>
+            <div class="saas-stat-card">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="/icons/api-sync.svg" width="48" height="48" alt="Gate Pass Sync">
+                        <div>
+                            <div class="saas-stat-value fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
+                                {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
+                            </div>
+                            <div class="saas-stat-label">API Sync Feed</div>
+                        </div>
                     </div>
+                    <span class="saas-stat-badge slate">Gate Pass</span>
                 </div>
-                <div class="stat-metric-number fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
-                    {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
-                </div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-hdd-network"></i> Gate Pass Feed
-                </span>
             </div>
         </div>
     </div>
 
     <!-- Today's Visitors: Queue & Operations Board -->
-    <div class="card-modern mb-4">
-        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="saas-table-card mb-4">
+        <div class="saas-table-header">
             <div>
-                <div class="card-title">
-                    <i class="bi bi-calendar2-day-fill text-primary"></i>
-                    <span>Today's Plant Visitors & Feedback Queue</span>
-                </div>
-                <div class="text-muted small mt-1">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
+                <div class="saas-table-title">Today's Plant Visitors & Feedback Queue</div>
+                <div class="saas-table-subtitle">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <!-- Scope toggle: All Visitors vs My Visitors -->
@@ -187,113 +183,86 @@
                     </a>
                 </div>
 
-                <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="btn btn-sm btn-outline-secondary" title="Export today pending list to CSV">
+                <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="saas-btn-filter text-decoration-none" title="Export today pending list to CSV">
                     <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export Pending
                 </a>
 
                 <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-success"
+                    <button type="submit" class="saas-btn-filter text-success border-success-subtle bg-white"
                         title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                        <i class="bi bi-arrow-repeat me-1"></i> Sync 3rd Party
+                        <i class="bi bi-arrow-repeat me-1"></i> Sync Gate API
                     </button>
                 </form>
 
-                <a href="{{ route('visits.create') }}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Add Visitor
+                <a href="{{ route('visits.create') }}" class="btn-action-edit-pill text-decoration-none">
+                    <i class="bi bi-person-plus-fill"></i> Add Visitor
                 </a>
 
-                <a href="{{ route('visits.index', ['today' => 1]) }}" class="btn btn-sm btn-link text-decoration-none">
+                <a href="{{ route('visits.index', ['today' => 1]) }}" class="btn btn-sm btn-link text-decoration-none text-muted">
                     <span>Full Log</span> <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
         </div>
 
-        <!-- Filter Tabs Header: Pending vs Completed vs All -->
-        <div class="filter-tabs-header bg-light border-bottom px-3 pt-2">
-            <div class="filter-tabs-nav">
+        <!-- Filter Tabs & Controls Toolbar -->
+        <div class="saas-toolbar-card border-0 rounded-0 border-bottom mb-0 shadow-none px-3 py-2 bg-light">
+            <div class="saas-filter-pills">
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'pending'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}"
-                    style="{{ ($todayTab ?? 'pending') === 'pending' ? 'border-bottom: 3px solid #f59e0b; color: #b45309; font-weight: 700;' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}">
                     <i class="bi bi-clock-history text-warning"></i>
-                    <span>Awaiting Feedback (Pending)</span>
-                    <span
-                        class="badge {{ $todayCounts['pending'] > 0 ? 'bg-warning text-dark' : 'bg-secondary text-white' }} rounded-pill ms-1" id="badgePendingCount">
-                        {{ $todayCounts['pending'] }}
-                    </span>
+                    <span>Awaiting feedback</span>
+                    <span class="pill-counter" id="badgePendingCount">{{ $todayCounts['pending'] }}</span>
                 </a>
 
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'completed'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}"
-                    style="{{ ($todayTab ?? '') === 'completed' ? 'border-bottom: 3px solid #10b981; color: #047857; font-weight: 700;' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}">
                     <i class="bi bi-check-circle-fill text-success"></i>
-                    <span>Feedback Completed</span>
-                    <span class="badge bg-success rounded-pill ms-1" id="badgeCompletedCount">
-                        {{ $todayCounts['completed'] }}
-                    </span>
+                    <span>Feedback completed</span>
+                    <span class="pill-counter" id="badgeCompletedCount">{{ $todayCounts['completed'] }}</span>
                 </a>
 
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
                     <i class="bi bi-people-fill text-primary"></i>
-                    <span>All Today's Visitors</span>
-                    <span class="badge bg-secondary rounded-pill ms-1" id="badgeAllCount">
-                        {{ $todayCounts['all'] }}
-                    </span>
+                    <span>All today's visitors</span>
+                    <span class="pill-counter" id="badgeAllCount">{{ $todayCounts['all'] }}</span>
                 </a>
+            </div>
+
+            <div class="saas-toolbar-controls">
+                <form method="GET" action="{{ route('shift_queue') }}" class="d-flex align-items-center gap-2">
+                    @if(request('today_tab'))
+                        <input type="hidden" name="today_tab" value="{{ request('today_tab') }}">
+                    @endif
+                    @if(request('scope'))
+                        <input type="hidden" name="scope" value="{{ request('scope') }}">
+                    @endif
+
+                    <div class="saas-search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="search" class="saas-search-input" placeholder="Search visitor, company, mobile..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    <button type="submit" class="saas-btn-filter">Search</button>
+                    @if(request('search'))
+                        <a href="{{ route('shift_queue', request()->except('search')) }}" class="saas-btn-filter text-muted">Clear</a>
+                    @endif
+                </form>
             </div>
         </div>
 
-        <!-- Quick Search Bar -->
-        <div class="p-3 bg-white border-bottom">
-            <form method="GET" action="{{ route('shift_queue') }}" class="row g-2 align-items-center">
-                @if(request('today_tab'))
-                    <input type="hidden" name="today_tab" value="{{ request('today_tab') }}">
-                @endif
-                @if(request('scope'))
-                    <input type="hidden" name="scope" value="{{ request('scope') }}">
-                @endif
-
-                <div class="col-12 col-md-5">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Search visitor name, company, mobile, pass code..."
-                               value="{{ request('search') }}">
-                    </div>
-                </div>
-
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-sm btn-primary px-3">Search</button>
-                    @if(request('search'))
-                        <a href="{{ route('shift_queue', request()->except('search')) }}" class="btn btn-sm btn-outline-secondary ms-1">Clear</a>
-                    @endif
-                </div>
-
-                @if(request('search') || (request('scope') && request('scope') !== 'all'))
-                    <div class="col-12 text-muted small mt-1">
-                        <span>Active filters:</span>
-                        @if(request('search'))
-                            <span class="badge bg-light text-dark border me-1">Search: {{ request('search') }}</span>
-                        @endif
-                        @if(request('scope') === 'my')
-                            <span class="badge bg-light text-dark border me-1">Scope: My Visitors</span>
-                        @endif
-                        <a href="{{ route('shift_queue') }}" class="text-danger ms-1 text-decoration-none"><i class="bi bi-x-circle"></i> Reset All</a>
-                    </div>
-                @endif
-            </form>
-        </div>
-
         <div class="table-responsive">
-            <table class="table-modern">
+            <table class="saas-table">
                 <thead>
                     <tr>
-                        <th>Visitor Information</th>
-                        <th>In / Out Time & Gate Status</th>
-                        <th>Department / Purpose</th>
-                        <th>Assigned Staff</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
+                        <th>VISITOR INFORMATION</th>
+                        <th>GATE IN / OUT STATUS</th>
+                        <th>DEPARTMENT / PURPOSE</th>
+                        <th>ASSIGNED STAFF</th>
+                        <th>STATUS</th>
+                        <th class="text-end">ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -303,10 +272,8 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>
                                     @if ($v->visitor_code)
-                                        <span
-                                            class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0"
-                                            style="font-size: 0.72rem;">
-                                            <i class="bi bi-qr-code me-1"></i> {{ $v->visitor_code }}
+                                        <span class="saas-code-badge">
+                                            <i class="bi bi-qr-code me-1"></i>{{ $v->visitor_code }}
                                         </span>
                                     @endif
                                 </div>
@@ -344,7 +311,7 @@
 
                                         @if ($v->is_exceeded_exit_threshold)
                                             <span class="badge bg-danger text-white px-2 py-0 ms-1 fw-bold" style="font-size: 0.70rem;" title="Checked out >2 hours ago without feedback!">
-                                                <i class="bi bi-exclamation-triangle-fill"></i> >2h Post-Exit Alert
+                                                <i class="bi bi-exclamation-triangle-fill"></i> >2h Alert
                                             </span>
                                         @endif
                                     </div>
@@ -380,7 +347,7 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center gap-2">
                                     <span class="user-avatar-chip" style="width: 28px; height: 28px; font-size: 0.72rem;">
                                         {{ strtoupper(substr($v->organizer->name ?? 'S', 0, 2)) }}
                                     </span>
@@ -419,7 +386,7 @@
                             <td class="text-end text-nowrap">
                                 @if ($v->feedback)
                                     <a href="{{ route('feedbacks.show', $v->feedback) }}"
-                                        class="btn btn-sm btn-outline-secondary py-1 px-3">
+                                        class="btn-action-edit-pill text-decoration-none">
                                         <i class="bi bi-eye"></i> View Feedback
                                     </a>
                                 @elseif ($v->is_feedback_expired)
@@ -428,9 +395,9 @@
                                     </button>
                                 @else
                                     <a href="{{ route('visits.feedback.create', $v) }}"
-                                        class="btn btn-sm {{ $v->is_exceeded_exit_threshold ? 'btn-danger text-white' : 'btn-warning text-dark' }} fw-bold py-1 px-3 shadow-sm"
+                                        class="btn-action-edit-pill text-decoration-none" style="background: {{ $v->is_exceeded_exit_threshold ? '#fff1f2' : '#fffbeb' }}; color: {{ $v->is_exceeded_exit_threshold ? '#e11d48' : '#b45309' }}; border-color: {{ $v->is_exceeded_exit_threshold ? '#fecdd3' : '#fde68a' }};"
                                         title="Fill feedback evaluation along with visitor">
-                                        <i class="bi bi-pencil-square me-1"></i> Submit on Behalf
+                                        <i class="bi bi-pencil-square"></i> Submit on Behalf
                                     </a>
                                 @endif
                             </td>
@@ -447,7 +414,7 @@
                                     <div class="small">Evaluations will appear here once submitted.</div>
                                 @else
                                     <div class="fw-bold text-dark fs-6">No visitors recorded yet for today.</div>
-                                    <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary mt-2">
+                                    <a href="{{ route('visits.create') }}" class="btn-action-edit-pill text-decoration-none mt-2 d-inline-block">
                                         <i class="bi bi-person-plus-fill me-1"></i> Register Today's First Visitor
                                     </a>
                                 @endif

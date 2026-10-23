@@ -3,47 +3,106 @@
 @section('page_title', 'System Audit Trail & Security Logs')
 @section('page_subtitle', 'Chronological audit trail of administrative activities, master entity modifications, and security events')
 
-@section('content')
-<!-- Filter Tabs & Controls Card -->
-<div class="filter-card-wrapper">
-    <!-- Filter Tabs Header -->
-    <div class="filter-tabs-header">
-        <div class="filter-tabs-nav">
-            <a href="{{ route('audit-logs.index', array_merge(request()->except(['tab', 'page']))) }}"
-               class="filter-tab-btn {{ ($currentTab ?? 'all') === 'all' ? 'active' : '' }}">
-                <i class="bi bi-clock-history"></i>
-                <span>All Activities</span>
-                <span class="filter-tab-badge">{{ $tabCounts['all'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'masters'])) }}"
-               class="filter-tab-btn {{ ($currentTab ?? '') === 'masters' ? 'active' : '' }}">
-                <i class="bi bi-building-gear text-primary"></i>
-                <span>Master Changes</span>
-                <span class="filter-tab-badge">{{ $tabCounts['masters'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'security'])) }}"
-               class="filter-tab-btn {{ ($currentTab ?? '') === 'security' ? 'active' : '' }}">
-                <i class="bi bi-shield-lock-fill text-warning"></i>
-                <span>Auth & Security</span>
-                <span class="filter-tab-badge">{{ $tabCounts['security'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'operations'])) }}"
-               class="filter-tab-btn {{ ($currentTab ?? '') === 'operations' ? 'active' : '' }}">
-                <i class="bi bi-activity text-success"></i>
-                <span>Operations & Logs</span>
-                <span class="filter-tab-badge">{{ $tabCounts['operations'] ?? 0 }}</span>
-            </a>
-        </div>
-
-        <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 10 per page
-            </span>
+@section('summary_cards')
+@php
+    $totalLogs = $tabCounts['all'] ?? 0;
+    $masterLogs = $tabCounts['masters'] ?? 0;
+    $securityLogs = $tabCounts['security'] ?? 0;
+@endphp
+<div class="row g-3">
+    <!-- 1. Total Audit Records -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/total-permissions.svg" width="48" height="48" alt="Audit Records">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($totalLogs) }}</div>
+                        <div class="saas-stat-label">Total audit records</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge cyan">Logs</span>
+            </div>
         </div>
     </div>
 
-    <!-- Filter Controls Bar -->
-    <div class="filter-controls-body">
+    <!-- 2. Master Modifications -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/security-modules.svg" width="48" height="48" alt="Master Changes">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($masterLogs) }}</div>
+                        <div class="saas-stat-label">Master changes</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge emerald">Masters</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Security Events -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/rbac.svg" width="48" height="48" alt="Security Events">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($securityLogs) }}</div>
+                        <div class="saas-stat-label">Auth & security</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge amber">Security</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Tamper Evident -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/system-roles.svg" width="48" height="48" alt="Tamper-evident trail">
+                    <div>
+                        <div class="saas-stat-value fs-5">Active</div>
+                        <div class="saas-stat-label">Tamper-evident trail</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge indigo">Verified</span>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('content')
+<!-- Filter Tabs & Controls Card -->
+<div class="saas-toolbar-card">
+    <div class="saas-filter-pills">
+        <a href="{{ route('audit-logs.index', array_merge(request()->except(['tab', 'page']))) }}"
+           class="saas-pill-btn {{ ($currentTab ?? 'all') === 'all' ? 'active' : '' }}">
+            <span>All activities</span>
+            <span class="pill-counter">{{ $tabCounts['all'] ?? 0 }}</span>
+        </a>
+        <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'masters'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'masters' ? 'active' : '' }}">
+            <span>Master changes</span>
+            <span class="pill-counter">{{ $tabCounts['masters'] ?? 0 }}</span>
+        </a>
+        <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'security'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'security' ? 'active' : '' }}">
+            <span>Auth & security</span>
+            <span class="pill-counter">{{ $tabCounts['security'] ?? 0 }}</span>
+        </a>
+        <a href="{{ route('audit-logs.index', array_merge(request()->except(['page']), ['tab' => 'operations'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'operations' ? 'active' : '' }}">
+            <span>Operations & logs</span>
+            <span class="pill-counter">{{ $tabCounts['operations'] ?? 0 }}</span>
+        </a>
+    </div>
+
+    <div class="saas-toolbar-controls">
         <form method="GET" action="{{ route('audit-logs.index') }}" class="d-flex flex-wrap align-items-center gap-2">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
@@ -51,9 +110,9 @@
 
             <x-search-suggest 
                 name="q" 
-                placeholder="Search user, action, description, IP..." 
+                placeholder="Search user, action, IP..." 
                 :suggestions="$auditSuggestions ?? []"
-                header-title="Audit Log Suggestions"
+                header-title="Audit Suggestions"
             />
 
             <x-custom-select 
@@ -62,7 +121,7 @@
                 placeholder="All Actions" 
                 search-placeholder="Search actions..." 
                 icon="bi-activity" 
-                min-width="145px" 
+                min-width="135px" 
                 :options="[
                     ['value' => 'login', 'label' => 'Login'],
                     ['value' => 'logout', 'label' => 'Logout'],
@@ -81,7 +140,7 @@
                 placeholder="All Modules" 
                 search-placeholder="Search modules..." 
                 icon="bi-boxes" 
-                min-width="145px" 
+                min-width="135px" 
                 :options="[
                     ['value' => 'plants', 'label' => 'Plants'],
                     ['value' => 'roles', 'label' => 'Roles'],
@@ -95,23 +154,24 @@
                 auto-submit
             />
 
-            <div class="d-flex align-items-center gap-1">
-                <span class="small text-muted">From:</span>
-                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
-            </div>
+            <x-date-range-picker 
+                from-name="from" 
+                to-name="to" 
+                :from-value="request('from')" 
+                :to-value="request('to')" 
+                placeholder="Date range" 
+                title="Filter by Log Date" 
+                auto-submit
+            />
 
-            <div class="d-flex align-items-center gap-1">
-                <span class="small text-muted">To:</span>
-                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
-            </div>
-
-            <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
-                <i class="bi bi-funnel-fill"></i> Filter
+            <button type="submit" class="saas-btn-filter" title="Apply Filters">
+                <i class="bi bi-funnel-fill"></i>
+                <span class="d-none d-sm-inline">Filter</span>
             </button>
 
             @if(request()->hasAny(['tab', 'q', 'action', 'module', 'from', 'to']))
-                <a href="{{ route('audit-logs.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Clear all filters">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                <a href="{{ route('audit-logs.index') }}" class="saas-btn-filter text-danger" title="Clear all filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
             @endif
         </form>
@@ -119,25 +179,18 @@
 </div>
 
 <!-- Logs Table Card -->
-<div class="card-modern">
-    <div class="card-header">
-        <div class="card-title">
-            <i class="bi bi-journal-text text-primary"></i>
-            <span>Recorded Audit Events</span>
-        </div>
-        <span class="badge-modern badge-slate">{{ $logs->total() }} Events Found</span>
-    </div>
+<div class="saas-table-card">
 
     <div class="table-responsive">
-        <table class="table-modern">
+        <table class="saas-table">
             <thead>
                 <tr>
-                    <th style="width: 165px;">Timestamp</th>
-                    <th>User / Actor</th>
-                    <th>Action & Module</th>
-                    <th>Event Description</th>
-                    <th>Network & Device</th>
-                    <th class="text-end">Details</th>
+                    <th style="width: 155px;">TIMESTAMP</th>
+                    <th>ACTOR / USER</th>
+                    <th>ACTION & MODULE</th>
+                    <th>EVENT DESCRIPTION</th>
+                    <th>NETWORK & IP</th>
+                    <th class="text-end">INSPECT</th>
                 </tr>
             </thead>
             <tbody>
@@ -156,11 +209,11 @@
                 <tr>
                     <td>
                         <div class="small fw-bold text-dark">{{ $log->created_at->format('M d, Y') }}</div>
-                        <div class="small text-muted">{{ $log->created_at->format('h:i:s A') }}</div>
+                        <div class="small text-muted" style="font-size: 0.72rem;">{{ $log->created_at->format('h:i:s A') }}</div>
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="user-avatar-chip" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                            <span class="user-avatar-chip" style="width: 30px; height: 30px; font-size: 0.75rem;">
                                 {{ strtoupper(substr($log->user_name ?? 'S', 0, 2)) }}
                             </span>
                             <div>
@@ -186,18 +239,18 @@
                     </td>
                     <td>
                         <div class="small text-dark">
-                            <i class="bi bi-hdd-network text-muted me-1"></i> <code>{{ $log->ip_address ?: '127.0.0.1' }}</code>
+                            <i class="bi bi-hdd-network text-muted me-1"></i> <code class="small">{{ $log->ip_address ?: '127.0.0.1' }}</code>
                         </div>
                         @if($log->user_agent)
-                            <div class="small text-muted text-truncate" style="max-width: 160px; font-size: 0.72rem;" title="{{ $log->user_agent }}">
-                                <i class="bi bi-browser-chrome text-muted me-1"></i> {{ Str::limit($log->user_agent, 24) }}
+                            <div class="small text-muted text-truncate mt-1" style="max-width: 160px; font-size: 0.70rem;" title="{{ $log->user_agent }}">
+                                <i class="bi bi-browser-chrome text-muted me-1"></i> {{ Str::limit($log->user_agent, 20) }}
                             </div>
                         @endif
                     </td>
                     <td class="text-end">
                         @if($log->details)
-                            <button type="button" class="btn-action-icon view" title="View event details" onclick="showLogDetails({{ json_encode($log) }})">
-                                <i class="bi bi-info-circle-fill"></i>
+                            <button type="button" class="btn-action-edit-pill" title="View event details" onclick="showLogDetails({{ json_encode($log) }})">
+                                <i class="bi bi-info-circle"></i> Inspect
                             </button>
                         @else
                             <span class="text-muted small">—</span>
@@ -215,15 +268,14 @@
             </tbody>
         </table>
     </div>
-</div>
 
-<!-- Pagination Footer Container -->
-<div class="pagination-container">
-    <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $logs->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $logs->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $logs->total() }}</span> audit events (10 per page)
-    </div>
-    <div>
-        {{ $logs->links() }}
+    <div class="saas-table-footer">
+        <div class="saas-footer-text">
+            Showing <b>{{ $logs->firstItem() ?? 0 }}</b> to <b>{{ $logs->lastItem() ?? 0 }}</b> of <b>{{ $logs->total() }}</b> audit events (10 per page)
+        </div>
+        <div>
+            {{ $logs->links() }}
+        </div>
     </div>
 </div>
 

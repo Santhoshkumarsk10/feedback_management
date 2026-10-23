@@ -50,6 +50,16 @@ class QuestionController extends Controller
         return back()->with('success', 'Question deleted.');
     }
 
+    public function toggle(Question $question)
+    {
+        $question->update(['is_active' => ! $question->is_active]);
+        $status = $question->is_active ? 'activated' : 'deactivated';
+
+        \App\Models\AuditLog::record('toggle', 'questions', "Toggled question #{$question->id} status to {$status}");
+
+        return back()->with('success', "Question has been {$status}.");
+    }
+
     private function data(Request $r): array
     {
         $d = $r->validate([

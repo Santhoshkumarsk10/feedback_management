@@ -219,7 +219,7 @@
                         <div class="badge bg-secondary-subtle text-secondary border mt-1" style="font-size: 0.7rem;">{{ auth()->user()->department }}</div>
                     @endif
                 </li>
-                <li><a class="dropdown-item py-2" href="{{ route('password.change') }}"><i class="bi bi-shield-lock me-2 text-primary"></i> Profile & Password</a></li>
+                <li><a class="dropdown-item py-2" href="{{ route('profile') }}"><i class="bi bi-person-circle me-2 text-primary"></i> My Profile</a></li>
                 @if(auth()->user() && auth()->user()->hasRole('superadmin'))
                     <li><a class="dropdown-item py-2" href="{{ route('company.edit') }}"><i class="bi bi-gear me-2 text-secondary"></i> System Settings</a></li>
                 @endif

@@ -175,7 +175,8 @@
 
                 const prevMonthNum = viewMonth === 1 ? 12 : viewMonth - 1;
                 const prevYearNum = viewMonth === 1 ? viewYear - 1 : viewYear;
-                cell.addEventListener('click', () => {
+                cell.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     selectDate(prevYearNum, prevMonthNum, dayNum);
                 });
                 daysGrid.appendChild(cell);
@@ -193,7 +194,8 @@
                 const isSelected = (viewYear === selectedYear && viewMonth === selectedMonth && day === selectedDay);
                 if (isSelected) cell.classList.add('is-selected');
 
-                cell.addEventListener('click', () => {
+                cell.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     selectDate(viewYear, viewMonth, day);
                 });
                 daysGrid.appendChild(cell);
@@ -209,7 +211,8 @@
 
                 const nextMonthNum = viewMonth === 12 ? 1 : viewMonth + 1;
                 const nextYearNum = viewMonth === 12 ? viewYear + 1 : viewYear;
-                cell.addEventListener('click', () => {
+                cell.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     selectDate(nextYearNum, nextMonthNum, day);
                 });
                 daysGrid.appendChild(cell);
@@ -217,10 +220,14 @@
         }
 
         function openPopup() {
-            // Close other open popups first
-            document.querySelectorAll('[data-custom-datepicker-container].is-open').forEach(other => {
-                if (other !== container && other._closeDatePicker) other._closeDatePicker();
-            });
+            // Close all other open popups, calendars and dropdowns across the site
+            if (window.closeAllPopups) {
+                window.closeAllPopups(container);
+            } else {
+                document.querySelectorAll('[data-custom-datepicker-container].is-open').forEach(other => {
+                    if (other !== container && other._closeDatePicker) other._closeDatePicker();
+                });
+            }
 
             container.classList.add('is-open');
             popup.style.display = 'block';
@@ -271,9 +278,15 @@
             hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
+        // Prevent click inside popup from bubbling to document
+        popup.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
         // Toggle on trigger click
         trigger.addEventListener('click', function(e) {
             if (e.target.closest('.custom-datepicker-clear')) return;
+            e.stopPropagation();
             if (container.classList.contains('is-open')) {
                 closePopup();
             } else {
@@ -335,6 +348,7 @@
 
         // Close on click outside
         document.addEventListener('click', function(e) {
+            if (!e.target || !e.target.isConnected) return;
             if (!container.contains(e.target)) {
                 closePopup();
             }

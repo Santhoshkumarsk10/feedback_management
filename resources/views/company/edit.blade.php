@@ -7,26 +7,6 @@
 @endsection
 
 @section('content')
-<!-- CMS Unified Navigation Tabs -->
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-    <div class="cms-hub-nav">
-        <a href="{{ route('company.edit') }}" class="cms-hub-tab active">
-            <i class="bi bi-building-gear"></i>
-            <span>Company Identity</span>
-        </a>
-        <a href="{{ route('banners.index') }}" class="cms-hub-tab">
-            <i class="bi bi-images"></i>
-            <span>Promotional Banners</span>
-        </a>
-    </div>
-
-    <div class="d-flex align-items-center gap-2">
-        <a href="/api/cms/company" target="_blank" class="badge-modern badge-slate text-decoration-none py-2 px-3" title="Inspect Public REST API Endpoint">
-            <i class="bi bi-code-slash text-primary"></i> <span>REST API: /api/cms/company</span>
-        </a>
-    </div>
-</div>
-
 <form action="{{ route('company.update') }}" method="POST" enctype="multipart/form-data" id="companyMasterForm" novalidate>
     @csrf
     @method('PUT')
