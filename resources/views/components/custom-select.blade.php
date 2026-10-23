@@ -235,12 +235,14 @@
                 return;
             }
 
-            // Close other open custom selects first
-            document.querySelectorAll('[data-custom-select-container].is-open').forEach(other => {
-                if (other !== container && other._closeCustomSelect) {
-                    other._closeCustomSelect();
-                }
-            });
+            // Close all other open popups, calendars and dropdowns across the site
+            if (window.closeAllPopups) {
+                window.closeAllPopups(container);
+            } else {
+                document.querySelectorAll('[data-custom-select-container].is-open').forEach(other => {
+                    if (other !== container && other._closeCustomSelect) other._closeCustomSelect();
+                });
+            }
 
             container.classList.add('is-open');
             dropdown.style.display = 'block';

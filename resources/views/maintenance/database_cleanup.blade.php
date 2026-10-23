@@ -5,7 +5,7 @@
 
 @section('topbar_actions')
     @can('tabledatacleanup.delete')
-        <form method="POST" action="{{ route('database_cleanup.reseed') }}" class="m-0" onsubmit="return confirm('Restore & Re-seed Default Data?\n\nThis will re-run database seeders to populate default plants, feedback questions, and demo credentials if tables were cleared.');">
+        <form method="POST" action="{{ route('database_cleanup.reseed') }}" class="m-0" data-confirm="Restore & Re-seed Default Data? This will re-run database seeders to populate default plants, feedback questions, and demo credentials if tables were cleared.">
             @csrf
             <button type="submit" class="btn-modern-emerald btn-sm shadow-xs text-nowrap" id="topbarReseedBtn">
                 <i class="bi bi-arrow-clockwise"></i>
@@ -227,10 +227,10 @@
         <div class="card-header bg-danger-subtle py-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-danger-subtle">
             <div class="card-title text-danger mb-0">
                 <i class="bi bi-shield-lock-fill text-danger me-1"></i>
-                <span>Strictly Protected Tables (Security & Auth Shielded)</span>
+                <span>Strictly Protected Master Data & Security Tables</span>
             </div>
             <span class="badge bg-danger text-white px-2 py-1 fw-bold">
-                {{ count($protectedTables) }} Tables Locked
+                {{ count($protectedTables) }} Tables Shielded
             </span>
         </div>
 
@@ -238,7 +238,7 @@
             <div class="d-flex align-items-center gap-2 small text-slate-700">
                 <i class="bi bi-lock-fill text-danger fs-5"></i>
                 <div>
-                    <strong>Protection Policy Active:</strong> The tables listed below store user credentials, password tokens, role-permission matrices, system session tokens, and audit compliance trails. They are <strong>hard-coded as protected</strong> and cannot be cleared or truncated from this console to prevent total administrative lockout.
+                    <strong>Master Data Protection Active:</strong> Master Data tables (Users, Roles, Permissions, Questions, Banners, Companies, Plants) and authentication schemas are <strong>strictly protected</strong> and shielded against accidental clearance to preserve system configuration.
                 </div>
             </div>
         </div>
@@ -342,7 +342,12 @@
     function promptClearConfirmation() {
         const checkboxes = document.querySelectorAll('.table-select-cb:checked');
         if (checkboxes.length === 0) {
-            alert('Please select at least one unshielded table to clear.');
+            Swal.fire({
+                icon: 'info',
+                title: 'No Tables Selected',
+                text: 'Please select at least one unshielded table to clear.',
+                confirmButtonColor: '#0284c7'
+            });
             return;
         }
 

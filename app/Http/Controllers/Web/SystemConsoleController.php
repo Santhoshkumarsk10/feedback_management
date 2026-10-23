@@ -40,6 +40,7 @@ class SystemConsoleController extends Controller
         'event:cache' => 'Caching application event listeners...',
         'event:clear' => 'Clearing event listener cache...',
         'cache:clear' => 'Flushing application key-value cache store...',
+        'db:clear-transactions' => 'Safely clearing transactional tables and preserving Master Data...',
         'up' => 'Bringing application out of maintenance mode (Live)...',
         'down' => 'Putting application into maintenance mode...',
     ];

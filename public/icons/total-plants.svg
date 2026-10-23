@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs><filter id="bl" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="2"/></filter><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DD3FC"/><stop offset="1" stop-color="#0369A1"/></linearGradient></defs><ellipse cx="32" cy="59" rx="18" ry="3" fill="#0F172A" opacity=".22" filter="url(#bl)"/><g fill="#94A3B8" opacity=".75"><circle cx="54" cy="13" r="4"/><circle cx="58" cy="7" r="3"/></g>
+<path d="M8 54V28l14 8v-8l14 8v-8l14 8V18h8v36z" fill="url(#g)" stroke="#075985" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M8 28l14 8v-8l14 8v-8l14 8V18h8v4H50v18l-14-8v8l-14-8v8L8 32z" fill="#fff" opacity=".22"/>
+<g fill="#FEF3C7" stroke="#B45309" stroke-width=".6"><rect x="14" y="41" width="8" height="7" rx="1.500"/><rect x="26" y="41" width="8" height="7" rx="1.500"/><rect x="38" y="41" width="8" height="7" rx="1.500"/></g>
+<rect x="49" y="44" width="7" height="10" rx="1" fill="#0C4A6E"/></svg>

@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'User Profile')
-@section('page_title', 'User Profile')
-@section('page_subtitle', 'Manage your personal profile details, contact information, and account settings')
+@section('title', 'My Profile')
+@section('page_title', 'My Profile')
+@section('page_subtitle', 'Manage your personal profile details, contact information, and security settings')
 
 @section('content')
 <div class="container-fluid px-0">

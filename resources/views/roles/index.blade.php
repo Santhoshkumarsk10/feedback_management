@@ -18,60 +18,120 @@
     @endcan
 @endsection
 
-@section('content')
-<!-- Filter Tabs & Controls Card -->
-<div class="filter-card-wrapper">
-    <!-- Filter Tabs Header -->
-    <div class="filter-tabs-header">
-        <div class="filter-tabs-nav">
-            <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']))) }}"
-               class="filter-tab-btn {{ ($currentTab ?? 'all') === 'all' ? 'active' : '' }}">
-                <i class="bi bi-shield-lock-fill"></i>
-                <span>All Roles</span>
-                <span class="filter-tab-badge">{{ $tabCounts['all'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'system'])) }}"
-               class="filter-tab-btn {{ ($currentTab ?? '') === 'system' ? 'active' : '' }}">
-                <i class="bi bi-shield-check text-primary"></i>
-                <span>System Core Roles</span>
-                <span class="filter-tab-badge">{{ $tabCounts['system'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'custom'])) }}"
-               class="filter-tab-btn {{ ($currentTab ?? '') === 'custom' ? 'active' : '' }}">
-                <i class="bi bi-person-badge text-amber-500"></i>
-                <span>Custom / Operational</span>
-                <span class="filter-tab-badge">{{ $tabCounts['custom'] ?? 0 }}</span>
-            </a>
-        </div>
-
-        <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 10 per page
-            </span>
+@section('summary_cards')
+@php
+    $totalRoles = $tabCounts['all'] ?? 0;
+    $systemRoles = $tabCounts['system'] ?? 0;
+    $customRoles = $tabCounts['custom'] ?? 0;
+@endphp
+<div class="row g-3">
+    <!-- 1. Total Roles -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/total-roles.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($totalRoles) }}</div>
+                        <div class="saas-stat-label">Total roles</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge slate">Personas</span>
+            </div>
         </div>
     </div>
 
-    <!-- Filter Controls Bar -->
-    <div class="filter-controls-body">
-        <form method="GET" action="{{ route('roles.index') }}" class="d-flex flex-wrap align-items-center gap-2">
+    <!-- 2. System Core Roles -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/system-roles.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($systemRoles) }}</div>
+                        <div class="saas-stat-label">System roles</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge indigo">Core security</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Custom Roles -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/custom-roles.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($customRoles) }}</div>
+                        <div class="saas-stat-label">Custom roles</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge emerald">Operational</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Permission Grants -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/permissions.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">Granted</div>
+                        <div class="saas-stat-label">Permissions</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge amber">Matrix access</span>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('content')
+<!-- Filter Tabs & Controls Card -->
+<div class="saas-toolbar-card">
+    <!-- Left: Filter Pills -->
+    <div class="saas-filter-pills">
+        <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']))) }}"
+           class="saas-pill-btn {{ ($currentTab ?? 'all') === 'all' ? 'active' : '' }}">
+            <span>All roles</span>
+            <span class="pill-counter">{{ $tabCounts['all'] ?? 0 }}</span>
+        </a>
+        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'system'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'system' ? 'active' : '' }}">
+            <span>System core</span>
+            <span class="pill-counter">{{ $tabCounts['system'] ?? 0 }}</span>
+        </a>
+        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'custom'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'custom' ? 'active' : '' }}">
+            <span>Custom</span>
+            <span class="pill-counter">{{ $tabCounts['custom'] ?? 0 }}</span>
+        </a>
+    </div>
+
+    <!-- Right: Search & Filter -->
+    <div class="saas-toolbar-controls">
+        <form method="GET" action="{{ route('roles.index') }}" class="d-flex align-items-center gap-2 m-0" id="roleSearchForm">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
 
-            <x-search-suggest 
-                name="q" 
-                placeholder="Search role title, identifier slug, description..." 
-                :suggestions="$roleSuggestions ?? []"
-                header-title="Role Directory Suggestions"
-            />
+            <div class="saas-search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" value="{{ request('q') }}" class="saas-search-input" placeholder="Search role title, slug, description...">
+            </div>
 
-            <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
-                <i class="bi bi-funnel-fill"></i> Filter
+            <button type="submit" class="saas-btn-filter">
+                <i class="bi bi-funnel"></i>
+                <span>Filter</span>
             </button>
-
             @if(request()->hasAny(['q', 'tab']))
-                <a href="{{ route('roles.index') }}" class="btn-modern-secondary btn-sm py-1 px-3" title="Clear all filters">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                <a href="{{ route('roles.index') }}" class="saas-btn-filter text-decoration-none" title="Clear filter">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
             @endif
         </form>
@@ -79,35 +139,20 @@
 </div>
 
 <!-- Roles Table Card -->
-<div class="card-modern">
-    <div class="card-header">
-        <div class="card-title">
-            <i class="bi bi-shield-shaded text-primary"></i>
-            <span>Defined System Roles</span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">{{ $roles->total() }} Roles Listed</span>
-            @can('rolemaster.create')
-                <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
-                    <i class="bi bi-shield-plus"></i>
-                    <span>Add Role</span>
-                </a>
-            @endcan
-        </div>
-    </div>
+<div class="saas-table-card">
+
 
     <div class="table-responsive">
-        <table class="table-modern">
+        <table class="saas-table">
             <thead>
                 <tr>
-                    <th>Role Title</th>
-                    <th>Identifier (Slug)</th>
-                    <th>Permissions & Capabilities</th>
-                    <th>Scope & Description</th>
-                    <th>Classification</th>
-                    <th class="text-center">Assigned Users</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th style="width: 25%;">Role Title</th>
+                    <th style="width: 15%;">Identifier</th>
+                    <th style="width: 20%;">Permissions</th>
+                    <th style="width: 18%;">Scope & Description</th>
+                    <th class="text-center" style="width: 10%;">Members</th>
+                    <th style="width: 6%;">Status</th>
+                    <th class="text-end" style="width: 6%;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -115,10 +160,15 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="stat-icon-bubble {{ $r->is_system ? 'shibaura' : 'amber' }}" style="width: 32px; height: 32px; font-size: 0.95rem;">
+                            <span class="saas-stat-icon {{ $r->is_system ? 'indigo' : 'amber' }}" style="width: 34px; height: 34px; font-size: 0.95rem; border-radius: 8px;">
                                 <i class="bi {{ $r->is_system ? 'bi-shield-check' : 'bi-person-badge' }}"></i>
                             </span>
-                            <span class="fw-bold text-dark fs-6">{{ $r->display_name ?: $r->name }}</span>
+                            <div>
+                                <span class="fw-bold text-dark fs-6">{{ $r->display_name ?: $r->name }}</span>
+                                @if($r->is_system)
+                                    <span class="badge-modern badge-shibaura ms-1" style="font-size: 0.65rem;">System</span>
+                                @endif
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -130,28 +180,15 @@
                                 <i class="bi bi-check-all"></i> All System Permissions
                             </span>
                         @else
-                            <div class="d-flex align-items-center gap-1 flex-wrap" style="max-width: 280px;">
-                                <span class="badge-modern badge-indigo py-1">
-                                    <i class="bi bi-key-fill text-indigo-400"></i> {{ $r->permissions_count }} Permissions
-                                </span>
-                            </div>
+                            <span class="badge-modern badge-indigo py-1">
+                                <i class="bi bi-key-fill text-indigo-400"></i> {{ $r->permissions_count }} Permissions
+                            </span>
                         @endif
                     </td>
                     <td>
-                        <div class="small text-muted line-clamp-1" style="max-width: 320px;">
+                        <div class="small text-muted line-clamp-1" style="max-width: 280px;">
                             {{ $r->description ?: 'No additional description provided.' }}
                         </div>
-                    </td>
-                    <td>
-                        @if($r->is_system)
-                            <span class="badge-modern badge-shibaura" title="Core system role - protected from deletion">
-                                <i class="bi bi-lock-fill"></i> System Core
-                            </span>
-                        @else
-                            <span class="badge-modern badge-slate">
-                                <i class="bi bi-sliders"></i> Custom Role
-                            </span>
-                        @endif
                     </td>
                     <td class="text-center">
                         <a href="{{ route('users.index', ['role' => $r->name]) }}" class="badge-modern badge-slate text-decoration-none" title="Filter users with this role">
@@ -159,80 +196,71 @@
                         </a>
                     </td>
                     <td>
-                        @if($r->is_active)
-                            <span class="badge-modern badge-emerald">
-                                <span class="status-dot active"></span> Active
-                            </span>
+                        @if(!$r->is_system)
+                            <form method="POST" action="{{ route('roles.toggle', $r) }}" class="d-inline">
+                                @csrf @method('PATCH')
+                                <label class="saas-status-switch m-0" title="Click to toggle status">
+                                    <input type="checkbox" class="saas-switch-input" {{ $r->is_active ? 'checked' : '' }} onchange="this.form.submit()">
+                                    <span class="saas-switch-slider"></span>
+                                    <span class="saas-switch-label {{ $r->is_active ? '' : 'inactive' }}">{{ $r->is_active ? 'Active' : 'Inactive' }}</span>
+                                </label>
+                            </form>
                         @else
-                            <span class="badge-modern badge-slate">
-                                <span class="status-dot inactive"></span> Inactive
-                            </span>
+                            <span class="saas-switch-label"><i class="bi bi-lock-fill"></i> Core</span>
                         @endif
                     </td>
                     <td class="text-end text-nowrap">
-                        <div class="d-inline-flex gap-1 align-items-center">
+                        <div class="d-inline-flex gap-2 align-items-center">
                             @can('rolemaster.edit')
-                                <a href="{{ route('roles.edit', $r) }}" class="btn-action-icon edit" title="Edit role & permissions">
+                                <a href="{{ route('roles.edit', $r) }}" class="btn-action-edit-pill" title="Edit role & permissions">
                                     <i class="bi bi-pencil-fill"></i>
+                                    <span>Edit</span>
                                 </a>
-                                @if(!$r->is_system)
-                                    <form method="POST" action="{{ route('roles.toggle', $r) }}" class="d-inline">
-                                        @csrf @method('PATCH')
-                                        <button class="btn-action-icon" type="submit" title="{{ $r->is_active ? 'Deactivate role' : 'Activate role' }}">
-                                            <i class="bi {{ $r->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }} fs-5"></i>
-                                        </button>
-                                    </form>
-                                @endif
                             @endcan
                             @can('rolemaster.delete')
                                 @if(!$r->is_system)
                                     <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
-                                          onsubmit="return confirm('Are you sure you want to delete role {{ $r->display_name ?: $r->name }}?')">
+                                          data-confirm="Are you sure you want to delete role '{{ $r->display_name ?: $r->name }}'?">
                                         @csrf @method('DELETE')
-                                        <button class="btn-action-icon delete" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
+                                        <button class="btn-action-delete-pill" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
                                             <i class="bi bi-trash-fill"></i>
                                         </button>
                                     </form>
                                 @endif
                             @endcan
-                            @if($r->is_system && auth()->user()->can('rolemaster.edit'))
-                                <span class="d-inline-block px-2 text-muted" title="Core system roles are locked from deletion">
-                                    <i class="bi bi-lock text-muted"></i>
-                                </span>
-                            @endif
-                            @if(!auth()->user()->can('rolemaster.edit') && !auth()->user()->can('rolemaster.delete'))
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
-                                    <i class="bi bi-eye"></i> View Only
-                                </span>
-                            @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-5">
-                        <i class="bi bi-shield fs-2 d-block mb-2 text-slate-300"></i>
-                        <p class="mb-3">No roles match the selected filter.</p>
-                        @can('rolemaster.create')
-                            <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm">
-                                <i class="bi bi-shield-plus"></i> Add Role
-                            </a>
-                        @endcan
+                    <td colspan="7" class="text-center py-5">
+                        <div class="empty-state-modern py-4">
+                            <div class="empty-icon-bubble mb-3">
+                                <i class="bi bi-shield text-muted fs-1"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">No roles found</h5>
+                            <p class="text-muted small mb-3">No access roles match the selected filter.</p>
+                            @can('rolemaster.create')
+                                <a href="{{ route('roles.create') }}" class="btn-modern-primary btn-sm shadow-xs">
+                                    <i class="bi bi-shield-plus"></i> Add Role
+                                </a>
+                            @endcan
+                        </div>
                     </td>
                 </tr>
             @endforelse
             </tbody>
         </table>
     </div>
-</div>
 
-<!-- Pagination Footer Container -->
-<div class="pagination-container">
-    <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $roles->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $roles->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $roles->total() }}</span> roles (10 per page)
-    </div>
-    <div>
-        {{ $roles->links() }}
+    <!-- Table Footer with Pagination -->
+    <div class="saas-table-footer">
+        <div class="saas-footer-text">
+            Showing {{ $roles->firstItem() ?? 0 }} to {{ $roles->lastItem() ?? 0 }} of {{ $roles->total() }} roles
+        </div>
+        <div class="saas-pagination">
+            {{ $roles->links('pagination::bootstrap-5') }}
+        </div>
     </div>
 </div>
 @endsection

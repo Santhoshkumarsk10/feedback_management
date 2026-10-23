@@ -7,13 +7,14 @@ use App\Http\Controllers\Api\CmsController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Visitor app: PUBLIC (no login) ----------
-Route::prefix('visitor')->middleware('throttle:60,1')->group(function () {
+// High concurrency for 100+ concurrent plant kiosks/tablets sharing same plant Wi-Fi IP
+Route::prefix('visitor')->middleware('throttle:1000,1')->group(function () {
     Route::get('/plants', [VisitorController::class, 'plants']);
     Route::get('/organizers', [VisitorController::class, 'organizers']);
     Route::get('/questions', [VisitorController::class, 'questions']);
     Route::get('/today-visitors', [VisitorController::class, 'todayVisitors']);
     Route::get('/lookup/{visitor_id}', [VisitorController::class, 'lookup']);
-    Route::post('/feedback', [VisitorController::class, 'submitFeedback'])->middleware('throttle:10,1');
+    Route::post('/feedback', [VisitorController::class, 'submitFeedback'])->middleware('throttle:300,1');
 });
 
 // ---------- CMS Public Content API ----------

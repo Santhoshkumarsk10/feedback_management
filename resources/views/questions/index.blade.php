@@ -5,11 +5,85 @@
 
 @section('topbar_actions')
     @can('feedbackform.create')
-        <a href="{{ route('questions.create') }}" class="btn-modern-primary btn-sm">
+        <button type="button" class="btn-modern-primary btn-sm shadow-xs" data-bs-toggle="modal" data-bs-target="#addQuestionModal">
             <i class="bi bi-plus-circle-fill"></i>
             <span>Add Question</span>
-        </a>
+        </button>
     @endcan
+@endsection
+
+@section('summary_cards')
+@php
+    $totalQuestions = $questions->count();
+    $totalSections = $questions->pluck('section')->unique()->filter()->count();
+    $mandatoryCount = $questions->where('is_mandatory', true)->count();
+    $activeQuestions = $questions->where('is_active', true)->count();
+@endphp
+<div class="row g-3">
+    <!-- 1. Total Questions -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/total-questions.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($totalQuestions) }}</div>
+                        <div class="saas-stat-label">Total questions</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge slate">Survey criteria</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Active Sections -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/active-sections.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($totalSections) }}</div>
+                        <div class="saas-stat-label">Active sections</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge emerald">Evaluated areas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Mandatory Fields -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/mandatory-fields.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($mandatoryCount) }}</div>
+                        <div class="saas-stat-label">Mandatory fields</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge amber">Required</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Live Status -->
+    <div class="col-6 col-lg-3">
+        <div class="saas-stat-card">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="/icons/live-status.svg" width="48" height="48" alt="">
+                    <div>
+                        <div class="saas-stat-value">{{ number_format($activeQuestions) }}</div>
+                        <div class="saas-stat-label">Live status</div>
+                    </div>
+                </div>
+                <span class="saas-stat-badge indigo">Published</span>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('content')
@@ -214,27 +288,43 @@
                             @endif
                         </td>
                         <td>
-                            @if($q->is_active)
-                                <span class="badge-modern badge-shibaura">
-                                    <span class="status-dot active"></span> Active
-                                </span>
+                            @can('feedbackform.edit')
+                                <form action="{{ route('questions.toggle', $q) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <label class="saas-status-switch m-0" title="Click to toggle status">
+                                        <input type="checkbox" class="saas-switch-input" {{ $q->is_active ? 'checked' : '' }} onchange="this.form.submit()">
+                                        <span class="saas-switch-slider"></span>
+                                        <span class="saas-switch-label {{ $q->is_active ? '' : 'inactive' }}">{{ $q->is_active ? 'Active' : 'Inactive' }}</span>
+                                    </label>
+                                </form>
                             @else
-                                <span class="badge-modern badge-slate">
-                                    <span class="status-dot inactive"></span> Inactive
+                                <span class="badge {{ $q->is_active ? 'bg-success-subtle text-success' : 'bg-light text-muted' }} border">
+                                    {{ $q->is_active ? 'Active' : 'Inactive' }}
                                 </span>
-                            @endif
+                            @endcan
                         </td>
                         <td class="text-end text-nowrap">
                             <div class="d-inline-flex gap-1 align-items-center">
                                 @can('feedbackform.edit')
-                                    <a href="{{ route('questions.edit', $q) }}" class="btn-action-icon edit" title="Edit Question">
+                                    <button type="button" class="btn-action-icon edit" title="Edit Question"
+                                            data-bs-toggle="modal" data-bs-target="#editQuestionModal"
+                                            data-id="{{ $q->id }}"
+                                            data-question="{{ $q->question }}"
+                                            data-section="{{ $q->section }}"
+                                            data-type="{{ $q->type }}"
+                                            data-options="{{ is_array($q->options) ? implode("\n", $q->options) : '' }}"
+                                            data-sort-order="{{ $q->sort_order }}"
+                                            data-is-required="{{ $q->is_required ? '1' : '0' }}"
+                                            data-is-active="{{ $q->is_active ? '1' : '0' }}"
+                                            onclick="openEditQuestionModal(this)">
                                         <i class="bi bi-pencil-fill"></i>
-                                    </a>
+                                    </button>
                                 @endcan
 
                                 @can('feedbackform.delete')
                                     <form method="POST" action="{{ route('questions.destroy', $q) }}" class="d-inline"
-                                          onsubmit="return confirm('Deactivate or delete this question?')">
+                                          data-confirm="Deactivate or delete this question?">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn-action-icon delete" title="Delete Question">
                                             <i class="bi bi-trash-fill"></i>
@@ -273,6 +363,170 @@
     <button type="button" class="btn-modern-primary btn-sm px-3" onclick="resetAllSectionFilters()">
         <i class="bi bi-check2-all me-1"></i> Show All Sections
     </button>
+</div>
+
+<!-- ADD QUESTION MODAL (Without Scroll) -->
+<div class="modal fade" id="addQuestionModal" tabindex="-1" aria-labelledby="addQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="POST" action="{{ route('questions.store') }}" novalidate>
+                @csrf
+                <div class="modal-header bg-white border-bottom py-3 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="stat-icon-bubble cyan p-2 rounded-3">
+                            <i class="bi bi-patch-question-fill text-primary fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="addQuestionModalLabel">Add New Question</h5>
+                            <p class="text-muted small mb-0">Define evaluation prompt, scoring type, and section</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <label class="form-modern-label" for="add_question_section">Section Name</label>
+                            <input type="text" name="section" id="add_question_section" list="sectionsDatalist" class="form-control form-control-modern" placeholder="e.g. Welcome & Reception, Facilities">
+                            <datalist id="sectionsDatalist">
+                                @foreach($grouped->keys() as $secName)
+                                    <option value="{{ $secName }}"></option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-modern-label required" for="add_question_type">Question Type</label>
+                            <select name="type" id="add_question_type" class="form-select form-control-modern" required onchange="toggleQuestionOptions('add')">
+                                <option value="rating">Rating (1 to 5 Stars)</option>
+                                <option value="mcq">Multiple Choice (MCQ)</option>
+                                <option value="text">Open Remarks (Text)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-modern-label required" for="add_question_text">Question Prompt</label>
+                            <textarea name="question" id="add_question_text" class="form-control form-control-modern" rows="2" placeholder="e.g. How would you rate the precision demonstration of our machinery?" required maxlength="255"></textarea>
+                        </div>
+                        <div class="col-12 d-none" id="add_options_wrapper">
+                            <label class="form-modern-label required" for="add_question_options">MCQ Options (One option per line)</label>
+                            <textarea name="options" id="add_question_options" class="form-control form-control-modern" rows="2" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-modern-label" for="add_question_sort">Sort Order</label>
+                            <input type="number" name="sort_order" id="add_question_sort" class="form-control form-control-modern" value="0" min="0" max="9999">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
+                                <div>
+                                    <span class="fw-semibold text-dark small d-block">Mandatory</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Required response</span>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" name="is_required" value="1" id="add_question_is_required" style="width: 2em; height: 1.1em;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
+                                <div>
+                                    <span class="fw-semibold text-dark small d-block">Active Status</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Show on survey</span>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="1" id="add_question_is_active" checked style="width: 2em; height: 1.1em;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modern-primary btn-sm px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Save Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT QUESTION MODAL (Without Scroll) -->
+<div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="POST" id="editQuestionForm" novalidate>
+                @csrf
+                @method('PUT')
+                <div class="modal-header bg-white border-bottom py-3 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="stat-icon-bubble emerald p-2 rounded-3">
+                            <i class="bi bi-pencil-square text-emerald-600 fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="editQuestionModalLabel">Edit Questionnaire Item</h5>
+                            <p class="text-muted small mb-0">Modify question prompt, scoring, and configuration</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <label class="form-modern-label" for="edit_question_section">Section Name</label>
+                            <input type="text" name="section" id="edit_question_section" list="sectionsDatalist" class="form-control form-control-modern" placeholder="e.g. Welcome & Reception, Facilities">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-modern-label required" for="edit_question_type">Question Type</label>
+                            <select name="type" id="edit_question_type" class="form-select form-control-modern" required onchange="toggleQuestionOptions('edit')">
+                                <option value="rating">Rating (1 to 5 Stars)</option>
+                                <option value="mcq">Multiple Choice (MCQ)</option>
+                                <option value="text">Open Remarks (Text)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-modern-label required" for="edit_question_text">Question Prompt</label>
+                            <textarea name="question" id="edit_question_text" class="form-control form-control-modern" rows="2" required maxlength="255"></textarea>
+                        </div>
+                        <div class="col-12 d-none" id="edit_options_wrapper">
+                            <label class="form-modern-label required" for="edit_question_options">MCQ Options (One option per line)</label>
+                            <textarea name="options" id="edit_question_options" class="form-control form-control-modern" rows="2" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-modern-label" for="edit_question_sort">Sort Order</label>
+                            <input type="number" name="sort_order" id="edit_question_sort" class="form-control form-control-modern" min="0" max="9999">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
+                                <div>
+                                    <span class="fw-semibold text-dark small d-block">Mandatory</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Required response</span>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" name="is_required" value="1" id="edit_question_is_required" style="width: 2em; height: 1.1em;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
+                                <div>
+                                    <span class="fw-semibold text-dark small d-block">Active Status</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Show on survey</span>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="1" id="edit_question_is_active" style="width: 2em; height: 1.1em;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modern-primary btn-sm px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Update Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -663,6 +917,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial render
     applyFilters();
 });
+
+function toggleQuestionOptions(mode) {
+    const type = document.getElementById(mode + '_question_type').value;
+    const wrapper = document.getElementById(mode + '_options_wrapper');
+    if (wrapper) {
+        wrapper.classList.toggle('d-none', type !== 'mcq');
+    }
+}
+
+function openEditQuestionModal(btn) {
+    const id = btn.getAttribute('data-id');
+    const form = document.getElementById('editQuestionForm');
+    form.action = `/questions/${id}`;
+    document.getElementById('edit_question_text').value = btn.getAttribute('data-question') || '';
+    document.getElementById('edit_question_section').value = btn.getAttribute('data-section') || '';
+    document.getElementById('edit_question_type').value = btn.getAttribute('data-type') || 'rating';
+    document.getElementById('edit_question_options').value = btn.getAttribute('data-options') || '';
+    document.getElementById('edit_question_sort').value = btn.getAttribute('data-sort-order') || '0';
+    document.getElementById('edit_question_is_required').checked = btn.getAttribute('data-is-required') === '1';
+    document.getElementById('edit_question_is_active').checked = btn.getAttribute('data-is-active') === '1';
+    toggleQuestionOptions('edit');
+}
 </script>
 @endpush
 @endsection

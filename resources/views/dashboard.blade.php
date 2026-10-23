@@ -10,9 +10,7 @@
     <div class="saas-metric-grid">
         <!-- 1. Total Visitors -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box blue">
-                <i class="bi bi-people-fill"></i>
-            </div>
+            <img src="/icons/total-visitors.svg" width="48" height="48" alt="">
             <div>
                 <div class="saas-metric-title">Total Visitors</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_visitors']['value'] }}</div>
@@ -26,9 +24,7 @@
 
         <!-- 2. Total Feedbacks -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box emerald">
-                <i class="bi bi-chat-left-dots-fill"></i>
-            </div>
+            <img src="/icons/total-feedbacks.svg" width="48" height="48" alt="">
             <div>
                 <div class="saas-metric-title">Total Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_feedbacks']['value'] }}</div>
@@ -42,9 +38,7 @@
 
         <!-- 3. Average Rating -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box amber">
-                <i class="bi bi-star-fill"></i>
-            </div>
+            <img src="/icons/average-rating.svg" width="48" height="48" alt="">
             <div>
                 <div class="saas-metric-title">Average Rating</div>
                 <div class="saas-metric-value">{{ $saasMetrics['average_rating']['value'] }}</div>
@@ -58,9 +52,7 @@
 
         <!-- 4. Positive Feedbacks -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box rose">
-                <i class="bi bi-emoji-smile-fill"></i>
-            </div>
+            <img src="/icons/positive-feedbacks.svg" width="48" height="48" alt="">
             <div>
                 <div class="saas-metric-title">Positive Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['positive_feedbacks']['value'] }}</div>
@@ -74,9 +66,7 @@
 
         <!-- 5. Pending Actions -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box purple">
-                <i class="bi bi-chat-square-dots-fill"></i>
-            </div>
+            <img src="/icons/pending-actions.svg" width="48" height="48" alt="">
             <div>
                 <div class="saas-metric-title">Pending Actions</div>
                 <div class="saas-metric-value">{{ $saasMetrics['pending_actions']['value'] }}</div>

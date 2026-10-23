@@ -40,7 +40,9 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
     Route::get('dashboard/global-search', [DashboardController::class, 'globalSearch'])->name('dashboard.global_search');
     Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 
-    // Account Security: Change Password & Profile Details
+    // Account Settings: My Profile & Password Management
+    Route::get('my-profile', [AuthController::class, 'showProfile'])->name('profile');
+    Route::get('myprofile', [AuthController::class, 'showProfile'])->name('myprofile');
     Route::get('change-password', [AuthController::class, 'showChangePassword'])->name('password.change');
     Route::post('change-password', [AuthController::class, 'updatePassword'])->name('password.change.update');
     Route::post('profile', [AuthController::class, 'updateProfile'])->name('profile.update');
@@ -97,6 +99,7 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
         Route::get('questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
         Route::put('questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
         Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+        Route::patch('questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
 
         // Audit Logs Trail
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
