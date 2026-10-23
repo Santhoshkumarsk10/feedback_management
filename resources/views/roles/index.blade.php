@@ -20,9 +20,9 @@
 
 @section('summary_cards')
 @php
-    $totalRoles = $tabCounts['all'] ?? 0;
-    $systemRoles = $tabCounts['system'] ?? 0;
-    $customRoles = $tabCounts['custom'] ?? 0;
+    $totalRoles = $tabCounts['all'] ?? $tabCounts['total'] ?? 0;
+    $activeRoles = $tabCounts['active'] ?? 0;
+    $inactiveRoles = $tabCounts['inactive'] ?? 0;
 @endphp
 <div class="row g-3">
     <!-- 1. Total Roles -->
@@ -41,34 +41,34 @@
         </div>
     </div>
 
-    <!-- 2. System Core Roles -->
+    <!-- 2. Active Roles -->
     <div class="col-6 col-lg-3">
         <div class="saas-stat-card">
             <div class="d-flex align-items-center justify-content-between w-100">
                 <div class="d-flex align-items-center gap-3">
                     <img src="/icons/system-roles.svg" width="48" height="48" alt="">
                     <div>
-                        <div class="saas-stat-value">{{ number_format($systemRoles) }}</div>
-                        <div class="saas-stat-label">System roles</div>
+                        <div class="saas-stat-value">{{ number_format($activeRoles) }}</div>
+                        <div class="saas-stat-label">Active Roles</div>
                     </div>
                 </div>
-                <span class="saas-stat-badge indigo">Core security</span>
+                <span class="saas-stat-badge emerald">Operational</span>
             </div>
         </div>
     </div>
 
-    <!-- 3. Custom Roles -->
+    <!-- 3. Inactive Roles -->
     <div class="col-6 col-lg-3">
         <div class="saas-stat-card">
             <div class="d-flex align-items-center justify-content-between w-100">
                 <div class="d-flex align-items-center gap-3">
                     <img src="/icons/custom-roles.svg" width="48" height="48" alt="">
                     <div>
-                        <div class="saas-stat-value">{{ number_format($customRoles) }}</div>
-                        <div class="saas-stat-label">Custom roles</div>
+                        <div class="saas-stat-value">{{ number_format($inactiveRoles) }}</div>
+                        <div class="saas-stat-label">Inactive Roles</div>
                     </div>
                 </div>
-                <span class="saas-stat-badge emerald">Operational</span>
+                <span class="saas-stat-badge amber">Standby</span>
             </div>
         </div>
     </div>
@@ -99,17 +99,17 @@
         <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']))) }}"
            class="saas-pill-btn {{ ($currentTab ?? 'all') === 'all' ? 'active' : '' }}">
             <span>All roles</span>
-            <span class="pill-counter">{{ $tabCounts['all'] ?? 0 }}</span>
+            <span class="pill-counter">{{ $tabCounts['all'] ?? $tabCounts['total'] ?? 0 }}</span>
         </a>
-        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'system'])) }}"
-           class="saas-pill-btn {{ ($currentTab ?? '') === 'system' ? 'active' : '' }}">
-            <span>System core</span>
-            <span class="pill-counter">{{ $tabCounts['system'] ?? 0 }}</span>
+        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'active'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'active' ? 'active' : '' }}">
+            <span>Active</span>
+            <span class="pill-counter">{{ $tabCounts['active'] ?? 0 }}</span>
         </a>
-        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'custom'])) }}"
-           class="saas-pill-btn {{ ($currentTab ?? '') === 'custom' ? 'active' : '' }}">
-            <span>Custom</span>
-            <span class="pill-counter">{{ $tabCounts['custom'] ?? 0 }}</span>
+        <a href="{{ route('roles.index', array_merge(request()->except(['page']), ['tab' => 'inactive'])) }}"
+           class="saas-pill-btn {{ ($currentTab ?? '') === 'inactive' ? 'active' : '' }}">
+            <span>Inactive</span>
+            <span class="pill-counter">{{ $tabCounts['inactive'] ?? 0 }}</span>
         </a>
     </div>
 

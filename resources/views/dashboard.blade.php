@@ -229,13 +229,14 @@
                             <div class="saas-feedback-info">
                                 <div class="saas-feedback-top">
                                     <span class="saas-feedback-name">{{ $rf['name'] }}</span>
+                                    <span class="saas-feedback-time" title="{{ $rf['full_date'] ?? '' }}">{{ $rf['date_time'] }}</span>
                                     <span class="saas-feedback-stars">
                                         @for($i = 1; $i <= 5; $i++)
                                             <i class="bi {{ $i <= $rf['rating'] ? 'bi-star-fill text-warning' : 'bi-star text-muted' }}"></i>
                                         @endfor
                                     </span>
+                                    
                                 </div>
-                                <div class="saas-feedback-time" title="{{ $rf['full_date'] ?? '' }}">{{ $rf['date_time'] }}</div>
                                 <div class="saas-feedback-comment">{{ $rf['comment'] }}</div>
                             </div>
                             <i class="bi bi-chevron-right saas-feedback-arrow ms-2"></i>
