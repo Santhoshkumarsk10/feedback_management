@@ -21,6 +21,8 @@ class VisitController extends Controller
             'from' => 'nullable|date',
             'to' => 'nullable|date',
             'per_page' => 'nullable|integer',
+            'sort_by' => 'nullable|string|in:visit_date,name',
+            'sort_dir' => 'nullable|string|in:asc,desc,ASC,DESC',
             'organizer_id' => 'nullable|integer|exists:users,id',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
@@ -31,6 +33,9 @@ class VisitController extends Controller
         if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
         }
+
+        $sortBy = $request->input('sort_by', 'visit_date');
+        $sortDir = strtolower($request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         $query = Visit::with(['organizer', 'feedback'])
             ->when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
@@ -61,7 +66,18 @@ class VisitController extends Controller
         $completedCount = min((clone $baseCount)->has('feedback')->count(), 1000);
         $pendingCount = min((clone $baseCount)->doesntHave('feedback')->count(), 1000);
 
-        $visits = $query->latest('visit_date')->latest('id')->paginateCapped($perPage, 1000);
+        if ($sortBy === 'visit_date') {
+            $query->orderBy('visits.visit_date', $sortDir)->orderBy('visits.id', $sortDir);
+        } elseif ($sortBy === 'name') {
+            $query->leftJoin('visitors', 'visits.visitor_id', '=', 'visitors.id')
+                ->orderBy('visitors.name', $sortDir)
+                ->orderBy('visits.id', $sortDir)
+                ->select('visits.*');
+        } else {
+            $query->latest('visits.visit_date')->latest('visits.id');
+        }
+
+        $visits = $query->paginateCapped($perPage, 1000);
 
         $visitSuggestions = Visitor::where('is_active', true)
             ->latest('id')

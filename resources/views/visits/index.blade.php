@@ -150,7 +150,7 @@
 </div>
 
 <!-- Visitors Table Card -->
-<div class="saas-table-card">
+<div class="saas-table-card" id="visits-table-card">
     <div class="saas-table-header">
         <div>
             <div class="saas-table-title">
@@ -180,8 +180,53 @@
         <table class="saas-table">
             <thead>
                 <tr>
-                    <th style="width: 140px;">VISIT DATE</th>
-                    <th>VISITOR INFORMATION</th>
+                    <th style="width: 75px;" class="text-center">INDEX NO</th>
+                    <th style="width: 145px;">
+                        @php
+                            $currentSortBy = request('sort_by', 'visit_date');
+                            $currentSortDir = strtolower(request('sort_dir', 'desc'));
+                            $isVisitDateSorted = ($currentSortBy === 'visit_date');
+                            $nextVisitDateDir = ($isVisitDateSorted && $currentSortDir === 'desc') ? 'asc' : 'desc';
+                            $visitDateSortUrl = request()->fullUrlWithQuery(['sort_by' => 'visit_date', 'sort_dir' => $nextVisitDateDir, 'page' => 1]);
+                        @endphp
+                        <a href="{{ $visitDateSortUrl }}" 
+                           class="sortable-th d-inline-flex align-items-center gap-1 text-decoration-none text-uppercase fw-bold text-nowrap"
+                           style="color: {{ $isVisitDateSorted ? 'var(--shibaura-blue, #0d6efd)' : 'inherit' }};"
+                           title="Sort by Visit Date (Currently {{ $isVisitDateSorted && $currentSortDir === 'asc' ? 'Oldest first' : 'Recent first' }})">
+                            <span>VISIT DATE</span>
+                            @if($isVisitDateSorted)
+                                @if($currentSortDir === 'asc')
+                                    <i class="bi bi-arrow-up text-primary fw-bold" style="font-size: 0.9rem;" title="Oldest date entry first (Ascending)"></i>
+                                @else
+                                    <i class="bi bi-arrow-down text-primary fw-bold" style="font-size: 0.9rem;" title="Recent date entry first (Descending)"></i>
+                                @endif
+                            @else
+                                <i class="bi bi-arrow-down-up text-muted opacity-50" style="font-size: 0.75rem;"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th style="min-width: 250px;">
+                        @php
+                            $isNameSorted = ($currentSortBy === 'name');
+                            $nextNameDir = ($isNameSorted && $currentSortDir === 'asc') ? 'desc' : 'asc';
+                            $nameSortUrl = request()->fullUrlWithQuery(['sort_by' => 'name', 'sort_dir' => $nextNameDir, 'page' => 1]);
+                        @endphp
+                        <a href="{{ $nameSortUrl }}" 
+                           class="sortable-th d-inline-flex align-items-center gap-1 text-decoration-none text-uppercase fw-bold text-nowrap"
+                           style="color: {{ $isNameSorted ? 'var(--shibaura-blue, #0d6efd)' : 'inherit' }};"
+                           title="Sort by Visitor Name">
+                            <span>VISITOR INFORMATION</span>
+                            @if($isNameSorted)
+                                @if($currentSortDir === 'asc')
+                                    <i class="bi bi-arrow-up text-primary fw-bold" style="font-size: 0.9rem;"></i>
+                                @else
+                                    <i class="bi bi-arrow-down text-primary fw-bold" style="font-size: 0.9rem;"></i>
+                                @endif
+                            @else
+                                <i class="bi bi-arrow-down-up text-muted opacity-50" style="font-size: 0.75rem;"></i>
+                            @endif
+                        </a>
+                    </th>
                     <th>ASSIGNED STAFF</th>
                     <th>PURPOSE</th>
                     <th class="text-end">FEEDBACK STATUS & ACTIONS</th>
@@ -190,6 +235,12 @@
             <tbody>
             @forelse($visits as $v)
                 <tr>
+                    <td class="text-center align-middle">
+                        <span class="badge bg-light text-secondary border font-monospace px-2 py-1" style="font-size: 0.78rem;">
+                            #{{ ($visits->firstItem() ?? 1) + $loop->index }}
+                        </span>
+                    </td>
+
                     <td style="white-space: nowrap;">
                         <div class="d-flex align-items-center gap-2">
                             <div class="p-2 rounded bg-light text-center" style="min-width: 48px; border: 1px solid #e2e8f0;">
@@ -201,25 +252,29 @@
                     </td>
 
                     <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="fw-bold text-dark fs-6">{{ $v->visitor_name }}</span>
+                        <div class="d-flex align-items-center gap-2 flex-nowrap mb-1">
+                            <span class="fw-bold text-dark fs-6 text-nowrap">{{ $v->visitor_name }}</span>
                             @if($v->visitor_code)
-                                <span class="saas-code-badge">
+                                <span class="saas-code-badge text-nowrap" style="white-space: nowrap !important; flex-shrink: 0;">
                                     <i class="bi bi-qr-code me-1"></i>{{ $v->visitor_code }}
                                 </span>
                             @endif
                         </div>
-                        @if($v->visitor_designation)
-                            <div class="small text-secondary fw-semibold">{{ $v->visitor_designation }}</div>
-                        @endif
-                        <div class="small text-muted d-flex align-items-center gap-2 mt-1">
+                        <div class="small d-flex align-items-center flex-wrap gap-2 text-muted" style="font-size: 0.78rem;">
                             @if($v->visitor_company)
-                                <span class="badge bg-light text-dark border">
-                                    <i class="bi bi-building me-1"></i> {{ $v->visitor_company }}
+                                <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.75rem; font-weight: 500;">
+                                    <i class="bi bi-building text-secondary"></i> {{ $v->visitor_company }}
+                                </span>
+                            @endif
+                            @if($v->visitor_designation)
+                                <span class="text-secondary fw-semibold small" style="font-size: 0.75rem;">
+                                    {{ $v->visitor_designation }}
                                 </span>
                             @endif
                             @if($v->visitor_mobile)
-                                <span><i class="bi bi-telephone text-muted"></i> {{ $v->visitor_mobile }}</span>
+                                <span class="text-muted small d-inline-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                    <i class="bi bi-telephone text-muted"></i> {{ $v->visitor_mobile }}
+                                </span>
                             @endif
                         </div>
                     </td>
@@ -280,7 +335,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-calendar-x fs-2 d-block mb-2 text-slate-300"></i>
                         No visit records match the selected filter.
                     </td>
@@ -291,12 +346,128 @@
     </div>
 
     <div class="saas-table-footer">
-        <div class="saas-footer-text">
-            Showing <b>{{ $visits->firstItem() ?? 0 }}</b> to <b>{{ $visits->lastItem() ?? 0 }}</b> of <b>{{ $visits->total() }}</b> visitors ({{ $visits->perPage() }} per page)@if($visits->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex align-items-center gap-1">
+                <span class="small text-muted fw-semibold me-1" style="font-size: 0.8rem;">Page size:</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Page size selector">
+                    @foreach([10, 25, 50, 100] as $size)
+                        @php $isActive = (int)request('per_page', 10) === $size; @endphp
+                        <a href="{{ request()->fullUrlWithQuery(['per_page' => $size, 'page' => 1]) }}"
+                           class="btn {{ $isActive ? 'btn-primary text-white fw-bold' : 'btn-outline-secondary bg-white text-secondary' }}"
+                           style="font-size: 0.78rem; padding: 2px 10px; border-color: #cbd5e1;">
+                            {{ $size }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="saas-footer-text">
+                Showing <b>{{ $visits->firstItem() ?? 0 }}</b> to <b>{{ $visits->lastItem() ?? 0 }}</b> of <b>{{ $visits->total() }}</b> visitors ({{ $visits->perPage() }} per page)@if($visits->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
+            </div>
         </div>
         <div>
-            {{ $visits->links() }}
+            {{ $visits->links('partials.pagination') }}
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tableCard = document.getElementById('visits-table-card');
+    if (!tableCard) return;
+
+    let isFetching = false;
+
+    function loadUrlViaAjax(url, pushState = true) {
+        if (isFetching) return;
+        isFetching = true;
+
+        tableCard.style.transition = 'opacity 0.15s ease';
+        tableCard.style.opacity = '0.5';
+        tableCard.style.pointerEvents = 'none';
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('HTTP error ' + response.status);
+            return response.text();
+        })
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            const newTableCard = doc.getElementById('visits-table-card');
+            if (newTableCard) {
+                tableCard.innerHTML = newTableCard.innerHTML;
+            }
+
+            const newPills = doc.querySelector('.saas-filter-pills');
+            const currentPills = document.querySelector('.saas-filter-pills');
+            if (newPills && currentPills) {
+                currentPills.innerHTML = newPills.innerHTML;
+            }
+
+            if (pushState && window.history && window.history.pushState) {
+                window.history.pushState({ url: url }, '', url);
+            }
+        })
+        .catch(err => {
+            console.warn('AJAX load error, falling back to full navigation:', err);
+            window.location.href = url;
+        })
+        .finally(() => {
+            tableCard.style.opacity = '1';
+            tableCard.style.pointerEvents = '';
+            isFetching = false;
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        // Page size selector links (10, 25, 50, 100)
+        const sizeLink = e.target.closest('#visits-table-card .btn-group[aria-label="Page size selector"] a');
+        if (sizeLink && sizeLink.href) {
+            e.preventDefault();
+            loadUrlViaAjax(sizeLink.href);
+            return;
+        }
+
+        // Pagination links
+        const pageLink = e.target.closest('#visits-table-card .pagination a.page-link');
+        if (pageLink && pageLink.href) {
+            e.preventDefault();
+            loadUrlViaAjax(pageLink.href);
+            return;
+        }
+
+        // Table header sort links
+        const sortLink = e.target.closest('#visits-table-card th a.sortable-th');
+        if (sortLink && sortLink.href) {
+            e.preventDefault();
+            loadUrlViaAjax(sortLink.href);
+            return;
+        }
+
+        // Filter tabs (All visitors, Feedback completed, Awaiting feedback)
+        const tabLink = e.target.closest('.saas-filter-pills a.saas-pill-btn');
+        if (tabLink && tabLink.href) {
+            e.preventDefault();
+            loadUrlViaAjax(tabLink.href);
+            return;
+        }
+    });
+
+    window.addEventListener('popstate', function (e) {
+        if (e.state && e.state.url) {
+            loadUrlViaAjax(e.state.url, false);
+        } else {
+            loadUrlViaAjax(window.location.href, false);
+        }
+    });
+});
+</script>
+@endpush

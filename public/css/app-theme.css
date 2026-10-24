@@ -4477,6 +4477,8 @@ input[type="checkbox"].saas-switch-input:not(+ .saas-switch-slider):not(+ .saas-
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
+    white-space: nowrap !important;
+    flex-shrink: 0;
 }
 
 /* 7. Table Footer & Pagination */

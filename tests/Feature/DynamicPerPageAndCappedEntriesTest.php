@@ -56,6 +56,35 @@ class DynamicPerPageAndCappedEntriesTest extends TestCase
         $this->assertEquals(10, $resInvalid->viewData('visits')->perPage());
     }
 
+    public function test_visit_date_sorting_asc_and_desc(): void
+    {
+        // Test Ascending Sort (oldest visit date first)
+        $resAsc = $this->actingAs($this->admin)->get(route('visits.index', [
+            'sort_by' => 'visit_date',
+            'sort_dir' => 'asc',
+        ]));
+        $resAsc->assertOk();
+        $ascVisits = $resAsc->viewData('visits');
+        if ($ascVisits->count() >= 2) {
+            $first = $ascVisits->first()->visit_date;
+            $last = $ascVisits->last()->visit_date;
+            $this->assertTrue($first->lte($last));
+        }
+
+        // Test Descending Sort (recent visit date first)
+        $resDesc = $this->actingAs($this->admin)->get(route('visits.index', [
+            'sort_by' => 'visit_date',
+            'sort_dir' => 'desc',
+        ]));
+        $resDesc->assertOk();
+        $descVisits = $resDesc->viewData('visits');
+        if ($descVisits->count() >= 2) {
+            $first = $descVisits->first()->visit_date;
+            $last = $descVisits->last()->visit_date;
+            $this->assertTrue($first->gte($last));
+        }
+    }
+
     public function test_per_page_options_across_other_modules(): void
     {
         // Feedbacks
