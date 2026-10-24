@@ -111,7 +111,7 @@
             <div id="globalSearchDropdown" class="topbar-search-dropdown shadow-lg" style="display: none;">
                 <div id="globalSearchResults"></div>
                 <div class="p-2 border-top text-center bg-light rounded-bottom small" style="font-size: 0.75rem;">
-                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to search in Visitors &amp; Plant Visits</span>
+                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to search in Visitors &amp; Visits</span>
                 </div>
             </div>
         </div>

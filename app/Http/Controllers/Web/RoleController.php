@@ -16,9 +16,14 @@ class RoleController extends Controller
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'per_page' => 'nullable|integer',
         ]);
 
         $tab = $request->input('tab', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = Role::withCount(['assignedUsers', 'permissions'])
             ->with('permissions')
@@ -32,11 +37,11 @@ class RoleController extends Controller
                   ->orWhere('description', 'like', "%$v%");
             }));
 
-        $totalCount = Role::count();
-        $systemCount = Role::where('is_system', true)->count();
-        $customCount = Role::where('is_system', false)->count();
+        $totalCount = min(Role::count(), 1000);
+        $systemCount = min(Role::where('is_system', true)->count(), 1000);
+        $customCount = min(Role::where('is_system', false)->count(), 1000);
 
-        $roles = $query->orderByDesc('is_system')->orderBy('name')->paginate(10)->withQueryString();
+        $roles = $query->orderByDesc('is_system')->orderBy('name')->paginateCapped($perPage, 1000);
 
         $roleSuggestions = Role::select('id', 'name', 'display_name', 'slug', 'description', 'is_system')
             ->orderByDesc('is_system')

@@ -82,7 +82,7 @@
         </a>
         <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}" href="{{ route('visits.index') }}">
             <i class="bi bi-person-badge-fill"></i>
-            <span>Plant Visitors</span>
+            <span>Visitors</span>
         </a>
 
         {{-- Brand & CMS --}}

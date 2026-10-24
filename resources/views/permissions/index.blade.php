@@ -55,6 +55,10 @@
                 </a>
             @endif
 
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
             <div class="ms-auto d-none d-md-flex align-items-center gap-2">
                 @if(request()->filled('module'))
                     <span class="badge-modern badge-shibaura">
@@ -64,6 +68,7 @@
                 <span class="badge-modern badge-slate">
                     <i class="bi bi-key-fill text-primary me-1"></i> {{ $permissions->total() }} of {{ $totalCount }} Capabilities
                 </span>
+                <x-per-page-selector :current="$permissions->perPage()" />
             </div>
         </form>
     </div>
@@ -179,7 +184,7 @@
 <!-- Pagination Footer Container -->
 <div class="pagination-container">
     <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $permissions->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $permissions->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $permissions->total() }}</span> permissions (15 per page)
+        Showing <span class="fw-bold text-dark">{{ $permissions->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $permissions->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $permissions->total() }}</span> permissions ({{ $permissions->perPage() }} per page)@if($permissions->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
     </div>
     <div>
         {{ $permissions->links() }}

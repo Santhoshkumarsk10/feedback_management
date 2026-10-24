@@ -33,9 +33,14 @@ class UserController extends Controller
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’@+]+$~u'],
             'role' => 'nullable|string|max:50',
             'status' => 'nullable|in:active,inactive',
+            'per_page' => 'nullable|integer',
         ]);
 
         $manageableSlugs = $this->manageableSlugs();
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         // Calculate counts for quick filter tabs
         $roleCounts = User::whereIn('role', $manageableSlugs)
@@ -43,7 +48,7 @@ class UserController extends Controller
             ->groupBy('role')
             ->pluck('count', 'role')
             ->all();
-        $totalUsers = array_sum($roleCounts);
+        $totalUsers = min(array_sum($roleCounts), 1000);
 
         $users = User::with(['roleModel'])
             ->whereIn('role', $manageableSlugs)
@@ -54,7 +59,7 @@ class UserController extends Controller
                 ->orWhere('email', 'like', "%$v%")
                 ->orWhere('mobile', 'like', "%$v%")
                 ->orWhere('department', 'like', "%$v%")))
-            ->orderBy('role')->orderBy('name')->paginate(10)->withQueryString();
+            ->orderBy('role')->orderBy('name')->paginateCapped($perPage, 1000);
 
         $availableRoles = Role::whereIn('slug', $manageableSlugs)->get();
 

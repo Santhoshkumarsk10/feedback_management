@@ -20,17 +20,22 @@ class VisitController extends Controller
         $request->validate([
             'from' => 'nullable|date',
             'to' => 'nullable|date',
+            'per_page' => 'nullable|integer',
             'organizer_id' => 'nullable|integer|exists:users,id',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
 
         $tab = $request->input('tab', 'all');
         $isTodayFilter = $request->boolean('today') || $request->input('date_filter') === 'today';
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = Visit::with(['organizer', 'feedback'])
             ->when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
-            ->when(! $isTodayFilter && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
-            ->when(! $isTodayFilter && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
+            ->when(! $isTodayFilter && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
+            ->when(! $isTodayFilter && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
@@ -42,8 +47,8 @@ class VisitController extends Controller
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'));
 
         $baseCount = Visit::when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
-            ->when(! $isTodayFilter && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
-            ->when(! $isTodayFilter && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
+            ->when(! $isTodayFilter && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
+            ->when(! $isTodayFilter && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
             ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
@@ -52,11 +57,11 @@ class VisitController extends Controller
                     ->orWhere('mobile', 'like', "%$v%")
                     ->orWhere('company', 'like', "%$v%"))));
 
-        $totalCount = (clone $baseCount)->count();
-        $completedCount = (clone $baseCount)->has('feedback')->count();
-        $pendingCount = (clone $baseCount)->doesntHave('feedback')->count();
+        $totalCount = min((clone $baseCount)->count(), 1000);
+        $completedCount = min((clone $baseCount)->has('feedback')->count(), 1000);
+        $pendingCount = min((clone $baseCount)->doesntHave('feedback')->count(), 1000);
 
-        $visits = $query->latest('visit_date')->latest('id')->paginate(10)->withQueryString();
+        $visits = $query->latest('visit_date')->latest('id')->paginateCapped($perPage, 1000);
 
         $visitSuggestions = Visitor::where('is_active', true)
             ->latest('id')

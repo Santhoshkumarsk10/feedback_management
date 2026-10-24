@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Register Plant Visitor')
-@section('page_title', 'Register Plant Visitor')
+@section('title', 'Register Visitor')
+@section('page_title', 'Register Visitor')
 @section('page_subtitle', 'Record new visitor arrival & escort assignment')
 
 @section('hide_top_errors', true)
@@ -24,7 +24,7 @@
         <div class="d-flex align-items-center gap-2 text-muted small">
             <a href="{{ route('dashboard') }}" class="text-decoration-none text-muted">Dashboard</a>
             <i class="bi bi-chevron-right fs-8"></i>
-            <a href="{{ route('visits.index') }}" class="text-decoration-none text-muted">Plant Visitors</a>
+            <a href="{{ route('visits.index') }}" class="text-decoration-none text-muted">Visitors</a>
             <i class="bi bi-chevron-right fs-8"></i>
             <span class="text-dark fw-bold">New Registration</span>
         </div>
@@ -262,7 +262,7 @@
                                     Cancel
                                 </a>
                                 <button type="submit" id="submitBtn" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
-                                    <i class="bi bi-check2-circle me-1"></i> Register Plant Visitor
+                                    <i class="bi bi-check2-circle me-1"></i> Register Visitor
                                 </button>
                             </div>
                         </div>

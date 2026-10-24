@@ -29,17 +29,17 @@ class ReportController extends Controller
 
         $reportTab = $request->input('report_tab', 'staff');
 
-        // Section 6.8: Low-Rating Report (Ratings <= 2 for management follow-up)
+        // Section 6.8: Low-Rating Report (Ratings <= 2 for management follow-up - capped at recent 1000)
         $lowRatingsQuery = Feedback::with(['visit', 'organizer', 'submittedBy'])
             ->where('overall_rating', '<=', 2);
         $this->dates($lowRatingsQuery, 'submitted_at', $request);
-        $lowRatings = $lowRatingsQuery->latest('submitted_at')->get();
+        $lowRatings = $lowRatingsQuery->latest('submitted_at')->take(1000)->get();
 
-        // Section 6.8: Pending Feedback Report (Visitors with no feedback in date range)
+        // Section 6.8: Pending Feedback Report (Visitors with no feedback in date range - capped at recent 1000)
         $pendingVisitsQuery = Visit::with(['organizer'])
             ->doesntHave('feedback');
         $this->dates($pendingVisitsQuery, 'visit_date', $request);
-        $pendingVisits = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
+        $pendingVisits = $pendingVisitsQuery->latest('visit_date')->latest('id')->take(1000)->get();
 
         return view('reports.index', [
             'rows' => $this->organizerRows($request),
@@ -73,12 +73,12 @@ class ReportController extends Controller
         $generatedAt = now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y, h:i A') . ' IST';
 
         if ($type === 'low_rating') {
-            $title = 'Low-Rating Reviews (≤ 2★) Incident Report';
+            $title = 'Low-Rating Reviews (≤ 2★) Incident Report (Recent 1,000 Max)';
             $baseFilename = 'low-rating-incidents-' . now()->format('Ymd');
             $lowRatingsQuery = Feedback::with(['visit', 'organizer', 'submittedBy'])
                 ->where('overall_rating', '<=', 2);
             $this->dates($lowRatingsQuery, 'submitted_at', $request);
-            $items = $lowRatingsQuery->latest('submitted_at')->get();
+            $items = $lowRatingsQuery->latest('submitted_at')->take(1000)->get();
             $meta = compact('title', 'periodLabel', 'generatedBy', 'generatedAt');
 
             if ($format === 'pdf') {
@@ -90,11 +90,11 @@ class ReportController extends Controller
         }
 
         if ($type === 'pending') {
-            $title = 'Pending Feedback Queue Report';
+            $title = 'Pending Feedback Queue Report (Recent 1,000 Max)';
             $baseFilename = 'pending-feedback-report-' . now()->format('Ymd');
             $pendingVisitsQuery = Visit::with(['organizer'])->doesntHave('feedback');
             $this->dates($pendingVisitsQuery, 'visit_date', $request);
-            $items = $pendingVisitsQuery->latest('visit_date')->latest('id')->get();
+            $items = $pendingVisitsQuery->latest('visit_date')->latest('id')->take(1000)->get();
             $meta = compact('title', 'periodLabel', 'generatedBy', 'generatedAt');
 
             if ($format === 'pdf') {

@@ -16,8 +16,14 @@
             <div>
                 <div class="saas-metric-title">Total Visitors</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_visitors']['value'] }}</div>
-                <div class="saas-trend-badge green">
-                    <i class="bi bi-arrow-up-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['total_visitors']['dir'] === 'up' ? 'green' : ($saasMetrics['total_visitors']['dir'] === 'down' ? 'rose' : 'gray') }}">
+                    @if($saasMetrics['total_visitors']['dir'] === 'up')
+                        <i class="bi bi-arrow-up-short fs-6"></i>
+                    @elseif($saasMetrics['total_visitors']['dir'] === 'down')
+                        <i class="bi bi-arrow-down-short fs-6"></i>
+                    @else
+                        <i class="bi bi-dash fs-6"></i>
+                    @endif
                     <span>{{ $saasMetrics['total_visitors']['growth'] }}</span>
                     <span class="saas-trend-sub">{{ $saasMetrics['total_visitors']['subtext'] }}</span>
                 </div>
@@ -26,14 +32,20 @@
 
         <!-- 2. Total Feedbacks -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box emerald">
+            <div class="saas-icon-box yellow">
                 <i class="bi bi-chat-left-dots-fill"></i>
             </div>
             <div>
                 <div class="saas-metric-title">Total Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge green">
-                    <i class="bi bi-arrow-up-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['total_feedbacks']['dir'] === 'up' ? 'green' : ($saasMetrics['total_feedbacks']['dir'] === 'down' ? 'rose' : 'gray') }}">
+                    @if($saasMetrics['total_feedbacks']['dir'] === 'up')
+                        <i class="bi bi-arrow-up-short fs-6"></i>
+                    @elseif($saasMetrics['total_feedbacks']['dir'] === 'down')
+                        <i class="bi bi-arrow-down-short fs-6"></i>
+                    @else
+                        <i class="bi bi-dash fs-6"></i>
+                    @endif
                     <span>{{ $saasMetrics['total_feedbacks']['growth'] }}</span>
                     <span class="saas-trend-sub">{{ $saasMetrics['total_feedbacks']['subtext'] }}</span>
                 </div>
@@ -48,8 +60,14 @@
             <div>
                 <div class="saas-metric-title">Average Rating</div>
                 <div class="saas-metric-value">{{ $saasMetrics['average_rating']['value'] }}</div>
-                <div class="saas-trend-badge green">
-                    <i class="bi bi-arrow-up-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['average_rating']['dir'] === 'up' ? 'green' : ($saasMetrics['average_rating']['dir'] === 'down' ? 'rose' : 'gray') }}">
+                    @if($saasMetrics['average_rating']['dir'] === 'up')
+                        <i class="bi bi-arrow-up-short fs-6"></i>
+                    @elseif($saasMetrics['average_rating']['dir'] === 'down')
+                        <i class="bi bi-arrow-down-short fs-6"></i>
+                    @else
+                        <i class="bi bi-dash fs-6"></i>
+                    @endif
                     <span>{{ $saasMetrics['average_rating']['growth'] }}</span>
                     <span class="saas-trend-sub">{{ $saasMetrics['average_rating']['subtext'] }}</span>
                 </div>
@@ -58,14 +76,20 @@
 
         <!-- 4. Positive Feedbacks -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box rose">
+            <div class="saas-icon-box green">
                 <i class="bi bi-emoji-smile-fill"></i>
             </div>
             <div>
                 <div class="saas-metric-title">Positive Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['positive_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge green">
-                    <i class="bi bi-arrow-up-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['positive_feedbacks']['dir'] === 'up' ? 'green' : ($saasMetrics['positive_feedbacks']['dir'] === 'down' ? 'rose' : 'gray') }}">
+                    @if($saasMetrics['positive_feedbacks']['dir'] === 'up')
+                        <i class="bi bi-arrow-up-short fs-6"></i>
+                    @elseif($saasMetrics['positive_feedbacks']['dir'] === 'down')
+                        <i class="bi bi-arrow-down-short fs-6"></i>
+                    @else
+                        <i class="bi bi-dash fs-6"></i>
+                    @endif
                     <span>{{ $saasMetrics['positive_feedbacks']['growth'] }}</span>
                     <span class="saas-trend-sub">{{ $saasMetrics['positive_feedbacks']['subtext'] }}</span>
                 </div>
@@ -74,14 +98,20 @@
 
         <!-- 5. Pending Actions -->
         <div class="saas-metric-card">
-            <div class="saas-icon-box purple">
+            <div class="saas-icon-box red">
                 <i class="bi bi-chat-square-dots-fill"></i>
             </div>
             <div>
                 <div class="saas-metric-title">Pending Actions</div>
                 <div class="saas-metric-value">{{ $saasMetrics['pending_actions']['value'] }}</div>
-                <div class="saas-trend-badge rose">
-                    <i class="bi bi-arrow-up-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['pending_actions']['dir'] === 'down' ? 'rose' : ($saasMetrics['pending_actions']['dir'] === 'up' ? 'green' : 'gray') }}">
+                    @if($saasMetrics['pending_actions']['dir'] === 'down')
+                        <i class="bi bi-arrow-up-short fs-6"></i>
+                    @elseif($saasMetrics['pending_actions']['dir'] === 'up')
+                        <i class="bi bi-arrow-down-short fs-6"></i>
+                    @else
+                        <i class="bi bi-dash fs-6"></i>
+                    @endif
                     <span>{{ $saasMetrics['pending_actions']['growth'] }}</span>
                     <span class="saas-trend-sub">{{ $saasMetrics['pending_actions']['subtext'] }}</span>
                 </div>
@@ -103,7 +133,12 @@
                     </select>
                 </div>
                 <div style="position: relative; height: 240px; width: 100%;">
-                    <canvas id="feedbackTrendsChart"></canvas>
+                    <div id="trendsEmptyNotice" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted {{ $hasTrendsData ? 'd-none' : '' }}" style="background: rgba(248, 250, 252, 0.7); border-radius: 8px;">
+                        <i class="bi bi-bar-chart-line fs-2 text-secondary opacity-50 mb-1"></i>
+                        <div class="fw-semibold small text-dark">No Feedback Trends Available</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No feedback submissions recorded in the database for this timeframe.</div>
+                    </div>
+                    <canvas id="feedbackTrendsChart" class="{{ !$hasTrendsData ? 'd-none' : '' }}"></canvas>
                 </div>
                 <div class="d-flex align-items-center justify-content-center gap-4 mt-3 pt-2">
                     <div class="d-flex align-items-center gap-2 small fw-semibold text-secondary">
@@ -127,29 +162,37 @@
                         <i class="bi bi-calendar3 me-1 text-primary"></i>{{ $rangeLabel }}
                     </span>
                 </div>
-                <div class="row align-items-center g-3 my-auto">
-                    <div class="col-12 col-sm-6 text-center">
-                        <div class="saas-donut-box">
-                            <canvas id="ratingDistributionDonut"></canvas>
-                            <div class="saas-donut-center">
-                                <div class="saas-donut-number">{{ number_format($ratingDist['total']) }}</div>
-                                <div class="saas-donut-label">Total Feedbacks</div>
+                @if($ratingDist['total'] > 0)
+                    <div class="row align-items-center g-3 my-auto">
+                        <div class="col-12 col-sm-6 text-center">
+                            <div class="saas-donut-box">
+                                <canvas id="ratingDistributionDonut"></canvas>
+                                <div class="saas-donut-center">
+                                    <div class="saas-donut-number">{{ number_format($ratingDist['total']) }}</div>
+                                    <div class="saas-donut-label">Total Feedbacks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="d-flex flex-column gap-1">
+                                @foreach($ratingDist['items'] as $item)
+                                    <div class="saas-legend-item">
+                                        <span class="saas-legend-dot" style="background: {{ $item['color'] }};"></span>
+                                        <span class="saas-legend-name">{{ $item['label'] }}</span>
+                                        <span class="saas-legend-pct">{{ $item['percent'] }}%</span>
+                                        <span class="saas-legend-cnt">{{ $item['count'] }}</span>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-6">
-                        <div class="d-flex flex-column gap-1">
-                            @foreach($ratingDist['items'] as $item)
-                                <div class="saas-legend-item">
-                                    <span class="saas-legend-dot" style="background: {{ $item['color'] }};"></span>
-                                    <span class="saas-legend-name">{{ $item['label'] }}</span>
-                                    <span class="saas-legend-pct">{{ $item['percent'] }}%</span>
-                                    <span class="saas-legend-cnt">{{ $item['count'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                        <i class="bi bi-pie-chart text-secondary opacity-50 fs-2 mb-2"></i>
+                        <div class="fw-semibold small text-dark">No Rating Data Available</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No feedback ratings have been submitted for this period.</div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -168,26 +211,32 @@
                         <i class="bi bi-star-fill text-warning me-1"></i>Rating 1-5
                     </span>
                 </div>
-                <div class="d-flex flex-column gap-1 my-auto">
-                    @forelse($categoryFeedback as $cat)
-                        <div class="saas-progress-row">
-                            <span class="saas-progress-name" title="{{ $cat['name'] }}">{{ $cat['name'] }}</span>
-                            <div class="saas-progress-track">
-                                <div class="saas-progress-bar" style="width: {{ $cat['percent'] }}%; background: {{ $cat['color'] }};"></div>
+                @if($hasCategoryData)
+                    <div class="d-flex flex-column gap-1 my-auto">
+                        @foreach($categoryFeedback as $cat)
+                            <div class="saas-progress-row">
+                                <span class="saas-progress-name" title="{{ $cat['name'] }}">{{ $cat['name'] }}</span>
+                                <div class="saas-progress-track">
+                                    <div class="saas-progress-bar" style="width: {{ $cat['percent'] }}%; background: {{ $cat['color'] }};"></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1 justify-content-end" style="min-width: 45px;">
+                                    @if(isset($cat['avg']) && $cat['avg'] > 0)
+                                        <span class="fw-bold text-dark small" style="font-size: 0.78rem;">{{ number_format($cat['avg'], 1) }}★</span>
+                                        <span class="text-muted" style="font-size: 0.68rem;">({{ $cat['count'] }})</span>
+                                    @else
+                                        <span class="saas-progress-val">0★ (0)</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center gap-1 justify-content-end" style="min-width: 45px;">
-                                @if(isset($cat['avg']) && $cat['avg'] > 0)
-                                    <span class="fw-bold text-dark small" style="font-size: 0.78rem;">{{ number_format($cat['avg'], 1) }}★</span>
-                                    <span class="text-muted" style="font-size: 0.68rem;">({{ $cat['count'] }})</span>
-                                @else
-                                    <span class="saas-progress-val">0</span>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center py-4 text-muted small">No facility rating questions configured in Section 4.</div>
-                    @endforelse
-                </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                        <i class="bi bi-card-checklist text-secondary opacity-50 fs-2 mb-2"></i>
+                        <div class="fw-semibold small text-dark">No Category Ratings Available</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No Section 4 facility ratings recorded for this period.</div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -203,21 +252,27 @@
                         <i class="bi bi-diagram-3 me-1 text-primary"></i>{{ $rangeLabel }}
                     </span>
                 </div>
-                <div class="d-flex flex-column gap-1 my-auto">
-                    @forelse($topLocations as $loc)
-                        <div class="saas-rank-row">
-                            <span class="saas-rank-num">{{ $loc['rank'] }}</span>
-                            <span class="saas-rank-name" title="{{ $loc['name'] }}">{{ $loc['name'] }}</span>
-                            <div class="saas-rank-track">
-                                <div class="saas-progress-bar" style="width: {{ $loc['percent'] }}%; background: {{ $loc['color'] }};"></div>
+                @if($hasTopLocations)
+                    <div class="d-flex flex-column gap-1 my-auto">
+                        @foreach($topLocations as $loc)
+                            <div class="saas-rank-row">
+                                <span class="saas-rank-num">{{ $loc['rank'] }}</span>
+                                <span class="saas-rank-name" title="{{ $loc['name'] }}">{{ $loc['name'] }}</span>
+                                <div class="saas-rank-track">
+                                    <div class="saas-progress-bar" style="width: {{ $loc['percent'] }}%; background: {{ $loc['color'] }};"></div>
+                                </div>
+                                <span class="saas-rank-pct">{{ $loc['percent'] }}%</span>
+                                <span class="saas-rank-cnt">{{ $loc['count'] }}</span>
                             </div>
-                            <span class="saas-rank-pct">{{ $loc['percent'] }}%</span>
-                            <span class="saas-rank-cnt">{{ $loc['count'] }}</span>
-                        </div>
-                    @empty
-                        <div class="text-center py-4 text-muted small">No department visits recorded in this period.</div>
-                    @endforelse
-                </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                        <i class="bi bi-building-slash text-secondary opacity-50 fs-2 mb-2"></i>
+                        <div class="fw-semibold small text-dark">No Department Visits Recorded</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No plant department visits recorded in this period.</div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -251,10 +306,10 @@
                             <i class="bi bi-chevron-right saas-feedback-arrow ms-2"></i>
                         </a>
                     @empty
-                        <div class="text-center py-4 text-muted">
-                            <i class="bi bi-chat-square-dots fs-3 text-secondary opacity-50 d-block mb-2"></i>
-                            <div class="fw-semibold small text-dark">No feedback submitted yet</div>
-                            <div class="small text-muted" style="font-size: 0.75rem;">Submitted visitor feedback will appear here in real-time.</div>
+                        <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                            <i class="bi bi-chat-square-dots text-secondary opacity-50 fs-2 mb-2"></i>
+                            <div class="fw-semibold small text-dark">No Feedback Submitted Yet</div>
+                            <div class="small text-muted" style="font-size: 0.75rem;">No visitor feedbacks found in the database for this period.</div>
                         </div>
                     @endforelse
                 </div>
@@ -273,29 +328,37 @@
                         <i class="bi bi-pie-chart me-1 text-primary"></i>{{ $rangeLabel }}
                     </span>
                 </div>
-                <div class="row align-items-center g-3 my-auto">
-                    <div class="col-12 col-sm-5 text-center">
-                        <div class="saas-donut-box">
-                            <canvas id="visitorTypeDonut"></canvas>
-                            <div class="saas-donut-center">
-                                <div class="saas-donut-number">{{ number_format($visitorTypes['total']) }}</div>
-                                <div class="saas-donut-label">Total Visitors</div>
+                @if($visitorTypes['total'] > 0)
+                    <div class="row align-items-center g-3 my-auto">
+                        <div class="col-12 col-sm-5 text-center">
+                            <div class="saas-donut-box">
+                                <canvas id="visitorTypeDonut"></canvas>
+                                <div class="saas-donut-center">
+                                    <div class="saas-donut-number">{{ number_format($visitorTypes['total']) }}</div>
+                                    <div class="saas-donut-label">Total Visitors</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-7">
+                            <div class="d-flex flex-column gap-1">
+                                @foreach($visitorTypes['items'] as $vt)
+                                    <div class="saas-legend-item">
+                                        <span class="saas-legend-dot" style="background: {{ $vt['color'] }};"></span>
+                                        <span class="saas-legend-name">{{ $vt['label'] }}</span>
+                                        <span class="saas-legend-pct">{{ $vt['percent'] }}%</span>
+                                        <span class="saas-legend-cnt">{{ $vt['count'] }}</span>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-7">
-                        <div class="d-flex flex-column gap-1">
-                            @foreach($visitorTypes['items'] as $vt)
-                                <div class="saas-legend-item">
-                                    <span class="saas-legend-dot" style="background: {{ $vt['color'] }};"></span>
-                                    <span class="saas-legend-name">{{ $vt['label'] }}</span>
-                                    <span class="saas-legend-pct">{{ $vt['percent'] }}%</span>
-                                    <span class="saas-legend-cnt">{{ $vt['count'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                        <i class="bi bi-people text-secondary opacity-50 fs-2 mb-2"></i>
+                        <div class="fw-semibold small text-dark">No Visitor Records Available</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No visitors recorded in the database for this period.</div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
 
@@ -308,29 +371,37 @@
                         <i class="bi bi-check2-circle me-1 text-primary"></i>{{ $rangeLabel }}
                     </span>
                 </div>
-                <div class="row align-items-center g-3 my-auto">
-                    <div class="col-12 col-sm-5 text-center">
-                        <div class="saas-donut-box">
-                            <canvas id="feedbackStatusDonut"></canvas>
-                            <div class="saas-donut-center">
-                                <div class="saas-donut-number">{{ number_format($feedbackStatuses['total']) }}</div>
-                                <div class="saas-donut-label">Total Feedbacks</div>
+                @if($feedbackStatuses['total'] > 0)
+                    <div class="row align-items-center g-3 my-auto">
+                        <div class="col-12 col-sm-5 text-center">
+                            <div class="saas-donut-box">
+                                <canvas id="feedbackStatusDonut"></canvas>
+                                <div class="saas-donut-center">
+                                    <div class="saas-donut-number">{{ number_format($feedbackStatuses['total']) }}</div>
+                                    <div class="saas-donut-label">Total Feedbacks</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-7">
+                            <div class="d-flex flex-column gap-1">
+                                @foreach($feedbackStatuses['items'] as $fs)
+                                    <div class="saas-legend-item">
+                                        <span class="saas-legend-dot" style="background: {{ $fs['color'] }};"></span>
+                                        <span class="saas-legend-name">{{ $fs['label'] }}</span>
+                                        <span class="saas-legend-pct">{{ $fs['percent'] }}%</span>
+                                        <span class="saas-legend-cnt">{{ $fs['count'] }}</span>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-7">
-                        <div class="d-flex flex-column gap-1">
-                            @foreach($feedbackStatuses['items'] as $fs)
-                                <div class="saas-legend-item">
-                                    <span class="saas-legend-dot" style="background: {{ $fs['color'] }};"></span>
-                                    <span class="saas-legend-name">{{ $fs['label'] }}</span>
-                                    <span class="saas-legend-pct">{{ $fs['percent'] }}%</span>
-                                    <span class="saas-legend-cnt">{{ $fs['count'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                        <i class="bi bi-clipboard-x text-secondary opacity-50 fs-2 mb-2"></i>
+                        <div class="fw-semibold small text-dark">No Feedback Status Records</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No feedback statuses recorded for this period in the database.</div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -457,10 +528,27 @@ document.addEventListener('DOMContentLoaded', function() {
     window.updateTrendsPeriod = function(period) {
         if (!feedbackTrendsChartInstance || !allTrendsData[period]) return;
         const target = allTrendsData[period];
-        feedbackTrendsChartInstance.data.labels = target.labels;
-        feedbackTrendsChartInstance.data.datasets[0].data = target.total;
-        feedbackTrendsChartInstance.data.datasets[1].data = target.positive;
-        feedbackTrendsChartInstance.update();
+        const hasData = target.has_data !== undefined ? target.has_data : target.total.some(v => v > 0);
+        const canvas = document.getElementById('feedbackTrendsChart');
+        const emptyNotice = document.getElementById('trendsEmptyNotice');
+
+        if (!hasData) {
+            if (canvas) canvas.classList.add('d-none');
+            if (emptyNotice) {
+                emptyNotice.classList.remove('d-none');
+                emptyNotice.classList.add('d-flex');
+            }
+        } else {
+            if (emptyNotice) {
+                emptyNotice.classList.add('d-none');
+                emptyNotice.classList.remove('d-flex');
+            }
+            if (canvas) canvas.classList.remove('d-none');
+            feedbackTrendsChartInstance.data.labels = target.labels;
+            feedbackTrendsChartInstance.data.datasets[0].data = target.total;
+            feedbackTrendsChartInstance.data.datasets[1].data = target.positive;
+            feedbackTrendsChartInstance.update();
+        }
     };
 
     // Common Donut Options

@@ -721,7 +721,8 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: #2563eb;
 }
 
-.saas-icon-box.emerald {
+.saas-icon-box.emerald,
+.saas-icon-box.green {
     background: #ecfdf5;
     color: #10b981;
 }
@@ -731,9 +732,21 @@ h1, h2, h3, h4, h5, h6, .heading-font {
     color: #f59e0b;
 }
 
+.saas-icon-box.yellow {
+    background: #fefce8;
+    color: #ca8a04;
+    border: 1px solid #fef08a;
+}
+
 .saas-icon-box.rose {
     background: #fff1f2;
     color: #f43f5e;
+}
+
+.saas-icon-box.red {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
 }
 
 .saas-icon-box.purple {
@@ -771,6 +784,10 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 
 .saas-trend-badge.rose {
     color: #ef4444;
+}
+
+.saas-trend-badge.gray {
+    color: #94a3b8;
 }
 
 .saas-trend-sub {
@@ -1329,6 +1346,258 @@ h1, h2, h3, h4, h5, h6, .heading-font {
 .border-indigo { border-color: #6366f1 !important; }
 .bg-indigo-subtle { background-color: #e0e7ff !important; }
 .text-indigo { color: #4338ca !important; }
+
+/* ==========================================================================
+   Modern Enterprise Per-Page Selector Dropdown
+   ========================================================================== */
+.per-page-selector-component {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.per-page-trigger-btn.dropdown-toggle {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    padding: 0.32rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+/* Hide default bootstrap caret */
+.per-page-trigger-btn.dropdown-toggle::after {
+    display: none !important;
+}
+
+.per-page-trigger-btn:hover {
+    background: #f8fafc;
+    border-color: #06539d;
+    color: #06539d;
+    box-shadow: 0 2px 6px rgba(6, 83, 157, 0.12);
+}
+
+.per-page-trigger-btn:focus,
+.per-page-trigger-btn[aria-expanded="true"],
+.per-page-trigger-btn.show {
+    background: #ffffff;
+    border-color: #06539d;
+    color: #06539d;
+    box-shadow: 0 0 0 3px rgba(6, 83, 157, 0.15);
+    outline: none;
+}
+
+.per-page-icon-pill {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #06539d;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+.per-page-trigger-btn:hover .per-page-icon-pill {
+    transform: scale(1.05);
+}
+
+.per-page-trigger-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.78rem;
+}
+
+.per-page-prefix,
+.per-page-suffix {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.74rem;
+}
+
+.per-page-selected-val {
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.per-page-chevron-icon {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    margin-left: 0.1rem;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+}
+
+.per-page-trigger-btn:hover .per-page-chevron-icon {
+    color: #06539d;
+}
+
+.per-page-trigger-btn[aria-expanded="true"] .per-page-chevron-icon,
+.per-page-trigger-btn.show .per-page-chevron-icon {
+    transform: rotate(180deg);
+    color: #06539d;
+}
+
+/* Dropdown Menu Panel */
+.per-page-menu-panel {
+    min-width: 220px;
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.14), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    margin-top: 0.4rem !important;
+    z-index: 1060;
+    animation: fadeInDown 0.15s ease-out;
+}
+
+.per-page-menu-header {
+    padding: 0.35rem 0.55rem 0.45rem;
+    list-style: none;
+}
+
+.per-page-header-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.per-page-cap-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 9999px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.per-page-item-link {
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    margin-bottom: 2px;
+}
+
+.per-page-item-link:hover {
+    background-color: #f8fafc;
+    color: #06539d;
+    transform: translateX(2px);
+}
+
+.per-page-item-link.is-active {
+    background-color: #eff6ff !important;
+    color: #06539d !important;
+}
+
+.per-page-size-chip {
+    width: 34px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #334155;
+    transition: all 0.15s ease;
+}
+
+.per-page-item-link:hover .per-page-size-chip {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.per-page-size-chip.active {
+    background: #06539d !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(6, 83, 157, 0.3);
+}
+
+.per-page-size-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.per-page-size-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.per-page-item-link.is-active .per-page-size-name {
+    color: #06539d;
+    font-weight: 700;
+}
+
+.per-page-size-hint {
+    font-size: 0.68rem;
+    color: #64748b;
+    line-height: 1.1;
+    margin-top: 1px;
+}
+
+.per-page-check-icon {
+    color: #06539d;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    animation: fadeInDown 0.15s ease-out;
+}
+
+/* Fallback badge style */
+.per-page-select-badge {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+}
+.per-page-select-badge:hover,
+.per-page-select-badge:focus-within {
+    border-color: #06539d;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(6, 83, 157, 0.12);
+}
+.per-page-select-badge select.per-page-select-control {
+    border: none;
+    background: transparent;
+    color: #1e293b;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0 2px;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+}
+
 
 .status-dot {
     width: 6px;

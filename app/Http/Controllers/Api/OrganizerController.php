@@ -90,8 +90,8 @@ class OrganizerController extends Controller
                 'feedback:id,visit_id,overall_rating,submitted_at',
             ])
             ->when($isToday, fn ($q) => $q->whereDate('visit_date', today()))
-            ->when(! $isToday && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
-            ->when(! $isToday && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
+            ->when(! $isToday && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
+            ->when(! $isToday && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'))
             ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w

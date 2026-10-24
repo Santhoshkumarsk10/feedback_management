@@ -12,6 +12,10 @@ class PlantController extends Controller
     public function index(Request $request)
     {
         $statusTab = $request->input('tab', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         if ($request->filled('q')) {
             $request->validate([
@@ -33,11 +37,11 @@ class PlantController extends Controller
                   ->orWhere('contact_email', 'like', "%$v%");
             }));
 
-        $totalCount = Plant::count();
-        $activeCount = Plant::where('is_active', true)->count();
-        $inactiveCount = Plant::where('is_active', false)->count();
+        $totalCount = min(Plant::count(), 1000);
+        $activeCount = min(Plant::where('is_active', true)->count(), 1000);
+        $inactiveCount = min(Plant::where('is_active', false)->count(), 1000);
 
-        $plants = $query->orderBy('code')->paginate(10)->withQueryString();
+        $plants = $query->orderBy('code')->paginateCapped($perPage, 1000);
 
         $allPlantSuggestions = Plant::select('id', 'name', 'code', 'location')
             ->orderBy('code')

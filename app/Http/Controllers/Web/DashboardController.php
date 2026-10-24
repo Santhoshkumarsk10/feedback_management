@@ -120,30 +120,72 @@ class DashboardController extends Controller
         $pendingActionsCount = (clone $visitsQuery)->doesntHave('feedback')->count();
 
         // Growth metrics vs Previous Period
+        $visitorsGrowth = '0%';
+        $visitorsGrowthDir = 'neutral';
+        $feedbackGrowth = '0%';
+        $feedbackGrowthDir = 'neutral';
+        $ratingGrowthText = '0.0 pts';
+        $ratingGrowthDir = 'neutral';
+        $pendingGrowth = '0%';
+        $pendingGrowthDir = 'neutral';
+        $prevVisitors = 0;
+        $prevFeedbacks = 0;
+
         if ($prevStartDate && $prevEndDate) {
             $prevVisitors = Visit::whereBetween('visit_date', [$prevStartDate->toDateString(), $prevEndDate->toDateString()])->count();
-            $visitorsGrowth = $prevVisitors > 0 ? round((($totalVisitorsCount - $prevVisitors) / $prevVisitors) * 100) : ($totalVisitorsCount > 0 ? 100 : 0);
+            if ($prevVisitors > 0) {
+                $vDiff = $totalVisitorsCount - $prevVisitors;
+                $vPct = round(($vDiff / $prevVisitors) * 100);
+                $visitorsGrowth = ($vPct >= 0 ? '+' : '') . $vPct . '%';
+                $visitorsGrowthDir = $vPct > 0 ? 'up' : ($vPct < 0 ? 'down' : 'neutral');
+            } elseif ($totalVisitorsCount > 0) {
+                $visitorsGrowth = "+{$totalVisitorsCount} new";
+                $visitorsGrowthDir = 'up';
+            } else {
+                $visitorsGrowth = '0%';
+                $visitorsGrowthDir = 'neutral';
+            }
 
             $prevFeedbacks = Feedback::whereBetween('submitted_at', [$prevStartDate, $prevEndDate])->count();
-            $feedbackGrowth = $prevFeedbacks > 0 ? round((($totalFeedbacksCount - $prevFeedbacks) / $prevFeedbacks) * 100) : ($totalFeedbacksCount > 0 ? 100 : 0);
+            if ($prevFeedbacks > 0) {
+                $fDiff = $totalFeedbacksCount - $prevFeedbacks;
+                $fPct = round(($fDiff / $prevFeedbacks) * 100);
+                $feedbackGrowth = ($fPct >= 0 ? '+' : '') . $fPct . '%';
+                $feedbackGrowthDir = $fPct > 0 ? 'up' : ($fPct < 0 ? 'down' : 'neutral');
+            } elseif ($totalFeedbacksCount > 0) {
+                $feedbackGrowth = "+{$totalFeedbacksCount} new";
+                $feedbackGrowthDir = 'up';
+            } else {
+                $feedbackGrowth = '0%';
+                $feedbackGrowthDir = 'neutral';
+            }
 
             $prevAvg = Feedback::whereBetween('submitted_at', [$prevStartDate, $prevEndDate])->avg('overall_rating');
-            if ($prevAvg !== null && $overallAvg > 0) {
-                $ratingDiff = round($overallAvg - (float) $prevAvg, 1);
-                $ratingGrowthText = ($ratingDiff >= 0 ? '+' : '') . $ratingDiff . ' pts';
-            } elseif ($overallAvg > 0) {
-                $ratingGrowthText = '+' . $overallAvg . ' pts';
+            if ($prevAvg !== null && $totalFeedbacksCount > 0 && $prevFeedbacks > 0) {
+                $rDiff = round($overallAvg - (float) $prevAvg, 1);
+                $ratingGrowthText = ($rDiff >= 0 ? '+' : '') . $rDiff . ' pts';
+                $ratingGrowthDir = $rDiff > 0 ? 'up' : ($rDiff < 0 ? 'down' : 'neutral');
+            } elseif ($totalFeedbacksCount > 0) {
+                $ratingGrowthText = '+' . number_format($overallAvg, 1) . ' pts';
+                $ratingGrowthDir = 'up';
             } else {
-                $ratingGrowthText = '+0.0 pts';
+                $ratingGrowthText = '0.0 pts';
+                $ratingGrowthDir = 'neutral';
             }
 
             $prevPending = Visit::whereBetween('visit_date', [$prevStartDate->toDateString(), $prevEndDate->toDateString()])->doesntHave('feedback')->count();
-            $pendingGrowth = $prevPending > 0 ? round((($pendingActionsCount - $prevPending) / $prevPending) * 100) : ($pendingActionsCount > 0 ? 100 : 0);
-        } else {
-            $visitorsGrowth = 0;
-            $feedbackGrowth = 0;
-            $ratingGrowthText = '+0.0 pts';
-            $pendingGrowth = 0;
+            if ($prevPending > 0) {
+                $pDiff = $pendingActionsCount - $prevPending;
+                $pPct = round(($pDiff / $prevPending) * 100);
+                $pendingGrowth = ($pPct >= 0 ? '+' : '') . $pPct . '%';
+                $pendingGrowthDir = $pPct > 0 ? 'down' : ($pPct < 0 ? 'up' : 'neutral');
+            } elseif ($pendingActionsCount > 0) {
+                $pendingGrowth = "+{$pendingActionsCount} new";
+                $pendingGrowthDir = 'down';
+            } else {
+                $pendingGrowth = '0%';
+                $pendingGrowthDir = 'neutral';
+            }
         }
 
         $stats = [
@@ -166,28 +208,33 @@ class DashboardController extends Controller
         $saasMetrics = [
             'total_visitors' => [
                 'value' => number_format($totalVisitorsCount),
-                'growth' => ($visitorsGrowth >= 0 ? '+' : '') . $visitorsGrowth . '%',
-                'subtext' => $growthSubtext,
+                'growth' => $visitorsGrowth,
+                'dir' => $visitorsGrowthDir,
+                'subtext' => ($totalVisitorsCount > 0 || $prevVisitors > 0) ? $growthSubtext : 'No data in period',
             ],
             'total_feedbacks' => [
                 'value' => number_format($totalFeedbacksCount),
-                'growth' => ($feedbackGrowth >= 0 ? '+' : '') . $feedbackGrowth . '%',
-                'subtext' => $growthSubtext,
+                'growth' => $feedbackGrowth,
+                'dir' => $feedbackGrowthDir,
+                'subtext' => ($totalFeedbacksCount > 0 || $prevFeedbacks > 0) ? $growthSubtext : 'No data in period',
             ],
             'average_rating' => [
                 'value' => ($totalFeedbacksCount > 0 ? number_format($overallAvg, 1) : '0.0') . ' / 5',
                 'growth' => $ratingGrowthText,
-                'subtext' => $growthSubtext,
+                'dir' => $ratingGrowthDir,
+                'subtext' => $totalFeedbacksCount > 0 ? $growthSubtext : 'No ratings in period',
             ],
             'positive_feedbacks' => [
                 'value' => number_format($positiveCount),
                 'growth' => "{$positivePct}%",
-                'subtext' => 'of total feedbacks',
+                'dir' => $positivePct > 0 ? 'up' : 'neutral',
+                'subtext' => $totalFeedbacksCount > 0 ? 'of total feedbacks' : 'No feedbacks submitted',
             ],
             'pending_actions' => [
                 'value' => number_format($pendingActionsCount),
-                'growth' => ($pendingGrowth >= 0 ? '+' : '') . $pendingGrowth . '%',
-                'subtext' => $growthSubtext,
+                'growth' => $pendingGrowth,
+                'dir' => $pendingGrowthDir,
+                'subtext' => $pendingActionsCount > 0 ? $growthSubtext : 'No pending visits',
             ],
         ];
 
@@ -214,6 +261,7 @@ class DashboardController extends Controller
                 'labels' => $labels,
                 'total' => $total,
                 'positive' => $positive,
+                'has_data' => array_sum($total) > 0,
             ];
         };
 
@@ -224,6 +272,7 @@ class DashboardController extends Controller
         ];
 
         $trendsData = $allTrends['30'];
+        $hasTrendsData = $trendsData['has_data'];
 
         // Rating Distribution Donut
         $dist = (clone $feedbacksQuery)->whereNotNull('overall_rating')
@@ -263,6 +312,7 @@ class DashboardController extends Controller
             'Facilities Rating: Overall Professional Experience' => 'Overall Experience',
         ];
 
+        $hasCategoryData = false;
         $categoryFeedback = [];
         $catIdx = 0;
         foreach ($sec4Questions as $question) {
@@ -274,6 +324,9 @@ class DashboardController extends Controller
             }
             
             $cnt = $ansQuery->count();
+            if ($cnt > 0) {
+                $hasCategoryData = true;
+            }
             $avg = $cnt > 0 ? (float) $ansQuery->avg('answer') : 0.0;
             $percent = $cnt > 0 ? min(100, round(($avg / 5.0) * 100)) : 0;
 
@@ -314,6 +367,7 @@ class DashboardController extends Controller
             ];
             $rank++;
         }
+        $hasTopLocations = count($topLocations) > 0 && array_sum(array_column($topLocations, 'count')) > 0;
 
         // Recent Feedbacks Stream
         $recentQuery = Feedback::with(['visit.visitor', 'organizer']);
@@ -321,10 +375,6 @@ class DashboardController extends Controller
             $recentQuery->whereBetween('submitted_at', [$startDate, $endDate]);
         }
         $recentFeedbacksList = $recentQuery->latest('submitted_at')->limit(5)->get();
-
-        if ($recentFeedbacksList->isEmpty() && Feedback::exists()) {
-            $recentFeedbacksList = Feedback::with(['visit.visitor', 'organizer'])->latest('submitted_at')->limit(5)->get();
-        }
 
         $avatarBgColors = ['#eff6ff', '#ecfdf5', '#fef3c7', '#fff1f2', '#f3e8ff'];
         $avatarTextColors = ['#1d4ed8', '#047857', '#b45309', '#be123c', '#7e22ce'];
@@ -409,8 +459,8 @@ class DashboardController extends Controller
         ];
 
         return view('dashboard', compact(
-            'stats', 'saasMetrics', 'trendsData', 'allTrends', 'ratingDist', 'categoryFeedback',
-            'topLocations', 'recentFeedbacks', 'visitorTypes', 'feedbackStatuses',
+            'stats', 'saasMetrics', 'trendsData', 'allTrends', 'hasTrendsData', 'ratingDist', 'categoryFeedback', 'hasCategoryData',
+            'topLocations', 'hasTopLocations', 'recentFeedbacks', 'visitorTypes', 'feedbackStatuses',
             'currentUser', 'todayCounts',
             'selectedRange', 'rangeLabel'
         ));
@@ -434,7 +484,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 1. Visitors List (Plant Visitors & Visits)
+        // 1. Visitors List (Visitors & Visits)
         $visits = Visit::with(['visitor', 'feedback'])
             ->where(function ($q) use ($term) {
                 $q->where('visitor_code', 'like', "%{$term}%")
@@ -539,14 +589,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dedicated Operations Page: Today's Plant Visitors & Feedback Queue
+     * Dedicated Operations Page: Today's Visitors & Feedback Queue
      */
     public function shiftQueue(Request $request)
     {
         $currentUser = auth()->user();
 
         // Today's Operations Queue Filter
-        $todayTab = $request->input('today_tab', 'pending');
+        $todayTab = $request->input('today_tab', 'all');
         $scope = $request->input('scope', 'all'); // 'all' or 'my'
         $search = $request->input('search');
 

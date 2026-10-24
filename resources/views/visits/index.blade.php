@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'Plant Visitors Log')
-@section('page_title', 'Plant Visitor Directory')
-@section('page_subtitle', 'Browse all plant visitors, escort assignments, and feedback statuses')
+@section('title', 'Visitors Log')
+@section('page_title', 'Visitor Directory')
+@section('page_subtitle', 'Browse all visitors, escort assignments, and feedback statuses')
 
 @section('content')
 <!-- Filter Tabs & Controls Card -->
@@ -30,9 +30,7 @@
         </div>
 
         <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 10 per page
-            </span>
+            <x-per-page-selector :current="$visits->perPage()" />
         </div>
     </div>
 
@@ -41,6 +39,9 @@
         <form method="GET" action="{{ route('visits.index') }}" class="d-flex flex-wrap align-items-center gap-2">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
+            @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
 
             <x-search-suggest 
@@ -90,7 +91,7 @@
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="card-title">
             <i class="bi bi-person-badge-fill text-primary"></i>
-            <span>Recorded Plant Visits</span>
+            <span>Recorded Visits</span>
             @if(!empty($isTodayFilter))
                 <span class="badge bg-primary text-white ms-2 fs-xs">Today's Visits</span>
             @endif
@@ -228,7 +229,7 @@
 
 <div class="pagination-container">
     <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $visits->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $visits->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $visits->total() }}</span> visits (10 per page)
+        Showing <span class="fw-bold text-dark">{{ $visits->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $visits->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $visits->total() }}</span> visits ({{ $visits->perPage() }} per page)@if($visits->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
     </div>
     <div>
         {{ $visits->links() }}

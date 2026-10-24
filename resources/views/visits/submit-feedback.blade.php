@@ -47,7 +47,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <div class="text-secondary fw-semibold">{{ $visit->visitor_designation ?: 'Plant Visitor' }} •
+                            <div class="text-secondary fw-semibold">{{ $visit->visitor_designation ?: 'Visitor' }} •
                                 <span class="text-dark">{{ $visit->visitor_company }}</span></div>
                         </div>
                         <div class="text-end">

@@ -74,7 +74,7 @@ class DatabaseMaintenanceController extends Controller
         ],
         // Unshielded tables
         'visits' => [
-            'description' => 'Plant visitor tour records, company details, arrival and status.',
+            'description' => 'Visitor tour records, company details, arrival and status.',
             'category' => 'Operational Logs',
         ],
         'feedbacks' => [

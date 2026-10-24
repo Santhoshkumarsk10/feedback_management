@@ -60,8 +60,9 @@
 
         <div class="d-none d-sm-flex align-items-center gap-2">
             <span class="badge-modern badge-slate">
-                <i class="bi bi-phone"></i> Target Devices: Mobile / Tablet / Web
+                <i class="bi bi-phone"></i> Devices
             </span>
+            <x-per-page-selector :current="$banners->perPage()" />
         </div>
     </div>
 
@@ -70,6 +71,9 @@
         <form method="GET" action="{{ route('banners.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="bannerSearchForm">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
+            @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
 
             <x-search-suggest 
@@ -226,11 +230,14 @@
         </table>
     </div>
 
-    @if($banners->hasPages())
-        <div class="p-3 border-top d-flex justify-content-center">
+    <div class="p-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="small text-muted">
+            Showing <span class="fw-bold text-dark">{{ $banners->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $banners->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $banners->total() }}</span> banners ({{ $banners->perPage() }} per page)@if($banners->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
+        </div>
+        <div>
             {{ $banners->links() }}
         </div>
-    @endif
+    </div>
 </div>
 
 <style>

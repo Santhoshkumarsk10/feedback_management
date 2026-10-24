@@ -20,9 +20,14 @@ class PermissionController extends Controller
         $request->validate([
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'module' => ['nullable', 'string', 'max:50'],
+            'per_page' => 'nullable|integer',
         ]);
 
         $moduleFilter = $request->input('module');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = Permission::with('roles')
             ->when(!empty($moduleFilter) && $moduleFilter !== 'all', fn ($q) => $q->where('module', $moduleFilter))
@@ -34,7 +39,7 @@ class PermissionController extends Controller
                   ->orWhere('description', 'like', "%$v%");
             }));
 
-        $totalCount = Permission::count();
+        $totalCount = min(Permission::count(), 1000);
         $allModules = Permission::select('module')
             ->distinct()
             ->orderBy('module')
@@ -46,7 +51,7 @@ class PermissionController extends Controller
             ->pluck('count', 'module')
             ->all();
 
-        $permissions = $query->orderBy('module')->orderBy('name')->paginate(15)->withQueryString();
+        $permissions = $query->orderBy('module')->orderBy('name')->paginateCapped($perPage, 1000);
 
         $permissionSuggestions = Permission::select('id', 'name', 'display_name', 'module', 'description')
             ->orderBy('module')

@@ -36,9 +36,7 @@
         </div>
 
         <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 10 per page
-            </span>
+            <x-per-page-selector :current="$logs->perPage()" />
         </div>
     </div>
 
@@ -47,6 +45,9 @@
         <form method="GET" action="{{ route('audit-logs.index') }}" class="d-flex flex-wrap align-items-center gap-2">
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
+            @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
 
             <x-search-suggest 
@@ -220,7 +221,7 @@
 <!-- Pagination Footer Container -->
 <div class="pagination-container">
     <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $logs->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $logs->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $logs->total() }}</span> audit events (10 per page)
+        Showing <span class="fw-bold text-dark">{{ $logs->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $logs->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $logs->total() }}</span> audit events ({{ $logs->perPage() }} per page)@if($logs->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
     </div>
     <div>
         {{ $logs->links() }}

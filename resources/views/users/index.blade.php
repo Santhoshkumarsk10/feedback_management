@@ -51,9 +51,7 @@
         </div>
 
         <div class="d-none d-sm-flex align-items-center gap-2">
-            <span class="badge-modern badge-slate">
-                <i class="bi bi-list-check"></i> 10 per page
-            </span>
+            <x-per-page-selector :current="$users->perPage()" />
         </div>
     </div>
 
@@ -62,6 +60,9 @@
         <form method="GET" action="{{ route('users.index') }}" class="d-flex flex-wrap align-items-center gap-2">
             @if(request('role'))
                 <input type="hidden" name="role" value="{{ request('role') }}">
+            @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
 
             <x-search-suggest 
@@ -230,7 +231,7 @@
 
 <div class="pagination-container">
     <div class="small text-muted">
-        Showing <span class="fw-bold text-dark">{{ $users->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $users->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $users->total() }}</span> users (10 per page)
+        Showing <span class="fw-bold text-dark">{{ $users->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $users->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $users->total() }}</span> users ({{ $users->perPage() }} per page)@if($users->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
     </div>
     <div>
         {{ $users->links() }}

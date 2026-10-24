@@ -36,24 +36,13 @@
                         </span>
                     </div>
 
-                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                    <div class="d-flex flex-wrap align-items-baseline gap-2">
                         <h4 class="fw-bold text-dark mb-0">
                             Today's Plant Operations
                         </h4>
                         <span class="badge bg-primary text-white fs-6 px-3 py-1">
                             {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y') }}
                         </span>
-                    </div>
-
-                    <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
-                        <span><i class="bi bi-person-badge text-primary"></i> Logged Staff:
-                            <strong>{{ $currentUser->name }}</strong> ({{ ucfirst($currentUser->role) }})</span>
-                        @if ($currentUser->department)
-                            <span><i class="bi bi-building text-secondary"></i> {{ $currentUser->department }}</span>
-                        @endif
-                        @if ($currentUser->plant)
-                            <span><i class="bi bi-geo-alt text-secondary"></i> {{ $currentUser->plant->name }}</span>
-                        @endif
                     </div>
                 </div>
 
@@ -170,7 +159,7 @@
             <div>
                 <div class="card-title">
                     <i class="bi bi-calendar2-day-fill text-primary"></i>
-                    <span>Today's Plant Visitors & Feedback Queue</span>
+                    <span>Today's Visitors & Feedback Queue</span>
                 </div>
                 <div class="text-muted small mt-1">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
             </div>
@@ -209,12 +198,21 @@
             </div>
         </div>
 
-        <!-- Filter Tabs Header: Pending vs Completed vs All -->
+        <!-- Filter Tabs Header: All vs Pending vs Completed -->
         <div class="filter-tabs-header bg-light border-bottom px-3 pt-2">
             <div class="filter-tabs-nav">
+                <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
+                    class="filter-tab-btn {{ ($todayTab ?? 'all') === 'all' ? 'active' : '' }}">
+                    <i class="bi bi-people-fill text-primary"></i>
+                    <span>All Today's Visitors</span>
+                    <span class="badge bg-secondary rounded-pill ms-1" id="badgeAllCount">
+                        {{ $todayCounts['all'] }}
+                    </span>
+                </a>
+
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'pending'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}"
-                    style="{{ ($todayTab ?? 'pending') === 'pending' ? 'border-bottom: 3px solid #f59e0b; color: #b45309; font-weight: 700;' : '' }}">
+                    class="filter-tab-btn {{ ($todayTab ?? '') === 'pending' ? 'active' : '' }}"
+                    style="{{ ($todayTab ?? '') === 'pending' ? 'border-bottom: 3px solid #f59e0b; color: #b45309; font-weight: 700;' : '' }}">
                     <i class="bi bi-clock-history text-warning"></i>
                     <span>Awaiting Feedback (Pending)</span>
                     <span
@@ -230,15 +228,6 @@
                     <span>Feedback Completed</span>
                     <span class="badge bg-success rounded-pill ms-1" id="badgeCompletedCount">
                         {{ $todayCounts['completed'] }}
-                    </span>
-                </a>
-
-                <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
-                    class="filter-tab-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
-                    <i class="bi bi-people-fill text-primary"></i>
-                    <span>All Today's Visitors</span>
-                    <span class="badge bg-secondary rounded-pill ms-1" id="badgeAllCount">
-                        {{ $todayCounts['all'] }}
                     </span>
                 </a>
             </div>
@@ -439,10 +428,10 @@
                         <tr>
                             <td colspan="6" class="text-center text-muted py-5">
                                 <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success opacity-75"></i>
-                                @if (($todayTab ?? 'pending') === 'pending')
+                                @if (($todayTab ?? 'all') === 'pending')
                                     <div class="fw-bold text-dark fs-6">No Pending Feedback for Today!</div>
                                     <div class="small">All registered visitors for today have submitted their evaluation.</div>
-                                @elseif (($todayTab ?? '') === 'completed')
+                                @elseif (($todayTab ?? 'all') === 'completed')
                                     <div class="fw-bold text-dark fs-6">No Completed Feedback Yet Today.</div>
                                     <div class="small">Evaluations will appear here once submitted.</div>
                                 @else
