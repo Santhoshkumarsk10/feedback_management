@@ -27,6 +27,8 @@ class RoleController extends Controller
 
         $query = Role::withCount(['assignedUsers', 'permissions'])
             ->with('permissions')
+            ->when($tab === 'active', fn ($q) => $q->where('is_active', true))
+            ->when($tab === 'inactive', fn ($q) => $q->where('is_active', false))
             ->when($tab === 'system', fn ($q) => $q->where('is_system', true))
             ->when($tab === 'custom', fn ($q) => $q->where('is_system', false))
             ->when($request->filled('q'), fn ($q) => $q->where(function ($w) use ($request) {
@@ -37,9 +39,9 @@ class RoleController extends Controller
                   ->orWhere('description', 'like', "%$v%");
             }));
 
-        $totalCount = min(Role::count(), 1000);
-        $systemCount = min(Role::where('is_system', true)->count(), 1000);
-        $customCount = min(Role::where('is_system', false)->count(), 1000);
+        $totalCount = Role::count();
+        $activeCount = Role::where('is_active', true)->count();
+        $inactiveCount = Role::where('is_active', false)->count();
 
         $roles = $query->orderByDesc('is_system')->orderBy('name')->paginateCapped($perPage, 1000);
 
@@ -60,8 +62,9 @@ class RoleController extends Controller
             'roles' => $roles,
             'tabCounts' => [
                 'all' => $totalCount,
-                'system' => $systemCount,
-                'custom' => $customCount,
+                'total' => $totalCount,
+                'active' => $activeCount,
+                'inactive' => $inactiveCount,
             ],
             'currentTab' => $tab,
             'roleSuggestions' => $roleSuggestions,

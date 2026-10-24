@@ -182,6 +182,11 @@ class AuthController extends Controller
         return back()->withErrors(['email' => __($status)])->onlyInput('email');
     }
 
+    public function showProfile()
+    {
+        return view('auth.change-password');
+    }
+
     public function showChangePassword()
     {
         return view('auth.change-password');

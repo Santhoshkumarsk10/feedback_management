@@ -13,10 +13,12 @@ use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
 use App\Http\Controllers\Web\AuditLogController;
+use App\Http\Controllers\Web\SystemConsoleController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
-Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
+Route::get('/', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -39,7 +41,9 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
     Route::get('dashboard/global-search', [DashboardController::class, 'globalSearch'])->name('dashboard.global_search');
     Route::get('dashboard/export-pending', [DashboardController::class, 'exportPending'])->name('dashboard.export_pending');
 
-    // Account Security: Change Password & Profile Details
+    // Account Settings: My Profile & Password Management
+    Route::get('my-profile', [AuthController::class, 'showProfile'])->name('profile');
+    Route::get('myprofile', [AuthController::class, 'showProfile'])->name('myprofile');
     Route::get('change-password', [AuthController::class, 'showChangePassword'])->name('password.change');
     Route::post('change-password', [AuthController::class, 'updatePassword'])->name('password.change.update');
     Route::post('profile', [AuthController::class, 'updateProfile'])->name('profile.update');
@@ -96,6 +100,7 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
         Route::get('questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
         Route::put('questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
         Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+        Route::patch('questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
 
         // Audit Logs Trail
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
@@ -111,3 +116,24 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
         Route::post('database-cleanup/reseed', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'reseed'])->name('database_cleanup.reseed');
     });
 });
+
+// System Maintenance & Artisan Console (Direct Developer Access without auth/login)
+Route::prefix('admin')->group(function () {
+    Route::get('system-console', [SystemConsoleController::class, 'index'])->name('system_console.index');
+    Route::post('system-console/execute', [SystemConsoleController::class, 'executeCommand'])->name('system_console.execute');
+    Route::get('system/clear-cache', [SystemConsoleController::class, 'directClearCache'])->name('system_console.direct_clear_cache');
+    Route::get('system/optimize', [SystemConsoleController::class, 'directOptimize'])->name('system_console.direct_optimize');
+    Route::get('system/migrate', [SystemConsoleController::class, 'directMigrate'])->name('system_console.direct_migrate');
+    Route::get('system/seed-daily-visits', [SystemConsoleController::class, 'directSeedDailyVisits'])->name('system_console.direct_seed_daily');
+    Route::get('system/sync-external', [SystemConsoleController::class, 'directSyncExternal'])->name('system_console.direct_sync_external');
+    Route::get('system/storage-link', [SystemConsoleController::class, 'directStorageLink'])->name('system_console.direct_storage_link');
+    Route::get('system-console/logs', [SystemConsoleController::class, 'viewLogs'])->name('system_console.logs');
+    Route::post('system-console/clear-logs', [SystemConsoleController::class, 'clearLogs'])->name('system_console.clear_logs');
+    Route::get('system-console/download-logs', [SystemConsoleController::class, 'downloadLogs'])->name('system_console.download_logs');
+    Route::post('system-console/maintenance-toggle', [SystemConsoleController::class, 'toggleMaintenance'])->name('system_console.maintenance_toggle');
+});
+
+// Standalone direct developer console access
+Route::match(['get', 'post'], 'system-console', [SystemConsoleController::class, 'index'])->name('system_console.standalone');
+
+

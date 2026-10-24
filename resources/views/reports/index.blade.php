@@ -162,15 +162,15 @@
             <input type="hidden" name="report_tab" value="{{ $reportTab }}">
 
 
-            <div class="d-flex align-items-center gap-1">
-                <span class="small text-muted fw-bold">From:</span>
-                <x-date-picker name="from" :value="request('from')" placeholder="dd/mm/yyyy" title="From Date" />
-            </div>
-
-            <div class="d-flex align-items-center gap-1">
-                <span class="small text-muted fw-bold">To:</span>
-                <x-date-picker name="to" :value="request('to')" placeholder="dd/mm/yyyy" title="To Date" />
-            </div>
+            <x-date-range-picker 
+                from-name="from" 
+                to-name="to" 
+                :from-value="request('from')" 
+                :to-value="request('to')" 
+                placeholder="Select Date Range" 
+                title="Filter Report Period" 
+                auto-submit
+            />
 
             <button type="submit" class="btn-modern-primary btn-sm py-1 px-3">
                 <i class="bi bi-check2"></i> Apply Filters

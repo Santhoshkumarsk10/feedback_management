@@ -13,19 +13,24 @@ class DatabaseMaintenanceController extends Controller
 {
     /**
      * Exact tables strictly protected from any truncation/clear operations.
+     * Master data (Users, Roles, Permissions, Questions, Banners, Companies, Plants)
+     * are shielded here to prevent accidental data loss.
      */
     public const PROTECTED_TABLES = [
         'users',
         'password_reset_tokens',
         'role_has_permissions',
         'roles_has_permissions',
-        'audit_logs',
         'permissions',
-        'sessions',
-        'migrations',
         'roles',
         'model_has_roles',
         'model_has_permissions',
+        'plants',
+        'questions',
+        'banners',
+        'companies',
+        'sessions',
+        'migrations',
     ];
 
     /**
@@ -44,10 +49,6 @@ class DatabaseMaintenanceController extends Controller
             'description' => 'RBAC mapping linking permissions to system roles.',
             'protected_reason' => 'Spatie authorization & capability mapping.',
         ],
-        'audit_logs' => [
-            'description' => 'Immutable historical audit trail of all administrative actions.',
-            'protected_reason' => 'Regulatory compliance & security accountability.',
-        ],
         'permissions' => [
             'description' => 'System permission capabilities and access tokens.',
             'protected_reason' => 'Core security matrix definition.',
@@ -61,7 +62,7 @@ class DatabaseMaintenanceController extends Controller
             'protected_reason' => 'Schema integrity and Laravel migration tracker.',
         ],
         'roles' => [
-            'description' => 'Defined access tiers (Super Admin, Admin, Supervisor, Staff, Organizer).',
+            'description' => 'Defined access tiers (Super Admin, Admin, Supervisor, Staff, Coordinator).',
             'protected_reason' => 'System role definitions.',
         ],
         'model_has_roles' => [
@@ -72,7 +73,23 @@ class DatabaseMaintenanceController extends Controller
             'description' => 'Direct user to permission assignments.',
             'protected_reason' => 'Direct capability assignments.',
         ],
-        // Unshielded tables
+        'plants' => [
+            'description' => 'Manufacturing plants, technical centres, and machine divisions.',
+            'protected_reason' => 'Core Master Data: Shibaura plant facilities and division units.',
+        ],
+        'questions' => [
+            'description' => 'Feedback questionnaire items, star ratings, and sections.',
+            'protected_reason' => 'Core Master Data: Standard survey questionnaire and rating items.',
+        ],
+        'banners' => [
+            'description' => 'Promotional banners and welcome displays on customer forms.',
+            'protected_reason' => 'Core Master Data: CMS brand banners and visual identity.',
+        ],
+        'companies' => [
+            'description' => 'Corporate branding, logos, contact details, and display configs.',
+            'protected_reason' => 'Core Master Data: Corporate identity, contact details, and branding.',
+        ],
+        // Unshielded tables (Operational & Transactional Data)
         'visits' => [
             'description' => 'Visitor tour records, company details, arrival and status.',
             'category' => 'Operational Logs',
@@ -89,21 +106,9 @@ class DatabaseMaintenanceController extends Controller
             'description' => 'Registered visitor identity records and company links.',
             'category' => 'Operational Logs',
         ],
-        'plants' => [
-            'description' => 'Manufacturing plants, technical centres, and machine divisions.',
-            'category' => 'Configuration',
-        ],
-        'questions' => [
-            'description' => 'Feedback questionnaire items, star ratings, and sections.',
-            'category' => 'Configuration',
-        ],
-        'banners' => [
-            'description' => 'Promotional banners and welcome displays on customer forms.',
-            'category' => 'CMS Assets',
-        ],
-        'companies' => [
-            'description' => 'Corporate branding, logos, contact details, and display configs.',
-            'category' => 'CMS Assets',
+        'audit_logs' => [
+            'description' => 'Historical audit trail of administrative actions and user events.',
+            'category' => 'System & Audit Logs',
         ],
         'cache' => [
             'description' => 'Application key-value cache store.',

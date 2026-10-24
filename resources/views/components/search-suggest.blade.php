@@ -200,6 +200,9 @@
 
         function openDropdown() {
             if (!dropdown) return;
+            if (window.closeAllPopups) {
+                window.closeAllPopups(container);
+            }
             dropdown.style.display = 'block';
             input.setAttribute('aria-expanded', 'true');
             filterSuggestions();
@@ -211,6 +214,8 @@
             input.setAttribute('aria-expanded', 'false');
             clearActiveItem();
         }
+
+        container._closeSearchSuggest = closeDropdown;
 
         function clearActiveItem() {
             items.forEach(el => el.classList.remove('active'));

@@ -51,7 +51,7 @@ class PermissionController extends Controller
             ->pluck('count', 'module')
             ->all();
 
-        $permissions = $query->orderBy('module')->orderBy('name')->paginateCapped($perPage, 1000);
+        $permissions = $query->orderBy('module')->orderBy('name')->paginate(10)->withQueryString();
 
         $permissionSuggestions = Permission::select('id', 'name', 'display_name', 'module', 'description')
             ->orderBy('module')
