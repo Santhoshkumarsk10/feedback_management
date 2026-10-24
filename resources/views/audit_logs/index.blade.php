@@ -23,7 +23,6 @@
                 </div>
                 <span class="saas-stat-badge cyan">Logs</span>
             </div>
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08
         </div>
     </div>
 

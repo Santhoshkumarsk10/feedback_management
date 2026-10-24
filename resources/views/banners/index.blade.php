@@ -143,211 +143,6 @@
         </div>
     </div>
 
-<!-- Banners Data Table Card -->
-<div class="card-modern">
-    <div class="table-responsive">
-        <table class="table-modern">
-            <thead>
-                <tr>
-                    <th style="width: 70px;">Order</th>
-                    <th style="width: 140px;">Preview</th>
-                    <th>Headline & Subtitle</th>
-                    <th style="width: 140px;">Target Device</th>
-                    <th style="width: 150px;">Redirect Link</th>
-                    <th style="width: 110px;">Status</th>
-                    <th style="width: 120px;" class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($banners as $banner)
-                    <tr>
-                        <td class="text-center">
-                            <span class="badge-modern badge-slate font-monospace fw-bold">#{{ $banner->sort_order }}</span>
-                        </td>
-                        <td>
-                            <div class="banner-thumb-container">
-                                <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="banner-thumb-img" onerror="this.src='{{ asset('images/shibaura-logo-cropped.webp') }}'">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="fw-bold text-dark fs-6">{{ $banner->title }}</div>
-                            @if($banner->subtitle)
-                                <div class="text-muted small mt-1 text-truncate" style="max-width: 380px;">{{ $banner->subtitle }}</div>
-                            @endif
-                        </td>
-                        <td>
-                            @switch($banner->target)
-                                @case('mobile')
-                                    <span class="badge-modern badge-sky"><i class="bi bi-phone"></i> Mobile App</span>
-                                    @break
-                                @case('tablet')
-                                    <span class="badge-modern badge-purple"><i class="bi bi-tablet"></i> Tablet Kiosk</span>
-                                    @break
-                                @case('web')
-                                    <span class="badge-modern badge-teal"><i class="bi bi-browser-chrome"></i> Web Only</span>
-                                    @break
-                                @default
-                                    <span class="badge-modern badge-primary"><i class="bi bi-globe2"></i> All Devices</span>
-                            @endswitch
-                        </td>
-                        <td>
-                            @if($banner->link_url)
-                                <a href="{{ $banner->link_url }}" target="_blank" class="text-primary small text-truncate d-inline-block" style="max-width: 140px;" title="{{ $banner->link_url }}">
-                                    <i class="bi bi-box-arrow-up-right"></i> {{ parse_url($banner->link_url, PHP_URL_HOST) ?? 'External Link' }}
-                                </a>
-                            @else
-                                <span class="text-muted small">— None —</span>
-                            @endif
-                        </td>
-                        <td>
-                            @can('bannercms.edit')
-                                <form action="{{ route('banners.toggle', $banner) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="badge-status-btn {{ $banner->is_active ? 'active' : 'inactive' }}" title="Click to toggle status">
-                                        <i class="bi {{ $banner->is_active ? 'bi-check-circle-fill' : 'bi-dash-circle-fill' }}"></i>
-                                        <span>{{ $banner->is_active ? 'Active' : 'Disabled' }}</span>
-                                    </button>
-                                </form>
-                            @else
-                                <span class="badge-modern {{ $banner->is_active ? 'badge-emerald' : 'badge-slate' }}">
-                                    <span class="status-dot {{ $banner->is_active ? 'active' : 'inactive' }}"></span>
-                                    {{ $banner->is_active ? 'Active' : 'Disabled' }}
-                                </span>
-                            @endcan
-                        </td>
-                        <td class="text-end">
-                            <div class="d-flex align-items-center justify-content-end gap-1">
-                                @can('bannercms.edit')
-                                    <a href="{{ route('banners.edit', $banner) }}" class="btn-action-icon text-primary" title="Edit banner">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                @endcan
-                                @can('bannercms.delete')
-                                    <form action="{{ route('banners.destroy', $banner) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this banner?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-action-icon text-danger border-0 bg-transparent" title="Delete banner">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </form>
-                                @endcan
-                                @cannot('bannercms.edit')
-                                    @cannot('bannercms.delete')
-                                        <span class="badge-modern badge-slate"><i class="bi bi-eye"></i> View Only</span>
-                                    @endcannot
-                                @endcannot
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <div class="py-4">
-                                <i class="bi bi-images text-muted display-4 d-block mb-3 opacity-50"></i>
-                                <h5 class="fw-bold text-dark">No Banners Found</h5>
-                                <p class="text-muted small">No promotional banners matched your criteria or none have been uploaded yet.</p>
-                                @can('bannercms.create')
-                                    <a href="{{ route('banners.create') }}" class="btn-modern-primary btn-sm mt-2">
-                                        <i class="bi bi-cloud-arrow-up-fill"></i> Upload First Banner
-                                    </a>
-                                @endcan
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="p-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="small text-muted">
-            Showing <span class="fw-bold text-dark">{{ $banners->firstItem() ?? 0 }}</span> to <span class="fw-bold text-dark">{{ $banners->lastItem() ?? 0 }}</span> of <span class="fw-bold text-dark">{{ $banners->total() }}</span> banners ({{ $banners->perPage() }} per page)@if($banners->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
-        </div>
-        <div>
-            {{ $banners->links() }}
-        </div>
-    </div>
-</div>
-
-<style>
-.banner-thumb-container {
-    width: 110px;
-    height: 60px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.banner-thumb-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.25s ease;
-}
-.banner-thumb-container:hover .banner-thumb-img {
-    transform: scale(1.08);
-}
-.badge-status-btn {
-    border: none;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.2s ease;
-}
-.badge-status-btn.active {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
-}
-.badge-status-btn.active:hover {
-    background: rgba(16, 185, 129, 0.25);
-}
-.badge-status-btn.inactive {
-    background: rgba(100, 116, 139, 0.15);
-    color: #64748b;
-}
-.badge-status-btn.inactive:hover {
-    background: rgba(100, 116, 139, 0.25);
-}
-.btn-action-icon {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: background 0.15s ease;
-}
-.btn-action-icon:hover {
-    background: #f1f5f9;
-}
-</style>
-@endsection
-=======
-                    ]" :value="request('target', 'all')" placeholder="Device Target"
-                        icon="bi-display" auto-submit />
-                </div>
-                <button type="submit" class="saas-btn-filter" title="Filter Banners">
-                    <i class="bi bi-funnel-fill"></i>
-                    <span class="d-none d-sm-inline">Filter</span>
-                </button>
-                @if (request()->hasAny(['q', 'tab', 'target']))
-                    <a href="{{ route('banners.index') }}" class="saas-btn-filter text-danger" title="Clear all filters">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                @endif
-            </form>
-        </div>
-    </div>
-    <!-- Banners Data Table Card -->
     <div class="saas-table-card">
         <div class="table-responsive">
             <table class="saas-table">
@@ -548,6 +343,7 @@
                 background: #f1f5f9;
             }
         </style>
+        @can('bannercms.create')
         <!-- ADD BANNER MODAL (Without Scroll) -->
         <div class="modal fade" id="addBannerModal" tabindex="-1" aria-labelledby="addBannerModalLabel"
             aria-hidden="true">
@@ -649,6 +445,9 @@
                 </div>
             </div>
         </div>
+        @endcan
+
+        @can('bannercms.edit')
         <!-- EDIT BANNER MODAL (Without Scroll) -->
         <div class="modal fade" id="editBannerModal" tabindex="-1" aria-labelledby="editBannerModalLabel"
             aria-hidden="true">
@@ -744,6 +543,7 @@
                 </div>
             </div>
         </div>
+        @endcan
     @endsection
     @push('scripts')
         <script>
@@ -783,4 +583,3 @@
             }
         </script>
     @endpush
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08

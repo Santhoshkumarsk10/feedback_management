@@ -227,7 +227,7 @@
         <div class="card-header bg-danger-subtle py-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-danger-subtle">
             <div class="card-title text-danger mb-0">
                 <i class="bi bi-shield-lock-fill text-danger me-1"></i>
-                <span>Strictly Protected Master Data & Security Tables</span>
+                <span>Strictly Protected Tables (Master Data & Security)</span>
             </div>
             <span class="badge bg-danger text-white px-2 py-1 fw-bold">
                 {{ count($protectedTables) }} Tables Shielded

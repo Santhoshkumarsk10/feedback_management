@@ -9,6 +9,10 @@
             <i class="bi bi-shield-plus"></i>
             <span>Add Role</span>
         </a>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+            <i class="bi bi-eye"></i> View Only
+        </span>
     @endcan
     @can('permissionmaster.view')
         <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
@@ -38,7 +42,6 @@
                 </div>
                 <span class="saas-stat-badge slate">Personas</span>
             </div>
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08
         </div>
     </div>
 
@@ -144,6 +147,13 @@
 
 <!-- Roles Table Card -->
 <div class="saas-table-card">
+    <div class="saas-table-header d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-shaded text-primary"></i>
+            <span class="fw-bold text-dark">Defined System Roles</span>
+        </div>
+        <span class="badge-modern badge-slate">{{ $roles->total() }} Roles Listed</span>
+    </div>
 
 
     <div class="table-responsive">
@@ -232,6 +242,11 @@
                                     </form>
                                 @endif
                             @endcan
+                            @if(!auth()->user()->can('rolemaster.edit') && !auth()->user()->can('rolemaster.delete'))
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye"></i> View Only
+                                </span>
+                            @endif
                         </div>
                     </td>
                 </tr>

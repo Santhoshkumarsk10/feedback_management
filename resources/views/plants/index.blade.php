@@ -9,6 +9,9 @@
             <i class="bi bi-building-add"></i>
             <span>Register New Plant</span>
         </button>
+        <a href="{{ route('plants.create') }}" class="d-none">Register New Plant</a>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary py-1 px-2 border"><i class="bi bi-eye"></i> View Only</span>
     @endcan
 @endsection
 
@@ -138,6 +141,13 @@
 
 <!-- Plants Table Card -->
 <div class="saas-table-card">
+    <div class="saas-table-header d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-building-gear text-primary"></i>
+            <span class="fw-bold text-dark">Plant Directory</span>
+        </div>
+        <span class="badge-modern badge-slate">{{ $plants->total() }} Facilities</span>
+    </div>
 
 
     <div class="table-responsive">
@@ -278,6 +288,7 @@
     </div>
 </div>
 
+@can('plantmaster.create')
 <!-- ADD PLANT MODAL (Without Scroll) -->
 <div class="modal fade" id="addPlantModal" tabindex="-1" aria-labelledby="addPlantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -344,10 +355,11 @@
                 </div>
             </form>
         </div>
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08
     </div>
 </div>
+@endcan
 
+@can('plantmaster.edit')
 <!-- EDIT PLANT MODAL (Without Scroll) -->
 <div class="modal fade" id="editPlantModal" tabindex="-1" aria-labelledby="editPlantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -417,6 +429,7 @@
         </div>
     </div>
 </div>
+@endcan
 @endsection
 
 @push('scripts')

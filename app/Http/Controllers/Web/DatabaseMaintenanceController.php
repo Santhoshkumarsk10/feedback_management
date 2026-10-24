@@ -21,6 +21,7 @@ class DatabaseMaintenanceController extends Controller
         'password_reset_tokens',
         'role_has_permissions',
         'roles_has_permissions',
+        'audit_logs',
         'permissions',
         'roles',
         'model_has_roles',
@@ -48,6 +49,10 @@ class DatabaseMaintenanceController extends Controller
         'role_has_permissions' => [
             'description' => 'RBAC mapping linking permissions to system roles.',
             'protected_reason' => 'Spatie authorization & capability mapping.',
+        ],
+        'audit_logs' => [
+            'description' => 'Historical audit trail of administrative actions and user events.',
+            'protected_reason' => 'Regulatory compliance & security accountability.',
         ],
         'permissions' => [
             'description' => 'System permission capabilities and access tokens.',
@@ -106,10 +111,7 @@ class DatabaseMaintenanceController extends Controller
             'description' => 'Registered visitor identity records and company links.',
             'category' => 'Operational Logs',
         ],
-        'audit_logs' => [
-            'description' => 'Historical audit trail of administrative actions and user events.',
-            'category' => 'System & Audit Logs',
-        ],
+
         'cache' => [
             'description' => 'Application key-value cache store.',
             'category' => 'System Cache',

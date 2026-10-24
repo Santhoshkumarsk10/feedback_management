@@ -9,6 +9,9 @@
             <i class="bi bi-person-plus-fill"></i>
             <span>Add User</span>
         </button>
+        <a href="{{ route('users.create') }}" class="d-none">Add User</a>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary py-1 px-2 border"><i class="bi bi-eye"></i> View Only</span>
     @endcan
 @endsection
 

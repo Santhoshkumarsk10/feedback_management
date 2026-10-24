@@ -9,6 +9,11 @@
             <i class="bi bi-key-fill"></i>
             <span>Add Permission</span>
         </button>
+        <a href="{{ route('permissions.create') }}" class="d-none">Add Permission</a>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+            <i class="bi bi-eye"></i> View Only
+        </span>
     @endcan
     @can('rolemaster.view')
         <a href="{{ route('roles.index') }}" class="btn-modern-secondary btn-sm">
@@ -121,10 +126,12 @@
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
 
-            <div class="saas-search-box">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ request('q') }}" class="saas-search-input" placeholder="Search capability, slug key...">
-            </div>
+            <x-search-suggest 
+                name="q" 
+                placeholder="Search capability, slug key..." 
+                :suggestions="$permissionSuggestions ?? []"
+                header-title="Permission Directory Suggestions"
+            />
 
             <button type="submit" class="saas-btn-filter">
                 <i class="bi bi-funnel"></i>
@@ -251,6 +258,7 @@
     </div>
 </div>
 
+@can('permissionmaster.edit')
 <!-- ADD PERMISSION MODAL (Without Scroll) -->
 <div class="modal fade" id="addPermissionModal" tabindex="-1" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -303,7 +311,6 @@
                 </div>
             </form>
         </div>
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08
     </div>
 </div>
 
@@ -357,6 +364,7 @@
         </div>
     </div>
 </div>
+@endcan
 @endsection
 
 @push('scripts')

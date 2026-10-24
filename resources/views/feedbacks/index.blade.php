@@ -104,7 +104,6 @@
     </div>
 
     <div class="saas-toolbar-controls">
->>>>>>> 4864f174f20811493741e0acdecfb5be9a962a08
         <form method="GET" action="{{ route('feedbacks.index') }}" class="d-flex flex-wrap align-items-center gap-2" id="feedbackFilterForm">
             @if(request('tier'))
                 <input type="hidden" name="tier" value="{{ request('tier') }}">
