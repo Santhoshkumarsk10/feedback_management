@@ -208,6 +208,40 @@
             });
         }
     }, true);
+
+    // Sidebar navigation scroll-to-top and active link positioning
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.app-sidebar .nav-item-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const linkHref = this.getAttribute('href');
+                if (!linkHref) return;
+
+                const isCurrentUrl = (this.href === window.location.href) || 
+                                     (linkHref === window.location.pathname) ||
+                                     (window.location.pathname === linkHref.split('?')[0]);
+
+                if (isCurrentUrl) {
+                    // Already on the target page: smoothly scroll to top immediately
+                    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                    document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                    const mainEl = document.querySelector('.app-main');
+                    if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Navigating to page: ensure scroll starts at top
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                }
+            });
+        });
+
+        // Ensure active sidebar link is within view inside sidebar menu
+        const activeItem = document.querySelector('.sidebar-menu .nav-item-link.active');
+        if (activeItem) {
+            activeItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+    });
 </script>
 @stack('scripts')
 </body>

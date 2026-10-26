@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class DailyVisitsSeeder extends Seeder
 {
     /**
-     * Seed 10 realistic, unique, non-duplicate plant visitors and visits for today.
+     * Seed 10 realistic, unique, non-duplicate visitors and visits for today.
      * All visits start with organizer_id = null so visitors can choose their host on the app.
      */
     public function run(): void

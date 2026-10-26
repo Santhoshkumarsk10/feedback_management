@@ -36,24 +36,13 @@
                         </span>
                     </div>
 
-                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                    <div class="d-flex flex-wrap align-items-baseline gap-2">
                         <h4 class="fw-bold text-dark mb-0">
                             Today's Plant Operations
                         </h4>
                         <span class="badge bg-primary text-white fs-6 px-3 py-1">
                             {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y') }}
                         </span>
-                    </div>
-
-                    <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
-                        <span><i class="bi bi-person-badge text-primary"></i> Logged Staff:
-                            <strong>{{ $currentUser->name }}</strong> ({{ ucfirst($currentUser->role) }})</span>
-                        @if ($currentUser->department)
-                            <span><i class="bi bi-building text-secondary"></i> {{ $currentUser->department }}</span>
-                        @endif
-                        @if ($currentUser->plant)
-                            <span><i class="bi bi-geo-alt text-secondary"></i> {{ $currentUser->plant->name }}</span>
-                        @endif
                     </div>
                 </div>
 
@@ -167,7 +156,7 @@
     <div class="saas-table-card mb-4">
         <div class="saas-table-header">
             <div>
-                <div class="saas-table-title">Today's Plant Visitors & Feedback Queue</div>
+                <div class="saas-table-title">Today's Visitors & Feedback Queue</div>
                 <div class="saas-table-subtitle">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
@@ -208,25 +197,25 @@
         <!-- Filter Tabs & Controls Toolbar -->
         <div class="saas-toolbar-card border-0 rounded-0 border-bottom mb-0 shadow-none px-3 py-2 bg-light">
             <div class="saas-filter-pills">
+                <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
+                    class="saas-pill-btn {{ ($todayTab ?? 'all') === 'all' ? 'active' : '' }}">
+                    <i class="bi bi-people-fill text-primary"></i>
+                    <span>All Today's Visitors</span>
+                    <span class="pill-counter" id="badgeAllCount">{{ $todayCounts['all'] }}</span>
+                </a>
+
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'pending'])) }}"
-                    class="saas-pill-btn {{ ($todayTab ?? 'pending') === 'pending' ? 'active' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? '') === 'pending' ? 'active' : '' }}">
                     <i class="bi bi-clock-history text-warning"></i>
-                    <span>Awaiting feedback</span>
+                    <span>Awaiting Feedback (Pending)</span>
                     <span class="pill-counter" id="badgePendingCount">{{ $todayCounts['pending'] }}</span>
                 </a>
 
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'completed'])) }}"
                     class="saas-pill-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}">
                     <i class="bi bi-check-circle-fill text-success"></i>
-                    <span>Feedback completed</span>
+                    <span>Feedback Completed</span>
                     <span class="pill-counter" id="badgeCompletedCount">{{ $todayCounts['completed'] }}</span>
-                </a>
-
-                <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
-                    class="saas-pill-btn {{ ($todayTab ?? '') === 'all' ? 'active' : '' }}">
-                    <i class="bi bi-people-fill text-primary"></i>
-                    <span>All today's visitors</span>
-                    <span class="pill-counter" id="badgeAllCount">{{ $todayCounts['all'] }}</span>
                 </a>
             </div>
 
@@ -406,10 +395,10 @@
                         <tr>
                             <td colspan="6" class="text-center text-muted py-5">
                                 <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success opacity-75"></i>
-                                @if (($todayTab ?? 'pending') === 'pending')
+                                @if (($todayTab ?? 'all') === 'pending')
                                     <div class="fw-bold text-dark fs-6">No Pending Feedback for Today!</div>
                                     <div class="small">All registered visitors for today have submitted their evaluation.</div>
-                                @elseif (($todayTab ?? '') === 'completed')
+                                @elseif (($todayTab ?? 'all') === 'completed')
                                     <div class="fw-bold text-dark fs-6">No Completed Feedback Yet Today.</div>
                                     <div class="small">Evaluations will appear here once submitted.</div>
                                 @else

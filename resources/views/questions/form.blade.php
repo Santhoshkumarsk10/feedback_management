@@ -20,7 +20,7 @@
                     <span>{{ $question->exists ? 'Update Question Configuration' : 'New Question Form' }}</span>
                 </div>
                 @if($question->exists)
-                    <span class="badge-modern badge-shibaura">ID: #{{ $question->id }}</span>
+                    <span class="badge-modern badge-shibaura">ID: {{ $question->id }}</span>
                 @endif
             </div>
 

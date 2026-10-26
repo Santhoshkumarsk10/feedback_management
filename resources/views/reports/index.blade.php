@@ -419,11 +419,14 @@
                     Critical feedback requiring operational investigation, root-cause analysis, and management follow-up (BRS Section 6.8).
                 </div>
             </div>
-            @can('reportsexports.export')
-                <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'low_rating'])) }}" class="btn-modern-danger btn-sm py-1 px-3">
-                    <i class="bi bi-download"></i> Export Incidents CSV
-                </a>
-            @endcan
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge-modern badge-slate">{{ $lowRatings->count() }} Incidents @if($lowRatings->count() >= 1000)(Recent 1,000 max)@endif</span>
+                @can('reportsexports.export')
+                    <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'low_rating'])) }}" class="btn-modern-danger btn-sm py-1 px-3">
+                        <i class="bi bi-download"></i> Export Incidents CSV
+                    </a>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -516,14 +519,17 @@
                     <span>Pending Feedback Audit Queue (Visits Without Feedback)</span>
                 </div>
                 <div class="small text-muted mt-1">
-                    Complete listing of all registered plant visitors who have not submitted feedback yet (BRS Section 6.5 & 6.8).
+                    Complete listing of all registered visitors who have not submitted feedback yet (BRS Section 6.5 & 6.8).
                 </div>
             </div>
-            @can('reportsexports.export')
-                <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'pending'])) }}" class="btn-modern-primary btn-sm py-1 px-3">
-                    <i class="bi bi-download"></i> Export Pending CSV
-                </a>
-            @endcan
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge-modern badge-slate">{{ $pendingVisits->count() }} Pending Visits @if($pendingVisits->count() >= 1000)(Recent 1,000 max)@endif</span>
+                @can('reportsexports.export')
+                    <a href="{{ route('reports.export', array_merge(request()->query(), ['type' => 'pending'])) }}" class="btn-modern-primary btn-sm py-1 px-3">
+                        <i class="bi bi-download"></i> Export Pending CSV
+                    </a>
+                @endcan
+            </div>
         </div>
 
         <div class="table-responsive">

@@ -19,17 +19,17 @@ class SeedDailyVisitsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Seed exactly 10 realistic, unique plant visitor records for today with unassigned host organizers';
+    protected $description = 'Seed exactly 10 realistic, unique visitor records for today with unassigned host organizers';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $this->info("Seeding 10 realistic plant visits for today...");
+        $this->info("Seeding 10 realistic visits for today...");
         $seeder = new DailyVisitsSeeder();
         $seeder->run();
-        $this->info("Successfully seeded 10 non-duplicate plant visits for today!");
+        $this->info("Successfully seeded 10 non-duplicate visits for today!");
         return Command::SUCCESS;
     }
 }

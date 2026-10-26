@@ -108,6 +108,9 @@
             @if(request('tier'))
                 <input type="hidden" name="tier" value="{{ request('tier') }}">
             @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
 
             <x-custom-select 
                 name="plant_id" 
@@ -261,7 +264,7 @@
 
     <div class="saas-table-footer">
         <div class="saas-footer-text">
-            Showing <b>{{ $feedbacks->firstItem() ?? 0 }}</b> to <b>{{ $feedbacks->lastItem() ?? 0 }}</b> of <b>{{ $feedbacks->total() }}</b> reviews (10 per page)
+            Showing <b>{{ $feedbacks->firstItem() ?? 0 }}</b> to <b>{{ $feedbacks->lastItem() ?? 0 }}</b> of <b>{{ $feedbacks->total() }}</b> reviews ({{ $feedbacks->perPage() }} per page)@if($feedbacks->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
         <div>
             {{ $feedbacks->links() }}

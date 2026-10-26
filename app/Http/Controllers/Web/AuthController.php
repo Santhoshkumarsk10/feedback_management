@@ -237,7 +237,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s]+$~u'],
             'email' => [
                 'nullable',
                 'email:rfc',
@@ -252,12 +252,12 @@ class AuthController extends Controller
                 'required_without:email',
                 Rule::unique('users', 'mobile')->ignore($user->id),
             ],
-            'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'department' => ['nullable', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ], [
             'name.required' => 'Full Name is required.',
             'name.min' => 'Full Name must be at least :min characters.',
             'name.max' => 'Full Name cannot exceed :max characters.',
-            'name.regex' => 'Full Name may only contain letters, spaces, hyphens, and dots.',
+            'name.regex' => 'Full Name may only contain letters and spaces. Special characters are not allowed.',
             'email.email' => 'Please provide a valid official email address.',
             'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',
             'email.required_without' => 'Either Email Address or Mobile Number is required.',

@@ -29,6 +29,36 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
+        \Illuminate\Database\Eloquent\Builder::macro('paginateCapped', function (?int $perPage = null, int $maxEntries = 1000, string $pageName = 'page') {
+            $perPage = (int) ($perPage ?? request('per_page', 10));
+            if (!in_array($perPage, [10, 25, 50, 100])) {
+                $perPage = 10;
+            }
+
+            $page = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage($pageName);
+            $rawTotal = (clone $this)->count();
+            $cappedTotal = min($rawTotal, $maxEntries);
+
+            $offset = ($page - 1) * $perPage;
+            if ($offset >= $cappedTotal) {
+                $items = $this->getModel()->newCollection([]);
+            } else {
+                $limit = min($perPage, $cappedTotal - $offset);
+                $items = (clone $this)->skip($offset)->take($limit)->get();
+            }
+
+            return (new \Illuminate\Pagination\LengthAwarePaginator(
+                $items,
+                $cappedTotal,
+                $perPage,
+                $page,
+                [
+                    'path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
+                    'pageName' => $pageName,
+                ]
+            ))->withQueryString();
+        });
+
         Gate::before(function ($user, $ability) {
             if ($user->hasRole('superadmin') || $user->role === 'superadmin') {
                 return true;

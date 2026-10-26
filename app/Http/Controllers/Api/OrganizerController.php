@@ -90,8 +90,8 @@ class OrganizerController extends Controller
                 'feedback:id,visit_id,overall_rating,submitted_at',
             ])
             ->when($isToday, fn ($q) => $q->whereDate('visit_date', today()))
-            ->when(! $isToday && $request->from, fn ($q, $v) => $q->whereDate('visit_date', '>=', $v))
-            ->when(! $isToday && $request->to, fn ($q, $v) => $q->whereDate('visit_date', '<=', $v))
+            ->when(! $isToday && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
+            ->when(! $isToday && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'))
             ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
@@ -133,6 +133,23 @@ class OrganizerController extends Controller
 
         if ($visit->is_feedback_expired) {
             abort(422, 'Feedback submission has expired for this visit. Feedback must be submitted on the day of the visit.');
+        }
+
+        $rawPlant = $request->input('plant_id') ?: $request->input('plant') ?: $request->input('facility') ?: $visit->plant_id;
+        if (!empty($rawPlant)) {
+            if (is_numeric($rawPlant) && Plant::where('id', (int) $rawPlant)->exists()) {
+                $request->merge(['plant_id' => (int) $rawPlant]);
+            } else {
+                $plantStr = trim((string) $rawPlant);
+                $plant = Plant::where('code', $plantStr)->first()
+                    ?? Plant::where('name', $plantStr)->first()
+                    ?? Plant::where('name', 'like', "%{$plantStr}%")->first();
+                if ($plant) {
+                    $request->merge(['plant_id' => $plant->id]);
+                }
+            }
+        } elseif ($visit->plant_id) {
+            $request->merge(['plant_id' => $visit->plant_id]);
         }
 
         $data = $request->validate([

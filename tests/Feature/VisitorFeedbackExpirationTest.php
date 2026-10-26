@@ -235,4 +235,94 @@ class VisitorFeedbackExpirationTest extends TestCase
         $response->assertSee('Expired (Day Ended)');
         $response->assertDontSee(route('visits.feedback.create', $pastVisit));
     }
+
+    public function test_visits_can_be_filtered_by_date_range_alone(): void
+    {
+        $visitJan = Visit::create([
+            'visitor_name' => 'Jan Unique Visitor',
+            'visitor_company' => 'Jan Corp',
+            'visitor_mobile' => '9876543218',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-01-15',
+        ]);
+
+        $visitFeb = Visit::create([
+            'visitor_name' => 'Feb Unique Visitor',
+            'visitor_company' => 'Feb Corp',
+            'visitor_mobile' => '9876543219',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-02-15',
+        ]);
+
+        // Filter by Jan 2027 range alone (no search keyword)
+        $response = $this->actingAs($this->staff)->get(route('visits.index', [
+            'from' => '2027-01-01',
+            'to' => '2027-01-31',
+        ]));
+
+        $response->assertOk();
+        $visits = $response->viewData('visits');
+        $this->assertTrue($visits->pluck('id')->contains($visitJan->id));
+        $this->assertFalse($visits->pluck('id')->contains($visitFeb->id));
+    }
+
+    public function test_visits_can_be_filtered_by_search_keyword_alone(): void
+    {
+        $visitAlpha = Visit::create([
+            'visitor_name' => 'Alpha User 101',
+            'visitor_company' => 'Alpha Industries',
+            'visitor_mobile' => '9876543220',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-01-10',
+        ]);
+
+        $visitBeta = Visit::create([
+            'visitor_name' => 'Beta User 202',
+            'visitor_company' => 'Beta Industries',
+            'visitor_mobile' => '9876543221',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-01-10',
+        ]);
+
+        // Search with keyword alone (no date filters)
+        $response = $this->actingAs($this->staff)->get(route('visits.index', [
+            'q' => 'Alpha User 101',
+        ]));
+
+        $response->assertOk();
+        $visits = $response->viewData('visits');
+        $this->assertTrue($visits->pluck('id')->contains($visitAlpha->id));
+        $this->assertFalse($visits->pluck('id')->contains($visitBeta->id));
+    }
+
+    public function test_visits_can_be_filtered_by_both_date_range_and_search_keyword(): void
+    {
+        $visitMatched = Visit::create([
+            'visitor_name' => 'Target Visitor Unique',
+            'visitor_company' => 'Target Industries',
+            'visitor_mobile' => '9876543222',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-01-12',
+        ]);
+
+        $visitOutsideDate = Visit::create([
+            'visitor_name' => 'Target Visitor Unique',
+            'visitor_company' => 'Target Industries',
+            'visitor_mobile' => '9876543223',
+            'organizer_id' => $this->staff->id,
+            'visit_date' => '2027-02-12',
+        ]);
+
+        // Combined date range and search keyword
+        $response = $this->actingAs($this->staff)->get(route('visits.index', [
+            'q' => 'Target Visitor Unique',
+            'from' => '2027-01-01',
+            'to' => '2027-01-31',
+        ]));
+
+        $response->assertOk();
+        $visits = $response->viewData('visits');
+        $this->assertTrue($visits->pluck('id')->contains($visitMatched->id));
+        $this->assertFalse($visits->pluck('id')->contains($visitOutsideDate->id));
+    }
 }

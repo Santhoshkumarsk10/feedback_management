@@ -16,9 +16,14 @@ class RoleController extends Controller
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'per_page' => 'nullable|integer',
         ]);
 
         $tab = $request->input('tab', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = Role::withCount(['assignedUsers', 'permissions'])
             ->with('permissions')
@@ -38,7 +43,7 @@ class RoleController extends Controller
         $activeCount = Role::where('is_active', true)->count();
         $inactiveCount = Role::where('is_active', false)->count();
 
-        $roles = $query->orderByDesc('is_system')->orderBy('name')->paginate(10)->withQueryString();
+        $roles = $query->orderByDesc('is_system')->orderBy('name')->paginateCapped($perPage, 1000);
 
         $roleSuggestions = Role::select('id', 'name', 'display_name', 'slug', 'description', 'is_system')
             ->orderByDesc('is_system')
@@ -80,8 +85,8 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'slug' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[a-zA-Z0-9_\-]+$/', 'unique:roles,name'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'slug' => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/', 'unique:roles,name'],
             'description' => ['nullable', 'string', 'min:2', 'max:500'],
             'is_active' => 'boolean',
             'permissions' => 'nullable|array',
@@ -141,12 +146,12 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'slug' => [
                 'nullable',
                 'string',
                 'min:2',
-                'max:50',
+                'max:100',
                 'regex:/^[a-zA-Z0-9_\-]+$/',
                 Rule::unique('roles', 'name')->ignore($role->id)
             ],

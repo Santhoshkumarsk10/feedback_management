@@ -228,9 +228,17 @@
         function hasActiveFilterValues() {
             if (!form) return false;
             let hasValues = false;
-            const elements = form.querySelectorAll('input:not([type="hidden"]), select');
+            // Check all input and select elements in the form (including date pickers and custom selects)
+            const elements = form.querySelectorAll('input, select');
             elements.forEach(el => {
-                if (el !== input && el.value && el.value !== 'all' && el.value.trim() !== '') {
+                if (el === input) return;
+                const name = (el.name || '').toLowerCase();
+                // Exclude CSRF, method, and tab/page pagination parameters
+                if (name === '_token' || name === '_method' || name === 'tab' || name === 'page' || !name) {
+                    return;
+                }
+                const val = (el.value || '').trim();
+                if (val && val !== 'all') {
                     hasValues = true;
                 }
             });
@@ -279,8 +287,9 @@
                 const searchVal = input.value.trim();
                 const activeUrl = hasActiveUrlFilters();
                 const hasFilters = hasActiveFilterValues();
+                const isSubmitBtn = e.submitter && (e.submitter.type === 'submit' || e.submitter.tagName === 'BUTTON');
 
-                if (!searchVal && !activeUrl && !hasFilters) {
+                if (!searchVal && !activeUrl && !hasFilters && !isSubmitBtn) {
                     e.preventDefault();
                     showSearchToast('Please enter search keywords or select a filter.');
                     input.focus();

@@ -9,6 +9,10 @@
             <i class="bi bi-shield-plus"></i>
             <span>Add Role</span>
         </a>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+            <i class="bi bi-eye"></i> View Only
+        </span>
     @endcan
     @can('permissionmaster.view')
         <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
@@ -119,6 +123,9 @@
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
 
             <div class="saas-search-box">
                 <i class="bi bi-search"></i>
@@ -140,6 +147,13 @@
 
 <!-- Roles Table Card -->
 <div class="saas-table-card">
+    <div class="saas-table-header d-flex align-items-center justify-content-between p-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-shaded text-primary"></i>
+            <span class="fw-bold text-dark">Defined System Roles</span>
+        </div>
+        <span class="badge-modern badge-slate">{{ $roles->total() }} Roles Listed</span>
+    </div>
 
 
     <div class="table-responsive">
@@ -228,6 +242,11 @@
                                     </form>
                                 @endif
                             @endcan
+                            @if(!auth()->user()->can('rolemaster.edit') && !auth()->user()->can('rolemaster.delete'))
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye"></i> View Only
+                                </span>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -256,7 +275,7 @@
     <!-- Table Footer with Pagination -->
     <div class="saas-table-footer">
         <div class="saas-footer-text">
-            Showing {{ $roles->firstItem() ?? 0 }} to {{ $roles->lastItem() ?? 0 }} of {{ $roles->total() }} roles
+            Showing {{ $roles->firstItem() ?? 0 }} to {{ $roles->lastItem() ?? 0 }} of {{ $roles->total() }} roles @if($roles->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
         <div class="saas-pagination">
             {{ $roles->links('pagination::bootstrap-5') }}

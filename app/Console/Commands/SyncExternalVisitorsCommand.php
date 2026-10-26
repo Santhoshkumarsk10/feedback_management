@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class SyncExternalVisitorsCommand extends Command
 {
     protected $signature = 'visitors:sync-external {--date= : The date to sync visitors for (YYYY-MM-DD)} {--organizer= : Default organizer/staff ID to assign}';
-    protected $description = 'Poll & sync plant visitor data from external 3rd-party API into visitor records and today queue.';
+    protected $description = 'Poll & sync visitor data from external 3rd-party API into visitor records and today queue.';
 
     public function handle(ExternalVisitorSyncService $syncService): int
     {

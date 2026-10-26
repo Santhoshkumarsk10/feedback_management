@@ -101,14 +101,20 @@
                 <span class="pill-counter">{{ $tabCounts['inactive'] ?? 0 }}</span>
             </a>
         </div>
+
         <div class="saas-toolbar-controls">
             <form method="GET" action="{{ route('banners.index') }}" class="d-flex flex-wrap align-items-center gap-2"
                 id="bannerSearchForm">
                 @if (request('tab'))
                     <input type="hidden" name="tab" value="{{ request('tab') }}">
                 @endif
+                @if (request('per_page'))
+                    <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+                @endif
+
                 <x-search-suggest name="q" placeholder="Search headline, target..." :suggestions="$allBannerSuggestions ?? []"
                     header-title="Banner Suggestions" />
+
                 <!-- Target device filter dropdown -->
                 <div style="min-width: 150px;">
                     <x-custom-select name="target" :options="[
@@ -116,22 +122,27 @@
                         ['value' => 'mobile', 'label' => 'Mobile Only'],
                         ['value' => 'tablet', 'label' => 'Tablet Only'],
                         ['value' => 'web', 'label' => 'Web Only'],
-                    ]" :value="request('target', 'all')" placeholder="Device Target"
-                        icon="bi-display" auto-submit />
+                    ]"
+                    :value="request('target', 'all')"
+                    placeholder="Device Target"
+                    icon="bi-display"
+                    auto-submit
+                    />
                 </div>
-                <button type="submit" class="saas-btn-filter" title="Filter Banners">
-                    <i class="bi bi-funnel-fill"></i>
-                    <span class="d-none d-sm-inline">Filter</span>
+
+                <button type="submit" class="saas-btn-filter">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
-                @if (request()->hasAny(['q', 'tab', 'target']))
-                    <a href="{{ route('banners.index') }}" class="saas-btn-filter text-danger" title="Clear all filters">
+
+                @if(request()->hasAny(['q', 'tab', 'target']))
+                    <a href="{{ route('banners.index') }}" class="saas-btn-filter text-decoration-none" title="Clear all filters">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 @endif
             </form>
         </div>
     </div>
-    <!-- Banners Data Table Card -->
+
     <div class="saas-table-card">
         <div class="table-responsive">
             <table class="saas-table">
@@ -150,7 +161,7 @@
                     @forelse($banners as $banner)
                         <tr>
                             <td class="text-center">
-                                <span class="saas-code-badge">#{{ $banner->sort_order }}</span>
+                                <span class="saas-code-badge">{{ $banner->sort_order }}</span>
                             </td>
                             <td>
                                 <div class="banner-thumb-container">
@@ -332,6 +343,7 @@
                 background: #f1f5f9;
             }
         </style>
+        @can('bannercms.create')
         <!-- ADD BANNER MODAL (Without Scroll) -->
         <div class="modal fade" id="addBannerModal" tabindex="-1" aria-labelledby="addBannerModalLabel"
             aria-hidden="true">
@@ -359,7 +371,9 @@
                                     <label class="form-modern-label required" for="add_banner_title">Banner Headline</label>
                                     <input type="text" name="title" id="add_banner_title"
                                         class="form-control form-control-modern"
-                                        placeholder="e.g. Precision Injection Moulding" required maxlength="200">
+                                        placeholder="e.g. Precision Injection Moulding" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The banner title contains invalid characters.">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="add_banner_target">Target Device</label>
@@ -376,13 +390,15 @@
                                         Caption</label>
                                     <input type="text" name="subtitle" id="add_banner_subtitle"
                                         class="form-control form-control-modern"
-                                        placeholder="e.g. Empowering manufacturing with Japanese precision" maxlength="500">
+                                        placeholder="e.g. Empowering manufacturing with Japanese precision" minlength="2" maxlength="150"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The subtitle contains invalid characters.">
                                 </div>
                                 <div class="col-md-7">
                                     <label class="form-modern-label" for="add_banner_link">Redirect Link (URL)</label>
                                     <input type="url" name="link_url" id="add_banner_link"
                                         class="form-control form-control-modern"
-                                        placeholder="https://www.shibaura-machine.co.in">
+                                        placeholder="https://www.shibaura-machine.co.in" maxlength="500">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="add_banner_sort">Sort Order</label>
@@ -433,6 +449,9 @@
                 </div>
             </div>
         </div>
+        @endcan
+
+        @can('bannercms.edit')
         <!-- EDIT BANNER MODAL (Without Scroll) -->
         <div class="modal fade" id="editBannerModal" tabindex="-1" aria-labelledby="editBannerModalLabel"
             aria-hidden="true">
@@ -460,7 +479,9 @@
                                 <div class="col-md-7">
                                     <label class="form-modern-label required" for="edit_banner_title">Banner Headline</label>
                                     <input type="text" name="title" id="edit_banner_title"
-                                        class="form-control form-control-modern" required maxlength="200">
+                                        class="form-control form-control-modern" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The banner title contains invalid characters.">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="edit_banner_target">Target Device</label>
@@ -476,12 +497,14 @@
                                     <label class="form-modern-label" for="edit_banner_subtitle">Subtitle / Supporting
                                         Caption</label>
                                     <input type="text" name="subtitle" id="edit_banner_subtitle"
-                                        class="form-control form-control-modern" maxlength="500">
+                                        class="form-control form-control-modern" minlength="2" maxlength="150"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The subtitle contains invalid characters.">
                                 </div>
                                 <div class="col-md-7">
                                     <label class="form-modern-label" for="edit_banner_link">Redirect Link (URL)</label>
                                     <input type="url" name="link_url" id="edit_banner_link"
-                                        class="form-control form-control-modern">
+                                        class="form-control form-control-modern" maxlength="500">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="edit_banner_sort">Sort Order</label>
@@ -528,6 +551,7 @@
                 </div>
             </div>
         </div>
+        @endcan
     @endsection
     @push('scripts')
         <script>
@@ -551,7 +575,7 @@
             function openEditBannerModal(btn) {
                 const id = btn.getAttribute('data-id');
                 const form = document.getElementById('editBannerForm');
-                form.action = `/banners/${id}`;
+                form.action = `{{ url('admin/banners') }}/${id}`;
                 document.getElementById('edit_banner_title').value = btn.getAttribute('data-title') || '';
                 document.getElementById('edit_banner_subtitle').value = btn.getAttribute('data-subtitle') || '';
                 document.getElementById('edit_banner_target').value = btn.getAttribute('data-target') || 'all';

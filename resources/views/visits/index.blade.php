@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title', 'Plant Visitors Log')
-@section('page_title', 'Plant Visitor Directory')
-@section('page_subtitle', 'Browse all plant visitors, escort assignments, and feedback statuses')
+@section('title', 'Visitors Log')
+@section('page_title', 'Visitor Directory')
+@section('page_subtitle', 'Browse all visitors, escort assignments, and feedback statuses')
 
 @section('summary_cards')
 @php
@@ -103,6 +103,9 @@
             @if(request('tab'))
                 <input type="hidden" name="tab" value="{{ request('tab') }}">
             @endif
+            @if(request('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
 
             <x-search-suggest 
                 name="q" 
@@ -156,7 +159,7 @@
                     <span class="badge bg-primary text-white ms-2 fs-xs">Today's Visits</span>
                 @endif
             </div>
-            <div class="saas-table-subtitle">Browse all plant visitors, escort assignments, and feedback statuses</div>
+            <div class="saas-table-subtitle">Browse all visitors, escort assignments, and feedback statuses</div>
         </div>
         <div class="d-flex align-items-center gap-2">
             @can('plantvisitors.create')
@@ -177,6 +180,7 @@
         <table class="saas-table">
             <thead>
                 <tr>
+                    <th style="width: 75px;" class="text-center">INDEX NO</th>
                     <th style="width: 140px;">VISIT DATE</th>
                     <th>VISITOR INFORMATION</th>
                     <th>ASSIGNED STAFF</th>
@@ -187,6 +191,11 @@
             <tbody>
             @forelse($visits as $v)
                 <tr>
+                    <td class="text-center align-middle">
+                        <span class="badge bg-light text-secondary border font-monospace px-2 py-1" style="font-size: 0.78rem;">
+                            {{ ($visits->firstItem() ?? 1) + $loop->index }}
+                        </span>
+                    </td>
                     <td style="white-space: nowrap;">
                         <div class="d-flex align-items-center gap-2">
                             <div class="p-2 rounded bg-light text-center" style="min-width: 48px; border: 1px solid #e2e8f0;">
@@ -277,7 +286,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center text-muted py-5">
                         <i class="bi bi-calendar-x fs-2 d-block mb-2 text-slate-300"></i>
                         No visit records match the selected filter.
                     </td>
@@ -289,7 +298,7 @@
 
     <div class="saas-table-footer">
         <div class="saas-footer-text">
-            Showing <b>{{ $visits->firstItem() ?? 0 }}</b> to <b>{{ $visits->lastItem() ?? 0 }}</b> of <b>{{ $visits->total() }}</b> visitors (10 per page)
+            Showing <b>{{ $visits->firstItem() ?? 0 }}</b> to <b>{{ $visits->lastItem() ?? 0 }}</b> of <b>{{ $visits->total() }}</b> visitors ({{ $visits->perPage() }} per page)@if($visits->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
         <div>
             {{ $visits->links() }}

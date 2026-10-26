@@ -16,10 +16,15 @@ class AuditLogController extends Controller
             'module' => 'nullable|string|max:50',
             'from' => 'nullable|date',
             'to' => 'nullable|date',
+            'per_page' => 'nullable|integer',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
 
         $tab = $request->input('tab', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = AuditLog::with('user')
             ->when($tab === 'masters', fn ($q) => $q->whereIn('module', ['plants', 'roles', 'users', 'questions']))
@@ -38,12 +43,12 @@ class AuditLogController extends Controller
                   ->orWhere('module', 'like', "%$v%");
             }));
 
-        $totalCount = AuditLog::count();
-        $mastersCount = AuditLog::whereIn('module', ['plants', 'roles', 'users', 'questions'])->count();
-        $securityCount = AuditLog::where('module', 'auth')->count();
-        $operationsCount = AuditLog::whereIn('module', ['visits', 'feedbacks', 'reports'])->count();
+        $totalCount = min(AuditLog::count(), 1000);
+        $mastersCount = min(AuditLog::whereIn('module', ['plants', 'roles', 'users', 'questions'])->count(), 1000);
+        $securityCount = min(AuditLog::where('module', 'auth')->count(), 1000);
+        $operationsCount = min(AuditLog::whereIn('module', ['visits', 'feedbacks', 'reports'])->count(), 1000);
 
-        $logs = $query->latest('id')->paginate(10)->withQueryString();
+        $logs = $query->latest('id')->paginateCapped($perPage, 1000);
 
         $auditSuggestions = AuditLog::select('id', 'user_name', 'action', 'module', 'description', 'ip_address')
             ->latest('id')

@@ -103,7 +103,8 @@
             <input type="text" 
                    class="topbar-search-input" 
                    id="globalTopSearch" 
-                   placeholder="Search visitors, coordinators or feedback..." 
+                   placeholder="Search visitors, feedback..." 
+                   title="Search visitors, coordinators or feedback"
                    autocomplete="off">
             <span id="globalSearchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute" style="right: 14px; display: none;" role="status"></span>
             
@@ -111,7 +112,7 @@
             <div id="globalSearchDropdown" class="topbar-search-dropdown shadow-lg" style="display: none;">
                 <div id="globalSearchResults"></div>
                 <div class="p-2 border-top text-center bg-light rounded-bottom small" style="font-size: 0.75rem;">
-                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to search in Visitors &amp; Plant Visits</span>
+                    <span class="text-muted">Press <kbd class="bg-white border text-dark px-1 rounded">Enter</kbd> to search in Visitors &amp; Visits</span>
                 </div>
             </div>
         </div>

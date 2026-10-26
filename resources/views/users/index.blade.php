@@ -9,6 +9,8 @@
             <i class="bi bi-person-plus-fill"></i>
             <span>Add User</span>
         </button>
+    @else
+        <span class="badge bg-secondary-subtle text-secondary py-1 px-2 border"><i class="bi bi-eye"></i> View Only</span>
     @endcan
 @endsection
 
@@ -116,6 +118,9 @@
                 @if (request('role'))
                     <input type="hidden" name="role" value="{{ request('role') }}">
                 @endif
+                @if (request('per_page'))
+                    <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+                @endif
 
                 <div class="saas-search-box">
                     <i class="bi bi-search"></i>
@@ -163,7 +168,7 @@
                                     <div>
                                         <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ $u->name }}
                                         </div>
-                                        <div class="small text-muted">ID: #{{ $u->id }}</div>
+                                        <div class="small text-muted">ID: {{ $u->id }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -264,7 +269,7 @@
         <!-- Table Footer with Pagination -->
         <div class="saas-table-footer">
             <div class="saas-footer-text">
-                Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ $users->total() }} users
+                Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ $users->total() }} users @if($users->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
             </div>
             <div class="saas-pagination">
                 {{ $users->links('pagination::bootstrap-5') }}
@@ -299,7 +304,9 @@
                                             class="bi bi-person"></i></span>
                                     <input type="text" name="name" id="add_user_name"
                                         class="form-control form-control-modern border-start-0"
-                                        placeholder="e.g. Ramesh Kumar" required maxlength="70">
+                                        placeholder="e.g. Ramesh Kumar" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\s]+$"
+                                        title="Full Name may only contain letters and spaces. Special characters are not allowed.">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -335,7 +342,7 @@
                                             class="bi bi-telephone"></i></span>
                                     <input type="tel" name="mobile" id="add_user_mobile"
                                         class="form-control form-control-modern border-start-0"
-                                        placeholder="e.g. 9844268120" maxlength="10">
+                                        placeholder="e.g. 9844268120" minlength="10" maxlength="10" pattern="^[6-9][0-9]{9}$" title="10-digit mobile number starting with 6, 7, 8, or 9">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -345,7 +352,9 @@
                                             class="bi bi-building"></i></span>
                                     <input type="text" name="department" id="add_user_department"
                                         class="form-control form-control-modern border-start-0"
-                                        placeholder="e.g. Operations, Quality" maxlength="60">
+                                        placeholder="e.g. Operations, Quality" minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                        title="Department may only contain letters, numbers, spaces, and allowed symbols.">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -355,7 +364,7 @@
                                             class="bi bi-key"></i></span>
                                     <input type="password" name="password" id="add_user_password"
                                         class="form-control form-control-modern border-start-0" placeholder="••••••••"
-                                        required minlength="6">
+                                        required minlength="6" maxlength="60">
                                 </div>
                             </div>
                             <div class="col-12">
@@ -418,7 +427,9 @@
                                     <span class="input-group-text bg-light text-muted border-end-0"><i
                                             class="bi bi-person"></i></span>
                                     <input type="text" name="name" id="edit_user_name"
-                                        class="form-control form-control-modern border-start-0" required maxlength="70">
+                                        class="form-control form-control-modern border-start-0" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\s]+$"
+                                        title="Full Name may only contain letters and spaces. Special characters are not allowed.">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -451,7 +462,7 @@
                                     <span class="input-group-text bg-light text-muted border-end-0"><i
                                             class="bi bi-telephone"></i></span>
                                     <input type="tel" name="mobile" id="edit_user_mobile"
-                                        class="form-control form-control-modern border-start-0" maxlength="10">
+                                        class="form-control form-control-modern border-start-0" minlength="10" maxlength="10" pattern="^[6-9][0-9]{9}$" title="10-digit mobile number starting with 6, 7, 8, or 9">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -460,7 +471,9 @@
                                     <span class="input-group-text bg-light text-muted border-end-0"><i
                                             class="bi bi-building"></i></span>
                                     <input type="text" name="department" id="edit_user_department"
-                                        class="form-control form-control-modern border-start-0" maxlength="60">
+                                        class="form-control form-control-modern border-start-0" minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                        title="Department may only contain letters, numbers, spaces, and allowed symbols.">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -471,7 +484,7 @@
                                             class="bi bi-key"></i></span>
                                     <input type="password" name="password" id="edit_user_password"
                                         class="form-control form-control-modern border-start-0"
-                                        placeholder="Leave blank to keep unchanged" minlength="6">
+                                        placeholder="Leave blank to keep unchanged" minlength="6" maxlength="60">
                                 </div>
                             </div>
                             <div class="col-12">
@@ -508,7 +521,7 @@
         function openEditUserModal(btn) {
             const id = btn.getAttribute('data-id');
             const form = document.getElementById('editUserForm');
-            form.action = `/users/${id}`;
+            form.action = `{{ url('admin/users') }}/${id}`;
             document.getElementById('edit_user_name').value = btn.getAttribute('data-name') || '';
             document.getElementById('edit_user_email').value = btn.getAttribute('data-email') || '';
             document.getElementById('edit_user_role_id').value = btn.getAttribute('data-role-id') || '';

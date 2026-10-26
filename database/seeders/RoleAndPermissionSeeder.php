@@ -34,7 +34,7 @@ class RoleAndPermissionSeeder extends Seeder
             'dashboard' => 'Dashboard',
             'plantmaster' => 'Plant Master',
             'feedbackform' => 'Feedback Form',
-            'plantvisitors' => 'Plant Visitors',
+            'plantvisitors' => 'Visitors',
             'companyprofile' => 'Company Profile',
             'bannercms' => 'Banner CMS',
             'feedbacklogs' => 'Feedback Logs',
@@ -73,7 +73,7 @@ class RoleAndPermissionSeeder extends Seeder
             'plantmaster.view', 'plantmaster.create', 'plantmaster.edit', 'plantmaster.delete', 'plantmaster.export',
             // Feedback Form: View, Create, Edit, Delete
             'feedbackform.view', 'feedbackform.create', 'feedbackform.edit', 'feedbackform.delete',
-            // Plant Visitors: View, Create, Edit, Delete, Export
+            // Visitors: View, Create, Edit, Delete, Export
             'plantvisitors.view', 'plantvisitors.create', 'plantvisitors.edit', 'plantvisitors.delete', 'plantvisitors.export',
             // Company Profile: View, Edit
             'companyprofile.view', 'companyprofile.edit',
@@ -104,7 +104,7 @@ class RoleAndPermissionSeeder extends Seeder
             'plantmaster.view', 'plantmaster.create', 'plantmaster.edit', 'plantmaster.export',
             // Feedback Form: View, Create, Edit
             'feedbackform.view', 'feedbackform.create', 'feedbackform.edit',
-            // Plant Visitors: View, Create, Edit, Export
+            // Visitors: View, Create, Edit, Export
             'plantvisitors.view', 'plantvisitors.create', 'plantvisitors.edit', 'plantvisitors.export',
             // Company Profile: View, Edit
             'companyprofile.view', 'companyprofile.edit',
@@ -133,7 +133,7 @@ class RoleAndPermissionSeeder extends Seeder
             'plantmaster.view',
             // Feedback Form: View, Create
             'feedbackform.view', 'feedbackform.create',
-            // Plant Visitors: View
+            // Visitors: View
             'plantvisitors.view',
             // Company Profile: View
             'companyprofile.view',

@@ -14,11 +14,58 @@ use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VisitController;
 use App\Http\Controllers\Web\AuditLogController;
 use App\Http\Controllers\Web\SystemConsoleController;
+use App\Http\Controllers\Web\VisitorWebController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Root redirect
 Route::get('/', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'));
+
+// ---------- Visitor Experience & Feedback Kiosk Portal (Public) ----------
+Route::get('/visitor', [VisitorWebController::class, 'index'])->name('visitor.home');
+Route::get('/visitor/lookup', [VisitorWebController::class, 'lookup'])->name('visitor.lookup');
+Route::get('/visitor-feedback', fn () => redirect()->route('visitor.home'));
+Route::get('/visitor-welcome', fn () => redirect()->route('visitor.home'));
+Route::get('/visitor/home', fn () => redirect()->route('visitor.home'));
+Route::get('/feedback-link', fn () => redirect()->route('visitor.home'));
+
+// ---------- Organizer Portal & Staff Login Navigation Aliases ----------
+Route::get('/organizer', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'))->name('organizer.home');
+Route::get('/organizer/login', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'))->name('organizer.login');
+Route::get('/organizer/portal', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'))->name('organizer.portal');
+Route::get('/organizer/dashboard', fn () => Auth::check() ? redirect()->route('dashboard') : redirect()->route('login'))->name('organizer.dashboard');
+Route::get('/admin/login', fn () => redirect()->route('login'));
+
+// ---------- Direct Feedback Link & Operational Access without /admin prefix ----------
+Route::get('visits/{visit}/feedback/create', [VisitController::class, 'createFeedback']);
+Route::post('visits/{visit}/feedback', [VisitController::class, 'storeFeedback']);
+Route::get('visits/{visit}', [VisitController::class, 'show']);
+Route::get('visits', fn () => Auth::check() ? redirect()->route('visits.index') : redirect()->route('login'));
+Route::get('feedback', fn () => Auth::check() ? redirect()->route('feedbacks.index') : redirect()->route('visitor.home'));
+Route::get('feedbacks', fn () => Auth::check() ? redirect()->route('feedbacks.index') : redirect()->route('login'));
+Route::get('feedbacks/{feedback}', fn (\App\Models\Feedback $feedback) => Auth::check() ? redirect()->route('feedbacks.show', $feedback) : redirect()->route('login'));
+Route::get('shift-queue', fn () => Auth::check() ? redirect()->route('shift_queue') : redirect()->route('login'));
+
+// Direct / Non-Admin Fallbacks for Admin Master Endpoints
+Route::middleware(['auth'])->group(function () {
+    Route::put('plants/{plant}', [PlantController::class, 'update']);
+    Route::get('plants/{plant}/edit', [PlantController::class, 'edit']);
+    Route::get('plants', fn () => redirect()->route('plants.index'));
+
+    Route::match(['put', 'patch'], 'permissions/{permission}', [PermissionController::class, 'update']);
+    Route::get('permissions/{permission}/edit', [PermissionController::class, 'edit']);
+    Route::get('permissions', fn () => redirect()->route('permissions.index'));
+
+    Route::put('users/{user}', [UserController::class, 'update']);
+    Route::get('users', fn () => redirect()->route('users.index'));
+
+    Route::put('questions/{question}', [QuestionController::class, 'update']);
+    Route::get('questions', fn () => redirect()->route('questions.index'));
+
+    Route::put('banners/{banner}', [BannerController::class, 'update']);
+    Route::get('banners', fn () => redirect()->route('banners.index'));
+    Route::get('roles', fn () => redirect()->route('roles.index'));
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

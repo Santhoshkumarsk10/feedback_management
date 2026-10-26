@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Register Plant Visitor')
-@section('page_title', 'Register Plant Visitor')
+@section('title', 'Register Visitor')
+@section('page_title', 'Register Visitor')
 @section('page_subtitle', 'Record new visitor arrival & escort assignment')
 
 @section('hide_top_errors', true)
@@ -24,7 +24,7 @@
         <div class="d-flex align-items-center gap-2 text-muted small">
             <a href="{{ route('dashboard') }}" class="text-decoration-none text-muted">Dashboard</a>
             <i class="bi bi-chevron-right fs-8"></i>
-            <a href="{{ route('visits.index') }}" class="text-decoration-none text-muted">Plant Visitors</a>
+            <a href="{{ route('visits.index') }}" class="text-decoration-none text-muted">Visitors</a>
             <i class="bi bi-chevron-right fs-8"></i>
             <span class="text-dark fw-bold">New Registration</span>
         </div>
@@ -68,14 +68,16 @@
                                         <label for="visitorNameInput" class="form-label fw-bold text-dark small mb-0">
                                             Visitor Full Name <span class="text-danger">*</span>
                                         </label>
-                                        <span id="visitorNameCount" class="validation-counter text-muted">0/100</span>
+                                        <span id="visitorNameCount" class="validation-counter text-muted">{{ mb_strlen(old('visitor_name', '')) }}/100</span>
                                     </div>
                                     <div class="input-icon-group">
                                         <span class="input-icon-badge" id="badge_visitor_name"><i class="bi bi-person-fill"></i></span>
                                         <input type="text" name="visitor_name" id="visitorNameInput" 
                                                class="form-control @error('visitor_name') is-invalid @enderror" 
                                                value="{{ old('visitor_name') }}" placeholder="e.g. Rajesh Kumar" 
-                                               required maxlength="100" autocomplete="name" autofocus>
+                                               required maxlength="100" autocomplete="name" autofocus
+                                               pattern="^[\p{L}\s]+$"
+                                               title="Visitor Name may only contain letters and spaces. Special characters are not allowed.">
                                     </div>
                                     <div id="feedback_visitor_name" class="validation-feedback-box error {{ $errors->has('visitor_name') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -88,14 +90,16 @@
                                         <label for="visitorCompanyInput" class="form-label fw-bold text-dark small mb-0">
                                             Company / Organization <span class="text-danger">*</span>
                                         </label>
-                                        <span id="visitorCompanyCount" class="validation-counter text-muted">0/150</span>
+                                        <span id="visitorCompanyCount" class="validation-counter text-muted">{{ mb_strlen(old('visitor_company', '')) }}/150</span>
                                     </div>
                                     <div class="input-icon-group">
                                         <span class="input-icon-badge" id="badge_visitor_company"><i class="bi bi-building-fill"></i></span>
                                         <input type="text" name="visitor_company" id="visitorCompanyInput" 
                                                class="form-control @error('visitor_company') is-invalid @enderror" 
                                                value="{{ old('visitor_company') }}" placeholder="e.g. TVS Motor Company Ltd" 
-                                               required maxlength="150" autocomplete="organization">
+                                               required maxlength="150" autocomplete="organization"
+                                               pattern="^[\p{L}\p{N}\s–—_&/,().' \-]+$"
+                                               title="Company Name contains invalid characters.">
                                     </div>
                                     <div id="feedback_visitor_company" class="validation-feedback-box error {{ $errors->has('visitor_company') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -106,13 +110,15 @@
                                 <div class="col-12 col-md-6">
                                     <div class="d-flex align-items-center justify-content-between mb-1">
                                         <label for="visitorDesignationInput" class="form-label fw-bold text-dark small mb-0">Designation / Role</label>
-                                        <span id="visitorDesignationCount" class="validation-counter text-muted">0/150</span>
+                                        <span id="visitorDesignationCount" class="validation-counter text-muted">{{ mb_strlen(old('visitor_designation', '')) }}/150</span>
                                     </div>
                                     <div class="input-icon-group">
                                         <span class="input-icon-badge" id="badge_visitor_designation"><i class="bi bi-briefcase-fill"></i></span>
                                         <input type="text" name="visitor_designation" id="visitorDesignationInput" 
                                                class="form-control @error('visitor_designation') is-invalid @enderror" 
-                                               value="{{ old('visitor_designation') }}" placeholder="e.g. Plant Head / Tooling Lead" maxlength="150">
+                                               value="{{ old('visitor_designation') }}" placeholder="e.g. Plant Head / Tooling Lead" maxlength="150"
+                                               pattern="^(?!^[0-9]+$)[\p{L}\p{N}\s–—_&/,().' \-]+$"
+                                               title="Designation may contain letters, numbers, spaces, and allowed symbols (&, -, _, /, ., ,, (), '). Numbers alone are not permitted.">
                                     </div>
                                     <div id="feedback_visitor_designation" class="validation-feedback-box error {{ $errors->has('visitor_designation') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -159,7 +165,9 @@
                                         <input type="tel" name="visitor_mobile" id="visitorMobileInput" 
                                                class="form-control @error('visitor_mobile') is-invalid @enderror" 
                                                value="{{ old('visitor_mobile') }}" placeholder="10-digit mobile" 
-                                               maxlength="10" autocomplete="tel">
+                                               maxlength="10" autocomplete="tel"
+                                               pattern="^[6-9][0-9]{9}$"
+                                               title="Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.">
                                     </div>
                                     <div id="feedback_visitor_mobile" class="validation-feedback-box error {{ $errors->has('visitor_mobile') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -178,7 +186,9 @@
                                         <input type="email" name="visitor_email" id="visitorEmailInput" 
                                                class="form-control @error('visitor_email') is-invalid @enderror" 
                                                value="{{ old('visitor_email') }}" placeholder="visitor@company.com" 
-                                               maxlength="150" autocomplete="email">
+                                               maxlength="150" autocomplete="email"
+                                               pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                               title="Please provide a valid email address with domain (e.g. name@company.com).">
                                     </div>
                                     <div id="feedback_visitor_email" class="validation-feedback-box error {{ $errors->has('visitor_email') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -215,14 +225,16 @@
                             <div class="mb-2">
                                 <div class="d-flex align-items-center justify-content-between mb-1">
                                     <label for="purposeInput" class="form-label fw-bold text-dark small mb-0">Purpose of Visit</label>
-                                    <span id="purposeCount" class="validation-counter text-muted">0/255</span>
+                                    <span id="purposeCount" class="validation-counter text-muted">{{ mb_strlen(old('purpose', 'Plant Tour & Technical Demo')) }}/150</span>
                                 </div>
                                 <div class="input-icon-group mb-2">
                                     <span class="input-icon-badge" id="badge_purpose"><i class="bi bi-journal-text"></i></span>
                                     <input type="text" name="purpose" id="purposeInput" 
                                            class="form-control @error('purpose') is-invalid @enderror" 
                                            value="{{ old('purpose', 'Plant Tour & Technical Demo') }}" 
-                                           placeholder="e.g. Injection Molding Trial, Die Casting Witness" maxlength="255">
+                                           placeholder="e.g. Injection Molding Trial, Die Casting Witness" maxlength="150"
+                                           pattern="^(?!^[0-9]+$)[\p{L}\p{N}\s–—_&/,().' \-]+$"
+                                           title="Purpose may contain letters, numbers, spaces, and allowed symbols. Numbers alone are not permitted.">
                                 </div>
                                 <div id="feedback_purpose" class="validation-feedback-box error {{ $errors->has('purpose') ? '' : 'd-none' }}">
                                     <i class="bi bi-exclamation-circle-fill"></i>
@@ -262,7 +274,7 @@
                                     Cancel
                                 </a>
                                 <button type="submit" id="submitBtn" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
-                                    <i class="bi bi-check2-circle me-1"></i> Register Plant Visitor
+                                    <i class="bi bi-check2-circle me-1"></i> Register Visitor
                                 </button>
                             </div>
                         </div>
@@ -361,13 +373,43 @@
     }
 
 
-    // 2. Name Validator (Letters, spaces, hyphens, periods, apostrophes)
-    const nameRegex = /^[\p{L}\s.\-']+$/u;
+    // 1. Trigger shake helper
+    function triggerShake(element) {
+        if (!element) return;
+        element.classList.remove('field-shake');
+        void element.offsetWidth; // re-flow
+        element.classList.add('field-shake');
+    }
+
+    // Helper: update character counter element styling
+    function updateCounter(counterEl, currentLen, maxLen) {
+        if (!counterEl) return;
+        counterEl.textContent = `${currentLen}/${maxLen}`;
+        if (currentLen >= maxLen) {
+            counterEl.className = 'validation-counter text-danger fw-bold';
+        } else if (currentLen >= Math.floor(maxLen * 0.9)) {
+            counterEl.className = 'validation-counter text-warning-emphasis fw-semibold';
+        } else {
+            counterEl.className = 'validation-counter text-muted';
+        }
+    }
+
+    // 2. Name Validator (Letters and spaces only - no special characters)
+    const nameRegex = /^[\p{L}\s]+$/u;
     function validateName() {
+        if (!nameInput) return true;
+        const rawLen = nameInput.value.length;
         const val = (nameInput.value || '').trim();
         const feedback = document.getElementById('feedback_visitor_name');
         const feedbackText = document.getElementById('feedback_visitor_name_text');
-        if (nameCount) nameCount.textContent = `${nameInput.value.length}/100`;
+
+        updateCounter(nameCount, rawLen, 100);
+
+        // When character limit is reached, show error box just like required
+        if (rawLen >= 100) {
+            setFieldState(nameInput, feedback, feedbackText, false, 'Maximum character limit reached (100/100 characters).');
+            return val.length >= 2 && nameRegex.test(val);
+        }
 
         if (!val) {
             setFieldState(nameInput, feedback, feedbackText, false, 'Visitor full name is required.');
@@ -377,12 +419,8 @@
             setFieldState(nameInput, feedback, feedbackText, false, 'Visitor full name must be at least 2 characters.');
             return false;
         }
-        if (val.length > 100) {
-            setFieldState(nameInput, feedback, feedbackText, false, 'Visitor full name cannot exceed 100 characters.');
-            return false;
-        }
         if (!nameRegex.test(val)) {
-            setFieldState(nameInput, feedback, feedbackText, false, 'Visitor name may only contain letters, spaces, hyphens, and dots.');
+            setFieldState(nameInput, feedback, feedbackText, false, 'Visitor Name may only contain letters and spaces. Special characters are not allowed.');
             return false;
         }
 
@@ -391,12 +429,21 @@
     }
 
     // 3. Company Validator (Alphanumeric, spaces, safe company punctuation)
-    const companyRegex = /^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$/u;
+    const companyRegex = /^[\p{L}\p{N}\s–—_&/,().'’ -]+$/u;
     function validateCompany() {
+        if (!companyInput) return true;
+        const rawLen = companyInput.value.length;
         const val = (companyInput.value || '').trim();
         const feedback = document.getElementById('feedback_visitor_company');
         const feedbackText = document.getElementById('feedback_visitor_company_text');
-        if (companyCount) companyCount.textContent = `${companyInput.value.length}/150`;
+
+        updateCounter(companyCount, rawLen, 150);
+
+        // When character limit is reached, show error box just like required
+        if (rawLen >= 150) {
+            setFieldState(companyInput, feedback, feedbackText, false, 'Maximum character limit reached (150/150 characters).');
+            return val.length >= 2 && companyRegex.test(val);
+        }
 
         if (!val) {
             setFieldState(companyInput, feedback, feedbackText, false, 'Company or organization name is required.');
@@ -404,10 +451,6 @@
         }
         if (val.length < 2) {
             setFieldState(companyInput, feedback, feedbackText, false, 'Company name must be at least 2 characters.');
-            return false;
-        }
-        if (val.length > 150) {
-            setFieldState(companyInput, feedback, feedbackText, false, 'Company name cannot exceed 150 characters.');
             return false;
         }
         if (!companyRegex.test(val)) {
@@ -421,7 +464,7 @@
 
     // 4. Mobile Validator (Optional, but if entered: exactly 10 digits starting with 6, 7, 8, or 9)
     function validateMobile() {
-        // Strip non-digits in real-time
+        if (!mobileInput) return true;
         let digits = mobileInput.value.replace(/\D/g, '').slice(0, 10);
         if (mobileInput.value !== digits) {
             mobileInput.value = digits;
@@ -476,6 +519,8 @@
     // 5. Email Validator (Optional, but if entered: RFC-compliant domain format)
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     function validateEmail() {
+        if (!emailInput) return true;
+        const rawLen = emailInput.value.length;
         const val = (emailInput.value || '').trim();
         const feedback = document.getElementById('feedback_visitor_email');
         const feedbackText = document.getElementById('feedback_visitor_email_text');
@@ -484,9 +529,9 @@
             setFieldState(emailInput, feedback, feedbackText, true, '', true);
             return true;
         }
-        if (val.length > 150) {
-            setFieldState(emailInput, feedback, feedbackText, false, 'Email address cannot exceed 150 characters.');
-            return false;
+        if (rawLen >= 150) {
+            setFieldState(emailInput, feedback, feedbackText, false, 'Maximum character limit reached (150/150 characters).');
+            return emailRegex.test(val);
         }
         if (!emailRegex.test(val)) {
             setFieldState(emailInput, feedback, feedbackText, false, 'Please provide a valid email address with a domain (e.g. name@company.com).');
@@ -499,6 +544,7 @@
 
     // 6. Date Validator
     function validateDate() {
+        if (!dateInput) return true;
         const val = (dateInput.value || '').trim();
         const feedback = document.getElementById('feedback_visit_date');
         const feedbackText = document.getElementById('feedback_visit_date_text');
@@ -513,50 +559,125 @@
     }
 
     // 7. Designation Validator
+    const designationRegex = /^[\p{L}\p{N}\s–—_&/,().'’ -]+$/u;
     function validateDesignation() {
-        const val = designationInput.value || '';
-        if (designationCount) designationCount.textContent = `${val.length}/150`;
+        if (!designationInput) return true;
+        const rawLen = designationInput.value.length;
+        const val = (designationInput.value || '').trim();
         const feedback = document.getElementById('feedback_visitor_designation');
         const feedbackText = document.getElementById('feedback_visitor_designation_text');
 
-        if (val.length > 150) {
-            setFieldState(designationInput, feedback, feedbackText, false, 'Designation cannot exceed 150 characters.');
+        updateCounter(designationCount, rawLen, 150);
+
+        if (rawLen >= 150) {
+            setFieldState(designationInput, feedback, feedbackText, false, 'Maximum character limit reached (150/150 characters).');
+            return true;
+        }
+
+        if (val.length === 0) {
+            setFieldState(designationInput, feedback, feedbackText, true, '', true);
+            return true;
+        }
+
+        if (val.length < 2) {
+            setFieldState(designationInput, feedback, feedbackText, false, 'Designation must be at least 2 characters.');
             return false;
         }
-        setFieldState(designationInput, feedback, feedbackText, true, '', val.trim().length === 0);
+
+        if (/^[0-9]+$/.test(val)) {
+            setFieldState(designationInput, feedback, feedbackText, false, 'Designation cannot be numbers only.');
+            return false;
+        }
+
+        if (!designationRegex.test(val)) {
+            setFieldState(designationInput, feedback, feedbackText, false, 'Designation contains invalid characters.');
+            return false;
+        }
+
+        setFieldState(designationInput, feedback, feedbackText, true);
         return true;
     }
 
     // 8. Purpose Validator
+    const purposeRegex = /^[\p{L}\p{N}\s–—_&/,().'’ -]+$/u;
     function validatePurpose() {
-        const val = purposeInput.value || '';
-        if (purposeCount) purposeCount.textContent = `${val.length}/255`;
+        if (!purposeInput) return true;
+        const rawLen = purposeInput.value.length;
+        const val = (purposeInput.value || '').trim();
         const feedback = document.getElementById('feedback_purpose');
         const feedbackText = document.getElementById('feedback_purpose_text');
 
-        if (val.length > 255) {
-            setFieldState(purposeInput, feedback, feedbackText, false, 'Purpose cannot exceed 255 characters.');
+        updateCounter(purposeCount, rawLen, 150);
+
+        if (rawLen >= 150) {
+            setFieldState(purposeInput, feedback, feedbackText, false, 'Maximum character limit reached (150/150 characters).');
+            return true;
+        }
+
+        if (val.length === 0) {
+            setFieldState(purposeInput, feedback, feedbackText, true, '', true);
+            return true;
+        }
+
+        if (val.length < 2) {
+            setFieldState(purposeInput, feedback, feedbackText, false, 'Purpose must be at least 2 characters.');
             return false;
         }
-        setFieldState(purposeInput, feedback, feedbackText, true, '', val.trim().length === 0);
+
+        if (/^[0-9]+$/.test(val)) {
+            setFieldState(purposeInput, feedback, feedbackText, false, 'Purpose cannot be numbers only.');
+            return false;
+        }
+
+        if (!purposeRegex.test(val)) {
+            setFieldState(purposeInput, feedback, feedbackText, false, 'Purpose contains invalid characters.');
+            return false;
+        }
+
+        setFieldState(purposeInput, feedback, feedbackText, true);
         return true;
     }
+
+    // Shake animation on typing beyond limit
+    function attachLimitWarning(inputEl, maxLen) {
+        if (!inputEl) return;
+        inputEl.addEventListener('keydown', function(e) {
+            const ignoredKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End', 'Control', 'Alt', 'Meta', 'Shift'];
+            if (ignoredKeys.includes(e.key) || e.ctrlKey || e.metaKey || e.altKey) {
+                return;
+            }
+            if (this.value.length >= maxLen && this.selectionStart === this.selectionEnd) {
+                triggerShake(this);
+            }
+        });
+    }
+    attachLimitWarning(nameInput, 100);
+    attachLimitWarning(companyInput, 150);
+    attachLimitWarning(designationInput, 150);
+    attachLimitWarning(purposeInput, 150);
+    attachLimitWarning(emailInput, 150);
 
     // Attach real-time listeners
     if (nameInput) {
         nameInput.addEventListener('input', validateName);
+        nameInput.addEventListener('keyup', validateName);
+        nameInput.addEventListener('paste', () => setTimeout(validateName, 10));
         nameInput.addEventListener('blur', validateName);
     }
     if (companyInput) {
         companyInput.addEventListener('input', validateCompany);
+        companyInput.addEventListener('keyup', validateCompany);
+        companyInput.addEventListener('paste', () => setTimeout(validateCompany, 10));
         companyInput.addEventListener('blur', validateCompany);
     }
     if (mobileInput) {
         mobileInput.addEventListener('input', validateMobile);
+        mobileInput.addEventListener('keyup', validateMobile);
         mobileInput.addEventListener('blur', validateMobile);
     }
     if (emailInput) {
         emailInput.addEventListener('input', validateEmail);
+        emailInput.addEventListener('keyup', validateEmail);
         emailInput.addEventListener('blur', validateEmail);
     }
     if (dateInput) {
@@ -565,20 +686,22 @@
     }
     if (designationInput) {
         designationInput.addEventListener('input', validateDesignation);
+        designationInput.addEventListener('keyup', validateDesignation);
     }
     if (purposeInput) {
         purposeInput.addEventListener('input', validatePurpose);
+        purposeInput.addEventListener('keyup', validatePurpose);
     }
 
     // Run initial validations and counter sync on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        if (nameInput && nameInput.value) {
-            if (nameCount) nameCount.textContent = `${nameInput.value.length}/100`;
-            validateName();
+    function initFieldStates() {
+        if (nameInput) {
+            updateCounter(nameCount, nameInput.value.length, 100);
+            if (nameInput.value) validateName();
         }
-        if (companyInput && companyInput.value) {
-            if (companyCount) companyCount.textContent = `${companyInput.value.length}/150`;
-            validateCompany();
+        if (companyInput) {
+            updateCounter(companyCount, companyInput.value.length, 150);
+            if (companyInput.value) validateCompany();
         }
         if (mobileInput && mobileInput.value) {
             validateMobile();
@@ -586,20 +709,27 @@
         if (emailInput && emailInput.value) {
             validateEmail();
         }
-        if (designationInput && designationInput.value) {
-            if (designationCount) designationCount.textContent = `${designationInput.value.length}/150`;
+        if (designationInput) {
+            updateCounter(designationCount, designationInput.value.length, 150);
+            if (designationInput.value) validateDesignation();
         }
-        if (purposeInput && purposeInput.value) {
-            if (purposeCount) purposeCount.textContent = `${purposeInput.value.length}/255`;
+        if (purposeInput) {
+            updateCounter(purposeCount, purposeInput.value.length, 255);
+            if (purposeInput.value) validatePurpose();
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFieldStates);
+    } else {
+        initFieldStates();
+    }
 
     // Form Submit Interceptor
     if (form) {
         form.addEventListener('submit', function(e) {
             const errors = [];
             let firstInvalidEl = null;
-
 
             if (!validateName()) {
                 const msg = document.getElementById('feedback_visitor_name_text')?.textContent || 'Visitor full name is required.';
@@ -632,12 +762,14 @@
             }
 
             if (!validateDesignation()) {
-                errors.push({ msg: 'Designation is too long (maximum 150 characters).', el: designationInput });
+                const msg = document.getElementById('feedback_visitor_designation_text')?.textContent || 'Designation contains invalid characters.';
+                errors.push({ msg: msg, el: designationInput });
                 if (!firstInvalidEl) firstInvalidEl = designationInput;
             }
 
             if (!validatePurpose()) {
-                errors.push({ msg: 'Purpose is too long (maximum 255 characters).', el: purposeInput });
+                const msg = document.getElementById('feedback_purpose_text')?.textContent || 'Purpose contains invalid characters.';
+                errors.push({ msg: msg, el: purposeInput });
                 if (!firstInvalidEl) firstInvalidEl = purposeInput;
             }
 

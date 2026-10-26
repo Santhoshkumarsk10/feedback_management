@@ -17,10 +17,15 @@ class BannerController extends Controller
     {
         $request->validate([
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'per_page' => 'nullable|integer',
         ]);
 
         $statusTab = $request->input('tab', 'all');
         $targetFilter = $request->input('target', 'all');
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
 
         $query = Banner::query()
             ->when($statusTab === 'active', fn ($q) => $q->where('is_active', true))
@@ -34,11 +39,11 @@ class BannerController extends Controller
                   ->orWhere('link_url', 'like', "%$v%");
             }));
 
-        $totalCount = Banner::count();
-        $activeCount = Banner::where('is_active', true)->count();
-        $inactiveCount = Banner::where('is_active', false)->count();
+        $totalCount = min(Banner::count(), 1000);
+        $activeCount = min(Banner::where('is_active', true)->count(), 1000);
+        $inactiveCount = min(Banner::where('is_active', false)->count(), 1000);
 
-        $banners = $query->orderBy('sort_order', 'asc')->orderBy('id', 'desc')->paginate(10)->withQueryString();
+        $banners = $query->orderBy('sort_order', 'asc')->orderBy('id', 'desc')->paginateCapped($perPage, 1000);
 
         // Search suggestions for search-suggest component
         $allBannerSuggestions = Banner::select('id', 'title', 'subtitle', 'target')
@@ -86,8 +91,8 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
-            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'title' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',
@@ -144,8 +149,8 @@ class BannerController extends Controller
     public function update(Request $request, Banner $banner)
     {
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
-            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'title' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',

@@ -242,7 +242,7 @@ class ValidationAndPhoneRuleTest extends TestCase
 
         // 2. Valid submission
         $validData = [
-            'visitor_name' => 'Dr. R. Ramanathan',
+            'visitor_name' => 'Doctor Ramanathan',
             'visitor_company' => 'Tata Motors Ltd. (CVBU)',
             'visitor_mobile' => '9840123456',
             'visitor_email' => 'ramanathan@tatamotors.com',
@@ -253,7 +253,7 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $validData);
         $res->assertSessionHasNoErrors();
         $this->assertDatabaseHas('visitors', [
-            'name' => 'Dr. R. Ramanathan',
+            'name' => 'Doctor Ramanathan',
             'company' => 'Tata Motors Ltd. (CVBU)',
             'mobile' => '9840123456',
         ]);
@@ -280,13 +280,17 @@ class ValidationAndPhoneRuleTest extends TestCase
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidEmail);
         $res->assertSessionHasErrors('visitor_email');
 
-        // 6. Invalid name with special characters
+        // 6. Invalid name with special characters (< > &)
         $invalidName = $validData;
         $invalidName['visitor_name'] = 'Ramanathan <Engineer> & Co';
         $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidName);
         $res->assertSessionHasErrors('visitor_name');
 
-
+        // 7. Invalid name with dots / periods
+        $invalidDotName = $validData;
+        $invalidDotName['visitor_name'] = 'Dr. Ramanathan';
+        $res = $this->actingAs($this->admin)->post(route('visits.store'), $invalidDotName);
+        $res->assertSessionHasErrors('visitor_name');
     }
 
     public function test_banner_validation_rules()

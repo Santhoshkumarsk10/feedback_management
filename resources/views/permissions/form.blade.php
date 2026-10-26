@@ -44,7 +44,9 @@
                                        placeholder="e.g. Manage Plant Locations" 
                                        required 
                                        minlength="2"
-                                       maxlength="80">
+                                       maxlength="100"
+                                       pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                       title="Display Title may only contain letters, numbers, spaces, and allowed symbols.">
                             </div>
                             <div class="form-text text-muted small mt-1">Human-friendly capability label</div>
                             @error('display_name')
@@ -64,7 +66,9 @@
                                        placeholder="e.g. manage-plants" 
                                        required 
                                        minlength="3"
-                                       maxlength="60"
+                                       maxlength="100"
+                                       pattern="^[a-z0-9\-\.]+$"
+                                       title="Permission Key may only contain lowercase letters, numbers, hyphens, and dots."
                                        {{ $permission->exists ? 'readonly' : '' }}>
                             </div>
                             <div class="form-text text-muted small mt-1">Machine-readable key used in <code>@@can</code> &amp; middleware (e.g. manage-plants)</div>
@@ -80,11 +84,15 @@
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-folder2-open"></i></span>
                                 <input list="moduleOptions" 
                                        name="module" 
-                                       id="perm_module"
+                                       id="perm_module" 
                                        class="form-control form-control-modern border-start-0 @error('module') is-invalid @enderror" 
                                        value="{{ old('module', $permission->module ?: 'System Masters') }}" 
                                        placeholder="e.g. System Masters, Operations & Visits, Analytics & Insights" 
-                                       required>
+                                       required
+                                       minlength="2"
+                                       maxlength="100"
+                                       pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                       title="Module Group may only contain letters, numbers, spaces, and allowed symbols.">
                                 <datalist id="moduleOptions">
                                     @foreach($existingModules as $m)
                                         <option value="{{ $m }}">
@@ -107,11 +115,11 @@
                         <div class="col-md-12">
                             <label class="form-modern-label" for="perm_description">Capability Description</label>
                             <textarea name="description" 
-                                      id="perm_description"
+                                      id="perm_description" 
                                       rows="3" 
                                       class="form-control form-control-modern @error('description') is-invalid @enderror" 
                                       placeholder="e.g. Grants access to configure factory facilities, locations, and plants" 
-                                      maxlength="255">{{ old('description', $permission->description) }}</textarea>
+                                      maxlength="150">{{ old('description', $permission->description) }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
