@@ -102,15 +102,17 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:60', 'regex:/^[a-z0-9\-\.]+$/', 'unique:permissions,name'],
-            'display_name' => ['required', 'string', 'min:2', 'max:80', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'module' => ['required', 'string', 'min:2', 'max:50'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[a-z0-9\-\.]+$/', 'unique:permissions,name'],
+            'display_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'module' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'description' => ['nullable', 'string', 'max:150'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,id'],
         ], [
             'name.regex' => 'Permission Key may only contain lowercase letters, numbers, hyphens, and dots (e.g. plantmaster.view).',
             'name.unique' => 'This permission key is already registered.',
+            'module.regex' => 'Module Name contains invalid characters.',
+            'display_name.regex' => 'Display Title contains invalid characters.',
         ]);
 
         $permission = Permission::create([
@@ -164,11 +166,14 @@ class PermissionController extends Controller
     public function update(Request $request, Permission $permission)
     {
         $validated = $request->validate([
-            'display_name' => ['required', 'string', 'min:2', 'max:80', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'module' => ['required', 'string', 'min:2', 'max:50'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'display_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'module' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'description' => ['nullable', 'string', 'max:150'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,id'],
+        ], [
+            'display_name.regex' => 'Display Title contains invalid characters.',
+            'module.regex' => 'Module Name contains invalid characters.',
         ]);
 
         $permission->update([

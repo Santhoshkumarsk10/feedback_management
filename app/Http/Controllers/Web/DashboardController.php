@@ -189,7 +189,7 @@ class DashboardController extends Controller
         }
 
         $stats = [
-            'organizers' => User::whereIn('role', ['organizer', 'staff'])->count(),
+            'organizers' => User::where('is_active', true)->count(),
             'visitors' => $totalVisitorsCount,
             'visits' => Visit::count(),
             'feedbacks' => $totalFeedbacksCount,
@@ -556,12 +556,7 @@ class DashboardController extends Controller
                   ->orWhere('mobile', 'like', "%{$term}%")
                   ->orWhere('department', 'like', "%{$term}%");
             })
-            ->where(function ($q) {
-                $q->whereIn('role', ['coordinator', 'organizer'])
-                  ->orWhereHas('roles', function ($rq) {
-                      $rq->whereIn('name', ['coordinator', 'organizer']);
-                  });
-            })
+            ->where('is_active', true)
             ->limit(4)
             ->get()
             ->map(function ($u) {

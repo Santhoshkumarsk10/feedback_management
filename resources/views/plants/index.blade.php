@@ -9,7 +9,6 @@
             <i class="bi bi-building-add"></i>
             <span>Register New Plant</span>
         </button>
-        <a href="{{ route('plants.create') }}" class="d-none">Register New Plant</a>
     @else
         <span class="badge bg-secondary-subtle text-secondary py-1 px-2 border"><i class="bi bi-eye"></i> View Only</span>
     @endcan
@@ -311,16 +310,16 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-modern-label required" for="add_plant_code">Plant Code</label>
-                            <input type="text" name="code" id="add_plant_code" class="form-control form-control-modern text-uppercase" placeholder="PLANT-05" required maxlength="20">
+                            <input type="text" name="code" id="add_plant_code" class="form-control form-control-modern text-uppercase" placeholder="PLANT-05" required minlength="2" maxlength="20" pattern="^[a-zA-Z0-9_\-]+$" title="Plant code should contain letters, digits, hyphen, or underscore">
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Letters, digits, hyphen, underscore</div>
                         </div>
                         <div class="col-md-8">
                             <label class="form-modern-label required" for="add_plant_name">Facility Name</label>
-                            <input type="text" name="name" id="add_plant_name" class="form-control form-control-modern" placeholder="e.g. Plant 5 — Precision Tooling Centre" required maxlength="100">
+                            <input type="text" name="name" id="add_plant_name" class="form-control form-control-modern" placeholder="e.g. Plant 5 — Precision Tooling Centre" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="add_plant_location">Facility Location / City</label>
-                            <input type="text" name="location" id="add_plant_location" class="form-control form-control-modern" placeholder="e.g. Chembarambakkam, Chennai" maxlength="200">
+                            <input type="text" name="location" id="add_plant_location" class="form-control form-control-modern" placeholder="e.g. Chembarambakkam, Chennai" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="add_plant_email">Contact Email</label>
@@ -328,7 +327,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="add_plant_phone">Contact Phone</label>
-                            <input type="tel" name="contact_phone" id="add_plant_phone" class="form-control form-control-modern" placeholder="9844268125" maxlength="10">
+                            <input type="tel" name="contact_phone" id="add_plant_phone" class="form-control form-control-modern" placeholder="9844268125" minlength="10" maxlength="10" pattern="^[6-9][0-9]{9}$" title="10-digit mobile number starting with 6, 7, 8, or 9">
                         </div>
                         <div class="col-md-6">
                             <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
@@ -383,16 +382,16 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-modern-label required" for="edit_plant_code">Plant Code</label>
-                            <input type="text" name="code" id="edit_plant_code" class="form-control form-control-modern text-uppercase" required maxlength="20">
+                            <input type="text" name="code" id="edit_plant_code" class="form-control form-control-modern text-uppercase" required minlength="2" maxlength="20" pattern="^[a-zA-Z0-9_\-]+$" title="Plant code should contain letters, digits, hyphen, or underscore">
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Letters, digits, hyphen, underscore</div>
                         </div>
                         <div class="col-md-8">
                             <label class="form-modern-label required" for="edit_plant_name">Facility Name</label>
-                            <input type="text" name="name" id="edit_plant_name" class="form-control form-control-modern" required maxlength="100">
+                            <input type="text" name="name" id="edit_plant_name" class="form-control form-control-modern" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="edit_plant_location">Facility Location / City</label>
-                            <input type="text" name="location" id="edit_plant_location" class="form-control form-control-modern" maxlength="200">
+                            <input type="text" name="location" id="edit_plant_location" class="form-control form-control-modern" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="edit_plant_email">Contact Email</label>
@@ -400,7 +399,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="edit_plant_phone">Contact Phone</label>
-                            <input type="tel" name="contact_phone" id="edit_plant_phone" class="form-control form-control-modern" maxlength="10">
+                            <input type="tel" name="contact_phone" id="edit_plant_phone" class="form-control form-control-modern" minlength="10" maxlength="10" pattern="^[6-9][0-9]{9}$" title="10-digit mobile number starting with 6, 7, 8, or 9">
                         </div>
                         <div class="col-md-6">
                             <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
@@ -437,7 +436,7 @@
     function openEditPlantModal(btn) {
         const id = btn.getAttribute('data-id');
         const form = document.getElementById('editPlantForm');
-        form.action = `/plants/${id}`;
+        form.action = `{{ url('admin/plants') }}/${id}`;
         document.getElementById('edit_plant_code').value = btn.getAttribute('data-code') || '';
         document.getElementById('edit_plant_name').value = btn.getAttribute('data-name') || '';
         document.getElementById('edit_plant_location').value = btn.getAttribute('data-location') || '';

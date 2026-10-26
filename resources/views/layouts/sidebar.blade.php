@@ -137,7 +137,9 @@
 
         @if ($canAuditLogs)
             <a class="nav-item-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}"
-                href="{{ route('audit-logs.index') }}">
+                id="sidebarAuditLogsLink"
+                href="{{ route('audit-logs.index') }}"
+                onclick="window.scrollTo({top: 0, left: 0, behavior: 'instant'}); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; const mainEl = document.querySelector('.app-main'); if (mainEl) mainEl.scrollTop = 0;">
                 <i class="bi bi-clock-history"></i>
                 <span>Audit Logs</span>
             </a>
@@ -171,7 +173,7 @@
             <div class="user-info-text">
                 <div class="user-name-title">{{ auth()->user()->name ?? 'User' }}</div>
                 <span class="user-role-badge">
-                    {{ auth()->user()->roleModel?->display_name ?? (auth()->user()->roles->first()?->display_name ?? ucfirst(auth()->user()->role ?? 'Staff')) }}
+                    {{ auth()->user()?->roleModel?->display_name ?? (auth()->user()?->role ? ucfirst(auth()->user()->role) : 'Staff') }}
                 </span>
             </div>
         </a>

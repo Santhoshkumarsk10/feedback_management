@@ -103,7 +103,8 @@
             <input type="text" 
                    class="topbar-search-input" 
                    id="globalTopSearch" 
-                   placeholder="Search visitors, coordinators or feedback..." 
+                   placeholder="Search visitors, feedback..." 
+                   title="Search visitors, coordinators or feedback"
                    autocomplete="off">
             <span id="globalSearchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute" style="right: 14px; display: none;" role="status"></span>
             

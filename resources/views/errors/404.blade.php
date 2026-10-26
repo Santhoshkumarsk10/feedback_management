@@ -33,4 +33,4 @@
 
 @section('tertiary_url', '/organizer/login')
 @section('tertiary_icon', 'fa-solid fa-user-shield')
-@section('tertiary_text', 'Organizer Login')
+@section('tertiary_text', 'Organizer Portal')

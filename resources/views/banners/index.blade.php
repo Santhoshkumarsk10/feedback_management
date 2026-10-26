@@ -161,7 +161,7 @@
                     @forelse($banners as $banner)
                         <tr>
                             <td class="text-center">
-                                <span class="saas-code-badge">#{{ $banner->sort_order }}</span>
+                                <span class="saas-code-badge">{{ $banner->sort_order }}</span>
                             </td>
                             <td>
                                 <div class="banner-thumb-container">
@@ -371,7 +371,9 @@
                                     <label class="form-modern-label required" for="add_banner_title">Banner Headline</label>
                                     <input type="text" name="title" id="add_banner_title"
                                         class="form-control form-control-modern"
-                                        placeholder="e.g. Precision Injection Moulding" required maxlength="200">
+                                        placeholder="e.g. Precision Injection Moulding" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The banner title contains invalid characters.">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="add_banner_target">Target Device</label>
@@ -388,13 +390,15 @@
                                         Caption</label>
                                     <input type="text" name="subtitle" id="add_banner_subtitle"
                                         class="form-control form-control-modern"
-                                        placeholder="e.g. Empowering manufacturing with Japanese precision" maxlength="500">
+                                        placeholder="e.g. Empowering manufacturing with Japanese precision" minlength="2" maxlength="150"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The subtitle contains invalid characters.">
                                 </div>
                                 <div class="col-md-7">
                                     <label class="form-modern-label" for="add_banner_link">Redirect Link (URL)</label>
                                     <input type="url" name="link_url" id="add_banner_link"
                                         class="form-control form-control-modern"
-                                        placeholder="https://www.shibaura-machine.co.in">
+                                        placeholder="https://www.shibaura-machine.co.in" maxlength="500">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="add_banner_sort">Sort Order</label>
@@ -475,7 +479,9 @@
                                 <div class="col-md-7">
                                     <label class="form-modern-label required" for="edit_banner_title">Banner Headline</label>
                                     <input type="text" name="title" id="edit_banner_title"
-                                        class="form-control form-control-modern" required maxlength="200">
+                                        class="form-control form-control-modern" required minlength="2" maxlength="100"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The banner title contains invalid characters.">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="edit_banner_target">Target Device</label>
@@ -491,12 +497,14 @@
                                     <label class="form-modern-label" for="edit_banner_subtitle">Subtitle / Supporting
                                         Caption</label>
                                     <input type="text" name="subtitle" id="edit_banner_subtitle"
-                                        class="form-control form-control-modern" maxlength="500">
+                                        class="form-control form-control-modern" minlength="2" maxlength="150"
+                                        pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                                        title="The subtitle contains invalid characters.">
                                 </div>
                                 <div class="col-md-7">
                                     <label class="form-modern-label" for="edit_banner_link">Redirect Link (URL)</label>
                                     <input type="url" name="link_url" id="edit_banner_link"
-                                        class="form-control form-control-modern">
+                                        class="form-control form-control-modern" maxlength="500">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-modern-label required" for="edit_banner_sort">Sort Order</label>
@@ -567,7 +575,7 @@
             function openEditBannerModal(btn) {
                 const id = btn.getAttribute('data-id');
                 const form = document.getElementById('editBannerForm');
-                form.action = `/banners/${id}`;
+                form.action = `{{ url('admin/banners') }}/${id}`;
                 document.getElementById('edit_banner_title').value = btn.getAttribute('data-title') || '';
                 document.getElementById('edit_banner_subtitle').value = btn.getAttribute('data-subtitle') || '';
                 document.getElementById('edit_banner_target').value = btn.getAttribute('data-target') || 'all';

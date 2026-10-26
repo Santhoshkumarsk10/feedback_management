@@ -180,17 +180,17 @@ class UserController extends Controller
     private function validated(Request $request, ?User $user = null): array
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s]+$~u'],
             'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
             'mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/', 'required_without:email', Rule::unique('users', 'mobile')->ignore($user?->id)],
             'role_id' => 'required|exists:roles,id',
-            'department' => ['nullable', 'string', 'min:2', 'max:60', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'department' => ['nullable', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:6', 'max:60'],
         ], [
             'name.required' => 'Full Name is required.',
             'name.min' => 'Full Name must be at least :min characters.',
             'name.max' => 'Full Name cannot exceed :max characters.',
-            'name.regex' => 'Full Name may only contain letters, spaces, hyphens, and dots.',
+            'name.regex' => 'Full Name may only contain letters and spaces. Special characters are not allowed.',
 
             'email.email' => 'Please provide a valid official email address.',
             'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',

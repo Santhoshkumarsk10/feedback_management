@@ -127,7 +127,8 @@
                                        id="email" 
                                        name="email" 
                                        value="{{ old('email', $company->email) }}" 
-                                       placeholder="contact@company.com">
+                                       placeholder="contact@company.com"
+                                       maxlength="100">
                             </div>
                             @error('email')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -202,7 +203,7 @@
                                   rows="3" 
                                   placeholder="Plant Plot No, Chennai-Bangalore Highway, Industrial Estate, Landmark"
                                   minlength="3"
-                                  maxlength="500">{{ old('address', $company->address) }}</textarea>
+                                  maxlength="150">{{ old('address', $company->address) }}</textarea>
                         @error('address')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -221,7 +222,7 @@
                                        value="{{ old('city', $company->city) }}" 
                                        placeholder="Chennai"
                                        minlength="2"
-                                       maxlength="50">
+                                       maxlength="100">
                             </div>
                             @error('city')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -239,7 +240,7 @@
                                        value="{{ old('state', $company->state) }}" 
                                        placeholder="Tamil Nadu"
                                        minlength="2"
-                                       maxlength="50">
+                                       maxlength="100">
                             </div>
                             @error('state')
                                 <div class="text-danger small mt-1">{{ $message }}</div>

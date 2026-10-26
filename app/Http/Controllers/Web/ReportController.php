@@ -330,7 +330,7 @@ class ReportController extends Controller
 
     private function organizerRows(Request $r)
     {
-        return User::whereIn('role', ['staff', 'organizer'])
+        return User::where('is_active', true)
             ->withCount([
                 'visitsAsOrganizer as visits_count' => fn ($q) => $this->filterVisits($q, $r),
                 'feedbacksReceived as feedbacks_count' => fn ($q) => $this->filterFeedbacks($q, $r),

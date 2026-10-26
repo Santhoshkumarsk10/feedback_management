@@ -85,7 +85,7 @@
                                        value="{{ old('location', $plant->location) }}" 
                                        placeholder="e.g. Chembarambakkam, Chennai, Tamil Nadu - 600123"
                                        minlength="3"
-                                       maxlength="200">
+                                       maxlength="150">
                             </div>
                             @error('location')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             label: 'Factory Location / Address',
             disallowedRegex: /[<>{}\[\]$^*~=\\\|]/g,
             min: 3,
-            max: 200,
+            max: 150,
             required: false,
             msg: 'Special symbols like < > { } [ ] $ ^ * = \\ | are not permitted.'
         },

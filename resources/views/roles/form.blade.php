@@ -44,7 +44,9 @@
                                 <input name="name" id="role_name" 
                                        class="form-control form-control-modern @error('name') is-invalid @enderror border-start-0" 
                                        value="{{ old('name', $role->display_name ?: $role->name) }}" 
-                                       placeholder="e.g. Operations Supervisor" minlength="2" maxlength="70" required>
+                                       placeholder="e.g. Operations Supervisor" minlength="2" maxlength="100" required
+                                       pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                       title="Role Title contains disallowed characters.">
                             </div>
                             @error('name')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -64,7 +66,9 @@
                                 <input name="slug" id="role_slug" 
                                        class="form-control form-control-modern @error('slug') is-invalid @enderror border-start-0" 
                                        value="{{ old('slug', $role->name) }}" 
-                                       placeholder="e.g. operations_supervisor" maxlength="50" 
+                                       placeholder="e.g. operations_supervisor" maxlength="100" 
+                                       pattern="^[a-zA-Z0-9_\-]+$"
+                                       title="Role Identifier may only contain letters, numbers, hyphens, and underscores."
                                        {{ $role->is_system ? 'readonly' : '' }}>
                             </div>
                             @error('slug')

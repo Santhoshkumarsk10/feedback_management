@@ -18,8 +18,8 @@ class VisitorController extends Controller
     /** Screen 1: list of organizers to pick from. */
     public function organizers()
     {
-        return User::whereIn('role', ['organizer', 'staff'])->where('is_active', true)
-            ->orderBy('name')->get(['id', 'name', 'department']);
+        return User::where('is_active', true)
+            ->orderBy('name')->get(['id', 'name', 'department', 'role']);
     }
 
     /** List of active plants for visitors/kiosk to pick from. */
@@ -111,7 +111,7 @@ class VisitorController extends Controller
         ]);
 
         $organizer = User::where('id', $data['organizer_id'])
-            ->whereIn('role', ['organizer', 'staff'])->where('is_active', true)->firstOrFail();
+            ->where('is_active', true)->firstOrFail();
 
         // all active + required questions must be answered
         $answered = collect($data['answers'])

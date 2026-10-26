@@ -159,7 +159,7 @@
             <table class="table-modern">
                 <thead>
                     <tr>
-                        <th style="width: 55px;">#</th>
+                        <th style="width: 60px;">Index</th>
                         <th style="width: 55%;">Question</th>
                         <th>Type</th>
                         <th class="text-end">Visitor's Response</th>
@@ -169,7 +169,7 @@
                 @foreach($answers as $idx => $a)
                     <tr>
                         <td>
-                            <span class="badge-modern badge-slate fw-bold">#{{ $a->question->sort_order ?? ($idx + 1) }}</span>
+                            <span class="badge-modern badge-slate fw-bold">{{ $a->question->sort_order ?? ($idx + 1) }}</span>
                         </td>
                         <td>
                             <div class="fw-semibold text-dark fs-6">{{ $a->question->question }}</div>

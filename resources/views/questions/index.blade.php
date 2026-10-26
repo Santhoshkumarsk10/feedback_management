@@ -257,11 +257,11 @@
                         @foreach ($sectionQuestions as $q)
                             <tr>
                                 <td>
-                                    <span class="badge-modern badge-slate fw-bold">#{{ $q->sort_order }}</span>
+                                    <span class="badge-modern badge-slate fw-bold">{{ $q->sort_order }}</span>
                                 </td>
                                 <td>
                                     <div class="fw-bold text-dark fs-6">{{ $q->question }}</div>
-                                    <div class="small text-muted">ID: #{{ $q->id }}</div>
+                                    <div class="small text-muted">ID: {{ $q->id }}</div>
                                 </td>
                                 <td>
                                     @if ($q->type === 'rating')
@@ -406,7 +406,10 @@
                                 <label class="form-modern-label" for="add_question_section">Section Name</label>
                                 <input type="text" name="section" id="add_question_section" list="sectionsDatalist"
                                     class="form-control form-control-modern"
-                                    placeholder="e.g. Welcome & Reception, Facilities">
+                                    placeholder="e.g. Welcome & Reception, Facilities"
+                                    minlength="2" maxlength="150"
+                                    pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’:]+$"
+                                    title="The section name contains invalid characters.">
                                 <datalist id="sectionsDatalist">
                                     @foreach ($grouped->keys() as $secName)
                                         <option value="{{ $secName }}"></option>
@@ -425,13 +428,13 @@
                             <div class="col-12">
                                 <label class="form-modern-label required" for="add_question_text">Question Prompt</label>
                                 <textarea name="question" id="add_question_text" class="form-control form-control-modern" rows="2"
-                                    placeholder="e.g. How would you rate the precision demonstration of our machinery?" required maxlength="255"></textarea>
+                                    placeholder="e.g. How would you rate the precision demonstration of our machinery?" required minlength="3" maxlength="255"></textarea>
                             </div>
                             <div class="col-12 d-none" id="add_options_wrapper">
                                 <label class="form-modern-label required" for="add_question_options">MCQ Options (One
                                     option per line)</label>
                                 <textarea name="options" id="add_question_options" class="form-control form-control-modern" rows="2"
-                                    placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                    placeholder="Option 1&#10;Option 2&#10;Option 3" maxlength="2000"></textarea>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-modern-label" for="add_question_sort">Sort Order</label>
@@ -507,7 +510,10 @@
                                 <label class="form-modern-label" for="edit_question_section">Section Name</label>
                                 <input type="text" name="section" id="edit_question_section" list="sectionsDatalist"
                                     class="form-control form-control-modern"
-                                    placeholder="e.g. Welcome & Reception, Facilities">
+                                    placeholder="e.g. Welcome & Reception, Facilities"
+                                    minlength="2" maxlength="150"
+                                    pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’:]+$"
+                                    title="The section name contains invalid characters.">
                             </div>
                             <div class="col-md-5">
                                 <label class="form-modern-label required" for="edit_question_type">Question Type</label>
@@ -521,13 +527,13 @@
                             <div class="col-12">
                                 <label class="form-modern-label required" for="edit_question_text">Question Prompt</label>
                                 <textarea name="question" id="edit_question_text" class="form-control form-control-modern" rows="2" required
-                                    maxlength="255"></textarea>
+                                    minlength="3" maxlength="255"></textarea>
                             </div>
                             <div class="col-12 d-none" id="edit_options_wrapper">
                                 <label class="form-modern-label required" for="edit_question_options">MCQ Options (One
                                     option per line)</label>
                                 <textarea name="options" id="edit_question_options" class="form-control form-control-modern" rows="2"
-                                    placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                    placeholder="Option 1&#10;Option 2&#10;Option 3" maxlength="2000"></textarea>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-modern-label" for="edit_question_sort">Sort Order</label>
@@ -986,7 +992,7 @@
             function openEditQuestionModal(btn) {
                 const id = btn.getAttribute('data-id');
                 const form = document.getElementById('editQuestionForm');
-                form.action = `/questions/${id}`;
+                form.action = `{{ url('admin/questions') }}/${id}`;
                 document.getElementById('edit_question_text').value = btn.getAttribute('data-question') || '';
                 document.getElementById('edit_question_section').value = btn.getAttribute('data-section') || '';
                 document.getElementById('edit_question_type').value = btn.getAttribute('data-type') || 'rating';

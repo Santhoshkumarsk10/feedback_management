@@ -333,17 +333,41 @@
 
 @push('scripts')
 <script>
-function showLogDetails(log) {
-    document.getElementById('modalTimestamp').innerText = log.created_at ? new Date(log.created_at).toLocaleString() : '—';
-    document.getElementById('modalActor').innerText = (log.user_name || 'System') + ' (' + (log.user_role || 'system') + ')';
-    document.getElementById('modalActionModule').innerText = (log.action || '').toUpperCase() + ' in ' + (log.module || '').toUpperCase();
-    document.getElementById('modalIp').innerText = log.ip_address || '127.0.0.1';
-    document.getElementById('modalDescription').innerText = log.description || '—';
-    document.getElementById('modalPayload').innerText = JSON.stringify(log.details || {}, null, 2);
+    // Force browser to disable automatic scroll restoration so Audit Logs always opens from the top
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
 
-    const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
-    modal.show();
-}
+    function ensureScrollToTop() {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        const mainEl = document.querySelector('.app-main');
+        if (mainEl) mainEl.scrollTop = 0;
+        const pageContainer = document.querySelector('.page-container');
+        if (pageContainer) pageContainer.scrollTop = 0;
+    }
+
+    ensureScrollToTop();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureScrollToTop);
+    }
+    window.addEventListener('load', ensureScrollToTop);
+    window.addEventListener('pageshow', ensureScrollToTop);
+    setTimeout(ensureScrollToTop, 50);
+    setTimeout(ensureScrollToTop, 150);
+
+    function showLogDetails(log) {
+        document.getElementById('modalTimestamp').innerText = log.created_at ? new Date(log.created_at).toLocaleString() : '—';
+        document.getElementById('modalActor').innerText = (log.user_name || 'System') + ' (' + (log.user_role || 'system') + ')';
+        document.getElementById('modalActionModule').innerText = (log.action || '').toUpperCase() + ' in ' + (log.module || '').toUpperCase();
+        document.getElementById('modalIp').innerText = log.ip_address || '127.0.0.1';
+        document.getElementById('modalDescription').innerText = log.description || '—';
+        document.getElementById('modalPayload').innerText = JSON.stringify(log.details || {}, null, 2);
+
+        const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+        modal.show();
+    }
 </script>
 @endpush
 @endsection

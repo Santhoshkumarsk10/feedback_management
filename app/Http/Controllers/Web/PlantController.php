@@ -125,7 +125,7 @@ class PlantController extends Controller
                 'nullable',
                 'string',
                 'min:3',
-                'max:200',
+                'max:150',
                 'regex:~^[\p{L}\p{N}\s,\.\-/#()&\'’]+$~u',
             ],
             'contact_email' => [

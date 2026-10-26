@@ -103,11 +103,13 @@
                                            class="form-control" 
                                            value="{{ old('name', auth()->user()->name) }}" 
                                            placeholder="Enter your full name" 
-                                           minlength="2" maxlength="70" required autocomplete="name">
+                                           minlength="2" maxlength="100" required autocomplete="name"
+                                           pattern="^[\p{L}\s]+$"
+                                           title="Full Name may only contain letters and spaces. Special characters are not allowed.">
                                 </div>
                                 @error('name')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
+                                 @enderror
                                 <div class="invalid-feedback d-none custom-live-err" id="live_err_profile_name"></div>
                             </div>
 
@@ -163,7 +165,7 @@
                                            class="form-control" 
                                            value="{{ old('department', auth()->user()->department) }}" 
                                            placeholder="e.g. Operations, IT, Quality" 
-                                           maxlength="60">
+                                           maxlength="100">
                                 </div>
                                 @error('department')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
@@ -611,6 +613,10 @@
                 if (!nameVal || nameVal.length < 2) {
                     hasErr = true;
                     showPassLiveErr('profile_name', 'Full Name must be at least 2 characters.', true);
+                    if (!firstFocus) firstFocus = profileName;
+                } else if (!/^[\p{L}\s]+$/u.test(nameVal)) {
+                    hasErr = true;
+                    showPassLiveErr('profile_name', 'Full Name may only contain letters and spaces. Special characters are not allowed.', true);
                     if (!firstFocus) firstFocus = profileName;
                 }
 

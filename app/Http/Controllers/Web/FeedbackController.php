@@ -52,7 +52,7 @@ class FeedbackController extends Controller
 
         return view('feedbacks.index', [
             'feedbacks' => $feedbacks,
-            'organizers' => User::whereIn('role', ['organizer', 'staff'])->orderBy('name')->get(['id', 'name']),
+            'organizers' => User::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'plants' => Plant::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
             'tabCounts' => [
                 'all' => $totalCount,

@@ -21,8 +21,6 @@ class VisitController extends Controller
             'from' => 'nullable|date',
             'to' => 'nullable|date',
             'per_page' => 'nullable|integer',
-            'sort_by' => 'nullable|string|in:visit_date,name',
-            'sort_dir' => 'nullable|string|in:asc,desc,ASC,DESC',
             'organizer_id' => 'nullable|integer|exists:users,id',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
@@ -33,9 +31,6 @@ class VisitController extends Controller
         if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
         }
-
-        $sortBy = $request->input('sort_by', 'visit_date');
-        $sortDir = strtolower($request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         $query = Visit::with(['organizer', 'feedback'])
             ->when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
@@ -66,18 +61,7 @@ class VisitController extends Controller
         $completedCount = min((clone $baseCount)->has('feedback')->count(), 1000);
         $pendingCount = min((clone $baseCount)->doesntHave('feedback')->count(), 1000);
 
-        if ($sortBy === 'visit_date') {
-            $query->orderBy('visits.visit_date', $sortDir)->orderBy('visits.id', $sortDir);
-        } elseif ($sortBy === 'name') {
-            $query->leftJoin('visitors', 'visits.visitor_id', '=', 'visitors.id')
-                ->orderBy('visitors.name', $sortDir)
-                ->orderBy('visits.id', $sortDir)
-                ->select('visits.*');
-        } else {
-            $query->latest('visits.visit_date')->latest('visits.id');
-        }
-
-        $visits = $query->paginateCapped($perPage, 1000);
+        $visits = $query->latest('visit_date')->latest('id')->paginateCapped($perPage, 1000);
 
         $visitSuggestions = Visitor::where('is_active', true)
             ->latest('id')
@@ -94,7 +78,7 @@ class VisitController extends Controller
 
         return view('visits.index', [
             'visits' => $visits,
-            'organizers' => User::whereIn('role', ['organizer', 'staff'])->orderBy('name')->get(['id', 'name']),
+            'organizers' => User::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'tabCounts' => [
                 'all' => $totalCount,
                 'completed' => $completedCount,
@@ -108,7 +92,7 @@ class VisitController extends Controller
 
     public function create()
     {
-        $organizers = User::whereIn('role', ['staff', 'organizer'])->orderBy('name')->get(['id', 'name']);
+        $organizers = User::where('is_active', true)->orderBy('name')->get(['id', 'name', 'role', 'department']);
 
         return view('visits.create', compact('organizers'));
     }
@@ -116,19 +100,19 @@ class VisitController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
+            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s]+$~u'],
             'visitor_company' => ['required', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'visitor_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'visitor_email' => ['nullable', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:150'],
-            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'purpose' => ['nullable', 'string', 'min:2', 'max:255', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u', 'not_regex:/^[0-9]+$/'],
+            'purpose' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u', 'not_regex:/^[0-9]+$/'],
             'organizer_id' => 'nullable|integer|exists:users,id',
             'visit_date' => 'nullable|date',
         ], [
             'visitor_name.required' => 'Visitor full name is required.',
             'visitor_name.min' => 'Visitor full name must be at least 2 characters.',
             'visitor_name.max' => 'Visitor full name cannot exceed 100 characters.',
-            'visitor_name.regex' => 'Visitor Name may only contain letters, spaces, hyphens, and dots.',
+            'visitor_name.regex' => 'Visitor Name may only contain letters and spaces. Special characters are not allowed.',
             'visitor_company.required' => 'Company or organization name is required.',
             'visitor_company.min' => 'Company name must be at least 2 characters.',
             'visitor_company.max' => 'Company name cannot exceed 150 characters.',
@@ -139,14 +123,16 @@ class VisitController extends Controller
             'visitor_email.max' => 'Email address cannot exceed 150 characters.',
             'visitor_designation.max' => 'Designation cannot exceed 150 characters.',
             'visitor_designation.regex' => 'Designation contains invalid characters.',
-            'purpose.max' => 'Purpose cannot exceed 255 characters.',
+            'visitor_designation.not_regex' => 'Designation cannot be numbers only.',
+            'purpose.max' => 'Purpose cannot exceed 150 characters.',
             'purpose.regex' => 'Purpose contains invalid characters.',
+            'purpose.not_regex' => 'Purpose cannot be numbers only.',
             'visit_date.date' => 'Please provide a valid visit date.',
         ]);
 
         $organizerId = $request->organizer_id ?: auth()->id();
-        if (! User::where('id', $organizerId)->exists()) {
-            $organizerId = User::whereIn('role', ['staff', 'organizer'])->value('id');
+        if (! User::where('id', $organizerId)->where('is_active', true)->exists()) {
+            $organizerId = User::where('is_active', true)->value('id');
         }
 
         $visit = Visit::create([
@@ -191,13 +177,14 @@ class VisitController extends Controller
 
         if ($visit->is_feedback_expired) {
             $formattedDate = $visit->visit_date ? $visit->visit_date->format('d/m/Y') : 'the visit date';
-            return redirect()->route('shift_queue')
+            $target = auth()->check() ? 'shift_queue' : 'visitor.home';
+            return redirect()->route($target)
                 ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
         }
 
         $visit->load(['organizer', 'plant']);
         $plants = Plant::where('is_active', true)->orderBy('name')->get();
-        $organizers = User::whereIn('role', ['staff', 'organizer'])->where('is_active', true)->orderBy('name')->get();
+        $organizers = User::where('is_active', true)->orderBy('name')->get();
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
 
@@ -207,29 +194,103 @@ class VisitController extends Controller
     public function storeFeedback(Request $request, Visit $visit)
     {
         if ($visit->feedback) {
-            return redirect()->route('feedbacks.show', $visit->feedback)
+            if (auth()->check()) {
+                return redirect()->route('feedbacks.show', $visit->feedback)
+                    ->with('info', 'Feedback has already been recorded for this visit.');
+            }
+            return redirect()->route('visitor.home')
                 ->with('info', 'Feedback has already been recorded for this visit.');
         }
 
         if ($visit->is_feedback_expired) {
             $formattedDate = $visit->visit_date ? $visit->visit_date->format('d/m/Y') : 'the visit date';
-            return redirect()->route('shift_queue')
+            $target = auth()->check() ? 'shift_queue' : 'visitor.home';
+            return redirect()->route($target)
                 ->with('error', "Feedback collection for this visitor has expired. Feedback must be submitted on the day of the visit ({$formattedDate}).");
+        }
+
+        // 1. Resolve and normalize plant_id when provided (supports ID, Code, Name, or full label)
+        $rawPlant = $request->input('plant_id')
+            ?? $request->input('plant')
+            ?? $request->input('facility')
+            ?? $request->input('facility_id')
+            ?? $request->input('plant_code');
+
+        if (!empty($rawPlant)) {
+            $resolvedPlantId = null;
+            if (is_numeric($rawPlant) && Plant::where('id', (int) $rawPlant)->exists()) {
+                $resolvedPlantId = (int) $rawPlant;
+            } else {
+                $plantStr = trim((string) $rawPlant);
+                $plant = Plant::where('code', $plantStr)->first()
+                    ?? Plant::where('name', $plantStr)->first();
+
+                if (!$plant && preg_match('/PLANT-\d+/i', $plantStr, $m)) {
+                    $plant = Plant::where('code', strtoupper($m[0]))->first();
+                }
+
+                if (!$plant) {
+                    $plant = Plant::where('name', 'like', "%{$plantStr}%")->first();
+                }
+
+                if ($plant) {
+                    $resolvedPlantId = $plant->id;
+                }
+            }
+
+            if ($resolvedPlantId) {
+                $request->merge(['plant_id' => $resolvedPlantId]);
+            }
+        }
+
+        // 2. Resolve and normalize organizer_id when provided (supports ID, Name, Email)
+        $rawOrganizer = $request->input('organizer_id')
+            ?? $request->input('organizer')
+            ?? $request->input('staff_id');
+
+        if (!empty($rawOrganizer)) {
+            $resolvedOrganizerId = null;
+            if (is_numeric($rawOrganizer) && User::where('id', (int) $rawOrganizer)->exists()) {
+                $resolvedOrganizerId = (int) $rawOrganizer;
+            } else {
+                $orgStr = trim((string) $rawOrganizer);
+                $user = User::where('name', $orgStr)->first()
+                    ?? User::where('email', $orgStr)->first()
+                    ?? User::where('name', 'like', "%{$orgStr}%")->first();
+                if ($user) {
+                    $resolvedOrganizerId = $user->id;
+                }
+            }
+
+            if ($resolvedOrganizerId) {
+                $request->merge(['organizer_id' => $resolvedOrganizerId]);
+            }
         }
 
         $request->validate([
             'plant_id' => 'required|integer|exists:plants,id',
             'organizer_id' => 'required|integer|exists:users,id',
             'overall_rating' => 'required|integer|between:1,5',
-            'comments' => 'nullable|string|max:2000',
+            'comments' => ['nullable', 'string', 'max:2000', 'regex:~^[\p{L}\p{N}\s\.\,\-\–\—\_\&\/\(\)\'\"\!\?\:\;\%\r\n]+$~u'],
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.answer' => 'nullable',
+            'answers.*.answer' => ['nullable', function ($attribute, $value, $fail) {
+                if (is_string($value) && mb_strlen($value) > 1000) {
+                    $fail("The answer cannot exceed 1000 characters.");
+                }
+                if (is_string($value) && !empty($value) && !preg_match('~^[\p{L}\p{N}\s\.\,\-\–\—\_\&\/\(\)\'\"\!\?\:\;\%\r\n]+$~u', $value)) {
+                    $fail("The answer contains unsupported special characters.");
+                }
+                if (is_array($value) && mb_strlen(implode(', ', $value)) > 1000) {
+                    $fail("The answer cannot exceed 1000 characters.");
+                }
+            }],
         ], [
             'plant_id.required' => 'Please select the manufacturing plant facility.',
             'plant_id.exists' => 'Selected manufacturing plant facility is invalid.',
             'organizer_id.required' => 'Please select the host tour organizer.',
             'organizer_id.exists' => 'Selected tour organizer is invalid.',
+            'comments.regex' => 'Visitor comments contain unsupported special characters.',
         ]);
 
         $activeRequired = Question::active()->where('is_required', true)->pluck('id');
@@ -242,17 +303,18 @@ class VisitController extends Controller
             return back()->withInput()->withErrors(['answers' => 'Please provide rating evaluations for all mandatory criteria.']);
         }
 
-        $staffUser = auth()->user();
+        $staffUser = auth()->user() ?: User::where('id', $request->organizer_id)->first() ?: User::first();
+        $isStaffAssist = auth()->check();
 
-        $feedback = DB::transaction(function () use ($request, $visit, $staffUser) {
+        $feedback = DB::transaction(function () use ($request, $visit, $staffUser, $isStaffAssist) {
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
                 'plant_id' => $request->plant_id,
                 'organizer_id' => $request->organizer_id,
                 'overall_rating' => $request->overall_rating,
                 'comments' => $request->comments,
-                'submitted_mode' => 'staff_assisted',
-                'submitted_by_staff_id' => $staffUser->id,
+                'submitted_mode' => $isStaffAssist ? 'staff_assisted' : 'direct',
+                'submitted_by_staff_id' => $isStaffAssist ? $staffUser->id : null,
                 'submitted_at' => now(),
             ]);
 
@@ -272,17 +334,22 @@ class VisitController extends Controller
                 ]);
             }
 
+            $submitterName = $isStaffAssist ? ("Staff " . $staffUser->name) : "Visitor directly";
             AuditLog::record(
                 'create',
                 'feedbacks',
-                "Staff {$staffUser->name} submitted evaluation on behalf of visitor {$visit->visitor_name} ({$visit->visitor_company}) with {$feedback->overall_rating} stars",
+                "{$submitterName} submitted evaluation on behalf of visitor {$visit->visitor_name} ({$visit->visitor_company}) with {$feedback->overall_rating} stars",
                 ['visit_id' => $visit->id, 'rating' => $feedback->overall_rating]
             );
 
             return $feedback;
         });
 
-        return redirect()->route('dashboard')->with('success', "Feedback successfully submitted on behalf of {$visit->visitor_name} ({$visit->visitor_company})!");
+        if (auth()->check()) {
+            return redirect()->route('dashboard')->with('success', "Feedback successfully submitted on behalf of {$visit->visitor_name} ({$visit->visitor_company})!");
+        }
+
+        return redirect()->route('visitor.home')->with('success', "Thank you! Your feedback for {$visit->visitor_name} ({$visit->visitor_company}) has been successfully submitted.");
     }
 
     /**

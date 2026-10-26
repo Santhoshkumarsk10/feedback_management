@@ -9,7 +9,6 @@
             <i class="bi bi-key-fill"></i>
             <span>Add Permission</span>
         </button>
-        <a href="{{ route('permissions.create') }}" class="d-none">Add Permission</a>
     @else
         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
             <i class="bi bi-eye"></i> View Only
@@ -281,7 +280,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="add_perm_module">System Module</label>
-                            <input type="text" name="module" id="add_perm_module" list="modulesDatalist" class="form-control form-control-modern" placeholder="e.g. Plant Master, Visitor Directory" required maxlength="50">
+                            <input type="text" name="module" id="add_perm_module" list="modulesDatalist" class="form-control form-control-modern" placeholder="e.g. Plant Master, Visitor Directory" required minlength="2" maxlength="100">
                             <datalist id="modulesDatalist">
                                 @foreach($allModules as $mod)
                                     <option value="{{ $mod }}"></option>
@@ -290,16 +289,16 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="add_perm_title">Capability Title</label>
-                            <input type="text" name="display_name" id="add_perm_title" class="form-control form-control-modern" placeholder="e.g. View Plant Tour Records" required maxlength="80">
+                            <input type="text" name="display_name" id="add_perm_title" class="form-control form-control-modern" placeholder="e.g. View Plant Tour Records" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="add_perm_slug">Permission Key (Slug)</label>
-                            <input type="text" name="name" id="add_perm_slug" class="form-control form-control-modern font-monospace" placeholder="e.g. plantmaster.view" required maxlength="60">
+                            <input type="text" name="name" id="add_perm_slug" class="form-control form-control-modern font-monospace" placeholder="e.g. plantmaster.view" required minlength="3" maxlength="100" pattern="^[a-z0-9\.\-_]+$" title="Lowercase letters, numbers, dots, hyphens, and underscores">
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Lowercase letters, numbers, dots, hyphens</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="add_perm_desc">Description / Scope</label>
-                            <input type="text" name="description" id="add_perm_desc" class="form-control form-control-modern" placeholder="Grants authorization to inspect tour history" maxlength="255">
+                            <input type="text" name="description" id="add_perm_desc" class="form-control form-control-modern" placeholder="Grants authorization to inspect tour history" maxlength="150">
                         </div>
                     </div>
                 </div>
@@ -337,20 +336,20 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="edit_perm_module">System Module</label>
-                            <input type="text" name="module" id="edit_perm_module" list="modulesDatalist" class="form-control form-control-modern" required maxlength="50">
+                            <input type="text" name="module" id="edit_perm_module" list="modulesDatalist" class="form-control form-control-modern" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="edit_perm_title">Capability Title</label>
-                            <input type="text" name="display_name" id="edit_perm_title" class="form-control form-control-modern" required maxlength="80">
+                            <input type="text" name="display_name" id="edit_perm_title" class="form-control form-control-modern" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label required" for="edit_perm_slug">Permission Key (Slug)</label>
-                            <input type="text" name="name" id="edit_perm_slug" class="form-control form-control-modern font-monospace" required maxlength="60">
+                            <input type="text" name="name" id="edit_perm_slug" class="form-control form-control-modern font-monospace" required minlength="3" maxlength="100" pattern="^[a-z0-9\.\-_]+$" title="Lowercase letters, numbers, dots, hyphens, and underscores">
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Core permission keys are referenced in authorization gates</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="edit_perm_desc">Description / Scope</label>
-                            <input type="text" name="description" id="edit_perm_desc" class="form-control form-control-modern" maxlength="255">
+                            <input type="text" name="description" id="edit_perm_desc" class="form-control form-control-modern" maxlength="150">
                         </div>
                     </div>
                 </div>
@@ -372,7 +371,7 @@
     function openEditPermissionModal(btn) {
         const id = btn.getAttribute('data-id');
         const form = document.getElementById('editPermissionForm');
-        form.action = `/permissions/${id}`;
+        form.action = `{{ url('admin/permissions') }}/${id}`;
         document.getElementById('edit_perm_module').value = btn.getAttribute('data-module') || '';
         document.getElementById('edit_perm_title').value = btn.getAttribute('data-display-name') || '';
         document.getElementById('edit_perm_slug').value = btn.getAttribute('data-name') || '';

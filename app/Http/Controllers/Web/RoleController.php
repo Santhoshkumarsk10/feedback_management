@@ -85,8 +85,8 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'slug' => ['nullable', 'string', 'min:2', 'max:50', 'regex:/^[a-zA-Z0-9_\-]+$/', 'unique:roles,name'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'slug' => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/', 'unique:roles,name'],
             'description' => ['nullable', 'string', 'min:2', 'max:500'],
             'is_active' => 'boolean',
             'permissions' => 'nullable|array',
@@ -146,12 +146,12 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:70', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'slug' => [
                 'nullable',
                 'string',
                 'min:2',
-                'max:50',
+                'max:100',
                 'regex:/^[a-zA-Z0-9_\-]+$/',
                 Rule::unique('roles', 'name')->ignore($role->id)
             ],

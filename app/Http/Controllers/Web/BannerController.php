@@ -91,8 +91,8 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
-            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'title' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'required|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',
@@ -149,8 +149,8 @@ class BannerController extends Controller
     public function update(Request $request, Banner $banner)
     {
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:2', 'max:200', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
-            'subtitle' => ['nullable', 'string', 'min:2', 'max:500', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'title' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
+            'subtitle' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’"!\?:;%]+$~u'],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg,gif|max:5120',
             'target' => ['required', Rule::in(['all', 'mobile', 'tablet', 'web'])],
             'link_url' => 'nullable|url|max:500',

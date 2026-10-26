@@ -20,7 +20,7 @@
                     <span>{{ $user->exists ? 'Update Account Information' : 'New User Details' }}</span>
                 </div>
                 @if($user->exists)
-                    <span class="badge-modern badge-shibaura">ID: #{{ $user->id }}</span>
+                    <span class="badge-modern badge-shibaura">ID: {{ $user->id }}</span>
                 @endif
             </div>
 
@@ -43,7 +43,9 @@
                                        placeholder="e.g. Ramesh Kumar" 
                                        required
                                        minlength="2"
-                                       maxlength="70">
+                                       maxlength="100"
+                                       pattern="^[\p{L}\s]+$"
+                                       title="Full Name may only contain letters and spaces. Special characters are not allowed.">
                             </div>
                             @error('name')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -128,7 +130,9 @@
                                        value="{{ old('department', $user->department) }}" 
                                        placeholder="e.g. Production, Quality, Technical Centre"
                                        minlength="2"
-                                       maxlength="60">
+                                       maxlength="100"
+                                       pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$"
+                                       title="Department may only contain letters, numbers, spaces, and allowed symbols.">
                             </div>
                             @error('department')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -236,11 +240,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const userConfigs = {
         user_name: {
             label: 'Full Name',
-            disallowedRegex: /[^a-zA-Z\s\.\-']/g,
+            disallowedRegex: /[^a-zA-Z\s]/g,
             min: 2,
-            max: 70,
+            max: 100,
             required: true,
-            msg: 'Only letters, spaces, hyphens, and dots are allowed in Name.'
+            msg: 'Only letters and spaces are allowed in Name. Special characters are not allowed.'
         },
         user_mobile: {
             label: 'Mobile Number',
@@ -254,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             label: 'Department',
             disallowedRegex: /[<>{}\[\]$^*~=\\\|]/g,
             min: 2,
-            max: 60,
+            max: 100,
             msg: 'Special symbols like < > { } [ ] $ ^ * = \\ | are not allowed.'
         },
         user_email: {

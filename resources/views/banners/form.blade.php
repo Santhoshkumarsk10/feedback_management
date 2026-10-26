@@ -28,7 +28,7 @@
                     <p class="text-muted small mb-0 mt-1">Configure banner target audience, order priority, and image file</p>
                 </div>
                 @if($isEdit)
-                    <span class="badge-modern badge-shibaura">ID: #{{ $banner->id }}</span>
+                    <span class="badge-modern badge-shibaura">ID: {{ $banner->id }}</span>
                 @endif
             </div>
 
@@ -53,8 +53,10 @@
                                value="{{ old('title', $banner->title) }}" 
                                placeholder="e.g. Leading Precision Injection Moulding Solutions" 
                                minlength="2"
-                               maxlength="200"
-                               required>
+                               maxlength="100"
+                               required
+                               pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                               title="The banner title contains invalid characters.">
                         <small class="text-muted d-block mt-1">Primary headline displayed over the banner</small>
                         @error('title')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -71,7 +73,9 @@
                                value="{{ old('subtitle', $banner->subtitle) }}" 
                                placeholder="e.g. Empowering Indian Manufacturing with Japanese Engineering Excellence" 
                                minlength="2"
-                               maxlength="500">
+                               maxlength="150"
+                               pattern="^[\p{L}\p{N}\s\-–—_&/,\.()\'’&quot;!\?:;%]+$"
+                               title="The subtitle contains invalid characters.">
                         <small class="text-muted d-block mt-1">Secondary caption or tagline displayed below headline</small>
                         @error('subtitle')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
