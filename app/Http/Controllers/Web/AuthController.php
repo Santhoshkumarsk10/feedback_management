@@ -157,10 +157,10 @@ class AuthController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'email' => ['required', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'email' => ['required', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:100'],
             'password' => 'required|string|min:8|max:100|confirmed',
         ], [
-            'email.regex' => 'Please provide a valid email address with domain.',
+            'email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
         ]);
 
         $status = Password::broker()->reset(
@@ -241,7 +241,7 @@ class AuthController extends Controller
             'email' => [
                 'nullable',
                 'email:rfc',
-                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/',
                 'max:100',
                 'required_without:mobile',
                 Rule::unique('users', 'email')->ignore($user->id),
@@ -258,8 +258,8 @@ class AuthController extends Controller
             'name.min' => 'Full Name must be at least :min characters.',
             'name.max' => 'Full Name cannot exceed :max characters.',
             'name.regex' => 'Full Name may only contain letters and spaces. Special characters are not allowed.',
-            'email.email' => 'Please provide a valid official email address.',
-            'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',
+            'email.email' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
+            'email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
             'email.required_without' => 'Either Email Address or Mobile Number is required.',
             'email.unique' => 'This email address is already in use by another user account.',
             'mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',

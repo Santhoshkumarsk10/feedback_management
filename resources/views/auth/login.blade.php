@@ -868,16 +868,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const passInp = document.getElementById('passwordInput');
 
     if (loginInp) {
-        const allowedRegex = /^[a-zA-Z0-9@._+\-]$/;
-        const disallowed = /[^a-zA-Z0-9@._+\-]/g;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const allowedRegex = /^[a-zA-Z0-9@._\-]$/;
+        const disallowed = /[^a-zA-Z0-9@._\-]/g;
+        const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
 
         // 1. Prevent typing disallowed characters on keystroke
         loginInp.addEventListener('keydown', function(e) {
             if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
                 if (!allowedRegex.test(e.key)) {
                     e.preventDefault();
-                    showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                    showLoginLiveErr('loginInput', 'Special characters other than @, ., _, - are not allowed.');
                 }
             }
         });
@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < e.data.length; i++) {
                     if (!allowedRegex.test(e.data[i])) {
                         e.preventDefault();
-                        showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                        showLoginLiveErr('loginInput', 'Special characters other than @, ., _, - are not allowed.');
                         return;
                     }
                 }
@@ -909,7 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loginInp.addEventListener('input', function() {
             if (disallowed.test(this.value)) {
                 this.value = this.value.replace(disallowed, '');
-                showLoginLiveErr('loginInput', 'Special characters other than @, ., _, +, - are not allowed.');
+                showLoginLiveErr('loginInput', 'Special characters other than @, ., _, - are not allowed.');
             } else if (this.value.trim().length >= 3) {
                 clearLoginLiveErr('loginInput');
             }
@@ -919,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loginInp.addEventListener('blur', function() {
             const val = this.value.trim();
             if (val.includes('@') && !emailRegex.test(val)) {
-                showLoginLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+                showLoginLiveErr('loginInput', 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).', true);
             }
         });
     }
@@ -939,7 +939,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const loginVal = loginInp ? loginInp.value.trim() : '';
             const passVal = passInp ? passInp.value : '';
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
 
             if (!loginVal) {
                 hasError = true;
@@ -951,7 +951,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!firstInvalid) firstInvalid = loginInp;
             } else if (loginVal.includes('@') && !emailRegex.test(loginVal)) {
                 hasError = true;
-                showLoginLiveErr('loginInput', 'Please enter a valid email address with a proper domain (e.g. name@company.com).', true);
+                showLoginLiveErr('loginInput', 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).', true);
                 if (!firstInvalid) firstInvalid = loginInp;
             }
 

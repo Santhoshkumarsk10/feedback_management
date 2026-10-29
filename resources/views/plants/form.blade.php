@@ -95,22 +95,25 @@
 
                         <!-- Operations Contact Email -->
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="plant_email">Operations Contact Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="form-modern-label mb-0" for="plant_email">Operations Contact Email</label>
+                                <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                            </div>
+                            <div class="input-icon-group">
+                                <span class="input-icon-badge" id="badge_plant_email"><i class="bi bi-envelope-fill"></i></span>
                                 <input type="email" 
                                        name="contact_email" 
-                                       id="plant_email"
-                                       class="form-control form-control-modern border-start-0 @error('contact_email') is-invalid @enderror" 
+                                       id="plant_email" 
+                                       class="form-control form-control-modern @error('contact_email') is-invalid @enderror" 
                                        value="{{ old('contact_email', $plant->contact_email) }}" 
-                                       placeholder="plant1.ops@shibaura-machine.in"
+                                       placeholder="plant@shibaura-machine.co.in" 
                                        minlength="5"
-                                       maxlength="100">
+                                       maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
                             </div>
-                            @error('contact_email')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <div class="invalid-feedback d-none custom-live-err" id="live_err_plant_email"></div>
+                            <div id="feedback_plant_email" class="validation-feedback-box error {{ $errors->has('contact_email') ? '' : 'd-none' }}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span id="feedback_plant_email_text">{{ $errors->first('contact_email') }}</span>
+                            </div>
                         </div>
 
                         <!-- Desk / Helpdesk Phone -->
@@ -278,6 +281,54 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Helper: Show discreet live error notice under input when invalid char is typed
+    function setFieldState(inputEl, feedbackEl, textEl, isValid, message = '', isOptionalEmpty = false) {
+        if (!inputEl) return;
+
+        if (isOptionalEmpty) {
+            inputEl.classList.remove('is-invalid', 'is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+            return;
+        }
+
+        if (isValid) {
+            inputEl.classList.remove('is-invalid');
+            inputEl.classList.add('is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+        } else {
+            inputEl.classList.remove('is-valid');
+            inputEl.classList.add('is-invalid');
+            if (feedbackEl) {
+                feedbackEl.classList.remove('d-none');
+                feedbackEl.classList.add('error');
+            }
+            if (textEl) textEl.textContent = message;
+        }
+    }
+
+    function validatePlantEmailField() {
+        const input = document.getElementById('plant_email');
+        if (!input) return true;
+        const feedbackEl = document.getElementById('feedback_plant_email');
+        const textEl = document.getElementById('feedback_plant_email_text');
+        const val = input.value.trim();
+
+        if (!val) {
+            setFieldState(input, feedbackEl, textEl, true, '', true);
+            return true;
+        }
+
+        const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(val)) {
+            setFieldState(input, feedbackEl, textEl, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
+            return false;
+        }
+
+        setFieldState(input, feedbackEl, textEl, true);
+        return true;
+    }
+
     function showLiveErr(inputId, msg, persistent = false) {
         const errEl = document.getElementById('live_err_' + inputId);
         const input = document.getElementById(inputId);
@@ -351,6 +402,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 3. Typing / Input event fallback
         input.addEventListener('input', function() {
+            if (id === 'plant_email') {
+                validatePlantEmailField();
+                return;
+            }
             if (cfg.autoUppercase) {
                 this.value = this.value.toUpperCase();
             }
@@ -381,11 +436,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 5. Blur event (minlength check)
         input.addEventListener('blur', function() {
+            if (id === 'plant_email') {
+                validatePlantEmailField();
+                return;
+            }
             const val = this.value.trim();
             if (val.length > 0 && cfg.min && val.length < cfg.min) {
                 showLiveErr(id, `Minimum ${cfg.min} characters required.`);
             } else if (val.length > 0 && cfg.phonePattern && !cfg.phonePattern.test(val)) {
                 showLiveErr(id, 'Must be a 10-digit number starting with 6, 7, 8, or 9.');
+            } else if (id === 'plant_email') {
+                if (!validatePlantEmailField()) {
+                    hasError = true;
+                    if (!firstInvalid) firstInvalid = input;
+                }
             } else if (val.length > 0 && cfg.emailPattern && !cfg.emailPattern.test(val)) {
                 showLiveErr(id, 'Please enter a valid official email address with domain (e.g. plant@shibaura-machine.co.in).');
             } else if (val.length > 0) {
@@ -422,6 +486,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 hasError = true;
                 showLiveErr(id, 'Must be a 10-digit number starting with 6, 7, 8, or 9.', true);
                 if (!firstInvalid) firstInvalid = input;
+            } else if (id === 'plant_email') {
+                if (!validatePlantEmailField()) {
+                    hasError = true;
+                    if (!firstInvalid) firstInvalid = input;
+                }
             } else if (val.length > 0 && cfg.emailPattern && !cfg.emailPattern.test(val)) {
                 hasError = true;
                 showLiveErr(id, 'Please enter a valid official email address with domain (e.g. plant@shibaura-machine.co.in).', true);
@@ -437,6 +506,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    // Initial validation on load (e.g. on Edit Plant Facility)
+    if (document.getElementById('plant_email')?.value.trim()) {
+        validatePlantEmailField();
+    }
 });
 </script>
 @endpush

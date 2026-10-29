@@ -281,7 +281,7 @@
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                <form method="POST" action="{{ route('users.store') }}" novalidate>
+                <form method="POST" id="addUserForm" action="{{ route('users.store') }}" novalidate>
                     @csrf
                     <div class="modal-header bg-white border-bottom py-3 px-4">
                         <div class="d-flex align-items-center gap-2">
@@ -326,13 +326,19 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-modern-label" for="add_user_email">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i
-                                            class="bi bi-envelope"></i></span>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="form-modern-label mb-0" for="add_user_email">Email Address</label>
+                                    <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                                </div>
+                                <div class="input-icon-group">
+                                    <span class="input-icon-badge" id="badge_add_user_email"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" id="add_user_email"
-                                        class="form-control form-control-modern border-start-0"
-                                        placeholder="name@shibaura.test" maxlength="100">
+                                        class="form-control form-control-modern"
+                                        placeholder="name@shibaura-machine.co.in" maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
+                                </div>
+                                <div id="feedback_add_user_email" class="validation-feedback-box error d-none">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span id="feedback_add_user_email_text"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -448,12 +454,19 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-modern-label" for="edit_user_email">Email Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i
-                                            class="bi bi-envelope"></i></span>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="form-modern-label mb-0" for="edit_user_email">Email Address</label>
+                                    <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                                </div>
+                                <div class="input-icon-group">
+                                    <span class="input-icon-badge" id="badge_edit_user_email"><i class="bi bi-envelope"></i></span>
                                     <input type="email" name="email" id="edit_user_email"
-                                        class="form-control form-control-modern border-start-0" maxlength="100">
+                                        class="form-control form-control-modern"
+                                        placeholder="name@shibaura-machine.co.in" maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
+                                </div>
+                                <div id="feedback_edit_user_email" class="validation-feedback-box error d-none">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span id="feedback_edit_user_email_text"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -518,6 +531,106 @@
 
 @push('scripts')
     <script>
+        const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+        const emailAllowedKey = /^[a-zA-Z0-9@._\-]$/;
+        const emailDisallowed = /[^a-zA-Z0-9@._\-]/g;
+
+        function setFieldState(input, feedbackEl, textEl, isValid, message = '', isEmpty = false) {
+            if (!input) return;
+            if (isEmpty) {
+                input.classList.remove('is-valid', 'is-invalid');
+                if (feedbackEl) feedbackEl.classList.add('d-none');
+                if (textEl) textEl.textContent = '';
+                return;
+            }
+            if (isValid) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                if (feedbackEl) feedbackEl.classList.add('d-none');
+                if (textEl) textEl.textContent = '';
+            } else {
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+                if (feedbackEl) {
+                    feedbackEl.classList.remove('d-none');
+                    feedbackEl.classList.add('error');
+                }
+                if (textEl) textEl.textContent = message;
+            }
+        }
+
+        function triggerShake(element) {
+            if (!element) return;
+            element.classList.remove('field-shake');
+            void element.offsetWidth;
+            element.classList.add('field-shake');
+        }
+
+        function validateUserEmail(id) {
+            const input = document.getElementById(id);
+            if (!input) return true;
+            const feedbackEl = document.getElementById('feedback_' + id);
+            const textEl = document.getElementById('feedback_' + id + '_text');
+            const val = input.value.trim();
+
+            if (!val) {
+                setFieldState(input, feedbackEl, textEl, true, '', true);
+                return true;
+            }
+
+            if (!emailRegex.test(val)) {
+                setFieldState(input, feedbackEl, textEl, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
+                return false;
+            }
+
+            setFieldState(input, feedbackEl, textEl, true);
+            return true;
+        }
+
+        ['add_user_email', 'edit_user_email'].forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !emailAllowedKey.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (emailDisallowed.test(this.value)) {
+                    this.value = this.value.replace(emailDisallowed, '');
+                }
+                validateUserEmail(id);
+            });
+
+            input.addEventListener('blur', function() {
+                validateUserEmail(id);
+            });
+        });
+
+        document.getElementById('addUserForm')?.addEventListener('submit', function(e) {
+            const emailInp = document.getElementById('add_user_email');
+            if (!validateUserEmail('add_user_email')) {
+                e.preventDefault();
+                if (emailInp) {
+                    emailInp.focus();
+                    triggerShake(emailInp);
+                }
+            }
+        });
+
+        document.getElementById('editUserForm')?.addEventListener('submit', function(e) {
+            const emailInp = document.getElementById('edit_user_email');
+            if (!validateUserEmail('edit_user_email')) {
+                e.preventDefault();
+                if (emailInp) {
+                    emailInp.focus();
+                    triggerShake(emailInp);
+                }
+            }
+        });
+
         function openEditUserModal(btn) {
             const id = btn.getAttribute('data-id');
             const form = document.getElementById('editUserForm');
@@ -537,6 +650,7 @@
             if (selfNotice) {
                 selfNotice.classList.toggle('d-none', !isSelf);
             }
+            setTimeout(() => { validateUserEmail('edit_user_email'); }, 150);
         }
     </script>
 @endpush

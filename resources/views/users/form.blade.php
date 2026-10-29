@@ -81,21 +81,24 @@
 
 
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="user_email">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="form-modern-label mb-0" for="user_email">Email Address</label>
+                                <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                            </div>
+                            <div class="input-icon-group">
+                                <span class="input-icon-badge" id="badge_user_email"><i class="bi bi-envelope-fill"></i></span>
                                 <input type="email" 
                                        name="email" 
-                                       id="user_email"
-                                       class="form-control form-control-modern border-start-0 @error('email') is-invalid @enderror" 
+                                       id="user_email" 
+                                       class="form-control form-control-modern @error('email') is-invalid @enderror" 
                                        value="{{ old('email', $user->email) }}" 
-                                       placeholder="name@plant.test"
-                                       maxlength="100">
+                                       placeholder="name@shibaura-machine.co.in" 
+                                       maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
                             </div>
-                            @error('email')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <div class="invalid-feedback d-none custom-live-err" id="live_err_user_email"></div>
+                            <div id="feedback_user_email" class="validation-feedback-box error {{ $errors->has('email') ? '' : 'd-none' }}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span id="feedback_user_email_text">{{ $errors->first('email') }}</span>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -263,12 +266,65 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         user_email: {
             label: 'Email Address',
-            disallowedRegex: /[^a-zA-Z0-9@._+\-]/g,
-            emailPattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            disallowedRegex: /[^a-zA-Z0-9@._\-]/g,
+            emailPattern: /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
             max: 100,
-            msg: 'Spaces and symbols other than @, ., _, +, - are not allowed in email.'
+            msg: 'Spaces and symbols other than @, ., _, - are not allowed in email.'
         }
     };
+
+    function setFieldState(inputEl, feedbackEl, textEl, isValid, message = '', isEmpty = false) {
+        if (!inputEl) return;
+        if (isEmpty) {
+            inputEl.classList.remove('is-valid', 'is-invalid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+            return;
+        }
+        if (isValid) {
+            inputEl.classList.remove('is-invalid');
+            inputEl.classList.add('is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+        } else {
+            inputEl.classList.remove('is-valid');
+            inputEl.classList.add('is-invalid');
+            if (feedbackEl) {
+                feedbackEl.classList.remove('d-none');
+                feedbackEl.classList.add('error');
+            }
+            if (textEl) textEl.textContent = message;
+        }
+    }
+
+    function triggerShake(element) {
+        if (!element) return;
+        element.classList.remove('field-shake');
+        void element.offsetWidth;
+        element.classList.add('field-shake');
+    }
+
+    function validateUserEmailField() {
+        const input = document.getElementById('user_email');
+        if (!input) return true;
+        const feedbackEl = document.getElementById('feedback_user_email');
+        const textEl = document.getElementById('feedback_user_email_text');
+        const val = input.value.trim();
+
+        if (!val) {
+            setFieldState(input, feedbackEl, textEl, true, '', true);
+            return true;
+        }
+
+        const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(val)) {
+            setFieldState(input, feedbackEl, textEl, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
+            return false;
+        }
+
+        setFieldState(input, feedbackEl, textEl, true);
+        return true;
+    }
 
     function showLiveErr(id, msg) {
         const errEl = document.getElementById('live_err_' + id);
@@ -301,7 +357,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
                 if (cfg.disallowedRegex && cfg.disallowedRegex.test(e.key)) {
                     e.preventDefault();
-                    showLiveErr(id, cfg.msg);
+                    if (id === 'user_email') {
+                        setFieldState(input, document.getElementById('feedback_user_email'), document.getElementById('feedback_user_email_text'), false, cfg.msg);
+                    } else {
+                        showLiveErr(id, cfg.msg);
+                    }
                 }
             }
         });
@@ -312,7 +372,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < e.data.length; i++) {
                     if (cfg.disallowedRegex.test(e.data[i])) {
                         e.preventDefault();
-                        showLiveErr(id, cfg.msg);
+                        if (id === 'user_email') {
+                            setFieldState(input, document.getElementById('feedback_user_email'), document.getElementById('feedback_user_email_text'), false, cfg.msg);
+                        } else {
+                            showLiveErr(id, cfg.msg);
+                        }
                         return;
                     }
                 }
@@ -326,12 +390,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 const cleaned = text.replace(cfg.disallowedRegex, '');
                 document.execCommand('insertText', false, cleaned);
-                showLiveErr(id, 'Unwanted characters removed from pasted text.');
+                if (id === 'user_email') {
+                    validateUserEmailField();
+                } else {
+                    showLiveErr(id, 'Unwanted characters removed from pasted text.');
+                }
             }
         });
 
         // 4. Input fallback & clear
         input.addEventListener('input', function() {
+            if (id === 'user_email') {
+                if (cfg.disallowedRegex && cfg.disallowedRegex.test(this.value)) {
+                    this.value = this.value.replace(cfg.disallowedRegex, '');
+                }
+                validateUserEmailField();
+                return;
+            }
             clearLiveErr(id);
             if (cfg.disallowedRegex && cfg.disallowedRegex.test(this.value)) {
                 this.value = this.value.replace(cfg.disallowedRegex, '');
@@ -344,16 +419,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 5. Blur validation
         input.addEventListener('blur', function() {
+            if (id === 'user_email') {
+                validateUserEmailField();
+                return;
+            }
             const val = this.value.trim();
             if (val.length > 0 && cfg.min && val.length < cfg.min) {
                 showLiveErr(id, `${cfg.label} must be at least ${cfg.min} characters.`);
             } else if (val.length > 0 && cfg.phonePattern && !cfg.phonePattern.test(val)) {
                 showLiveErr(id, 'Must be a 10-digit number starting with 6, 7, 8, or 9.');
-            } else if (val.length > 0 && cfg.emailPattern && !cfg.emailPattern.test(val)) {
-                showLiveErr(id, 'Please enter a valid official email address with domain (e.g. name@company.com).');
             }
         });
     });
+
+    // Initial validation if email already has value
+    if (document.getElementById('user_email')?.value.trim()) {
+        validateUserEmailField();
+    }
 
     const pwdInput = document.getElementById('user_password');
     pwdInput?.addEventListener('input', function() {
@@ -372,6 +454,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const cfg = userConfigs[id];
             const val = input.value.trim();
 
+            if (id === 'user_email') {
+                if (val.length > 0 && !validateUserEmailField()) {
+                    hasError = true;
+                    if (!firstInvalid) firstInvalid = input;
+                }
+                return;
+            }
+
             if (cfg.required && val.length === 0) {
                 hasError = true;
                 showLiveErr(id, `${cfg.label} is required.`);
@@ -384,10 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 hasError = true;
                 showLiveErr(id, 'Must be a 10-digit number starting with 6, 7, 8, or 9.');
                 if (!firstInvalid) firstInvalid = input;
-            } else if (val.length > 0 && cfg.emailPattern && !cfg.emailPattern.test(val)) {
-                hasError = true;
-                showLiveErr(id, 'Please enter a valid official email address with domain (e.g. name@company.com).');
-                if (!firstInvalid) firstInvalid = input;
             }
         });
 
@@ -398,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const mobileVal = (mobileInput?.value || '').trim();
         if (!emailVal && !mobileVal) {
             hasError = true;
-            showLiveErr('user_email', 'Either Email Address or Mobile Number is required.');
+            setFieldState(emailInput, document.getElementById('feedback_user_email'), document.getElementById('feedback_user_email_text'), false, 'Either Email Address or Mobile Number is required.');
             showLiveErr('user_mobile', 'Either Email Address or Mobile Number is required.');
             if (!firstInvalid) firstInvalid = emailInput || mobileInput;
         }
@@ -423,6 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (firstInvalid) {
                 firstInvalid.focus();
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                triggerShake(firstInvalid);
             }
             return false;
         }

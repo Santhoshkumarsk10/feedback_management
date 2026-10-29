@@ -187,8 +187,8 @@
                                                class="form-control @error('visitor_email') is-invalid @enderror" 
                                                value="{{ old('visitor_email') }}" placeholder="visitor@company.com" 
                                                maxlength="150" autocomplete="email"
-                                               pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                                               title="Please provide a valid email address with domain (e.g. name@company.com).">
+                                               pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$"
+                                               title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
                                     </div>
                                     <div id="feedback_visitor_email" class="validation-feedback-box error {{ $errors->has('visitor_email') ? '' : 'd-none' }}">
                                         <i class="bi bi-exclamation-circle-fill"></i>
@@ -517,7 +517,8 @@
     }
 
     // 5. Email Validator (Optional, but if entered: RFC-compliant domain format)
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+    const emailDisallowedRegex = /[^a-zA-Z0-9@._\-]/g;
     function validateEmail() {
         if (!emailInput) return true;
         const rawLen = emailInput.value.length;
@@ -534,7 +535,7 @@
             return emailRegex.test(val);
         }
         if (!emailRegex.test(val)) {
-            setFieldState(emailInput, feedback, feedbackText, false, 'Please provide a valid email address with a domain (e.g. name@company.com).');
+            setFieldState(emailInput, feedback, feedbackText, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
             return false;
         }
 
@@ -676,7 +677,21 @@
         mobileInput.addEventListener('blur', validateMobile);
     }
     if (emailInput) {
-        emailInput.addEventListener('input', validateEmail);
+        emailInput.addEventListener('keydown', function(e) {
+            const allowed = /^[a-zA-Z0-9@._\-]$/;
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !allowed.test(e.key)) {
+                e.preventDefault();
+                const feedback = document.getElementById('feedback_visitor_email');
+                const feedbackText = document.getElementById('feedback_visitor_email_text');
+                setFieldState(emailInput, feedback, feedbackText, false, 'Spaces and special characters other than @, ., _, - are not allowed in email.');
+            }
+        });
+        emailInput.addEventListener('input', function() {
+            if (emailDisallowedRegex.test(this.value)) {
+                this.value = this.value.replace(emailDisallowedRegex, '');
+            }
+            validateEmail();
+        });
         emailInput.addEventListener('keyup', validateEmail);
         emailInput.addEventListener('blur', validateEmail);
     }
@@ -750,7 +765,7 @@
             }
 
             if (!validateEmail()) {
-                const msg = document.getElementById('feedback_visitor_email_text')?.textContent || 'Please provide a valid email address.';
+                const msg = document.getElementById('feedback_visitor_email_text')?.textContent || 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).';
                 errors.push({ msg: msg, el: emailInput });
                 if (!firstInvalidEl) firstInvalidEl = emailInput;
             }

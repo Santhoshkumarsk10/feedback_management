@@ -292,7 +292,7 @@
 <div class="modal fade" id="addPlantModal" tabindex="-1" aria-labelledby="addPlantModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <form method="POST" action="{{ route('plants.store') }}" novalidate>
+            <form method="POST" id="addPlantForm" action="{{ route('plants.store') }}" novalidate>
                 @csrf
                 <div class="modal-header bg-white border-bottom py-3 px-4">
                     <div class="d-flex align-items-center gap-2">
@@ -322,8 +322,18 @@
                             <input type="text" name="location" id="add_plant_location" class="form-control form-control-modern" placeholder="e.g. Chembarambakkam, Chennai" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="add_plant_email">Contact Email</label>
-                            <input type="email" name="contact_email" id="add_plant_email" class="form-control form-control-modern" placeholder="plant5.ops@shibaura-machine.in" maxlength="100">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="form-modern-label mb-0" for="add_plant_email">Contact Email</label>
+                                <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                            </div>
+                            <div class="input-icon-group">
+                                <span class="input-icon-badge" id="badge_add_plant_email"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="contact_email" id="add_plant_email" class="form-control form-control-modern" placeholder="plant5.ops@shibaura-machine.in" maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
+                            </div>
+                            <div id="feedback_add_plant_email" class="validation-feedback-box error d-none">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span id="feedback_add_plant_email_text"></span>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="add_plant_phone">Contact Phone</label>
@@ -394,8 +404,18 @@
                             <input type="text" name="location" id="edit_plant_location" class="form-control form-control-modern" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="edit_plant_email">Contact Email</label>
-                            <input type="email" name="contact_email" id="edit_plant_email" class="form-control form-control-modern" maxlength="100">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="form-modern-label mb-0" for="edit_plant_email">Contact Email</label>
+                                <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                            </div>
+                            <div class="input-icon-group">
+                                <span class="input-icon-badge" id="badge_edit_plant_email"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="contact_email" id="edit_plant_email" class="form-control form-control-modern" maxlength="100" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
+                            </div>
+                            <div id="feedback_edit_plant_email" class="validation-feedback-box error d-none">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span id="feedback_edit_plant_email_text"></span>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-modern-label" for="edit_plant_phone">Contact Phone</label>
@@ -433,6 +453,108 @@
 
 @push('scripts')
 <script>
+    const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+    const emailAllowedKey = /^[a-zA-Z0-9@._\-]$/;
+    const emailDisallowed = /[^a-zA-Z0-9@._\-]/g;
+
+    ['add_plant_email', 'edit_plant_email'].forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !emailAllowedKey.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', function() {
+            if (emailDisallowed.test(this.value)) {
+                this.value = this.value.replace(emailDisallowed, '');
+            }
+            validatePlantEmail(id);
+        });
+
+        input.addEventListener('blur', function() {
+            validatePlantEmail(id);
+        });
+    });
+
+    function setFieldState(inputEl, feedbackEl, textEl, isValid, message = '', isOptionalEmpty = false) {
+        if (!inputEl) return;
+
+        if (isOptionalEmpty) {
+            inputEl.classList.remove('is-invalid', 'is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+            return;
+        }
+
+        if (isValid) {
+            inputEl.classList.remove('is-invalid');
+            inputEl.classList.add('is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+        } else {
+            inputEl.classList.remove('is-valid');
+            inputEl.classList.add('is-invalid');
+            if (feedbackEl) {
+                feedbackEl.classList.remove('d-none');
+                feedbackEl.classList.add('error');
+            }
+            if (textEl) textEl.textContent = message;
+        }
+    }
+
+    function triggerShake(element) {
+        if (!element) return;
+        element.classList.remove('field-shake');
+        void element.offsetWidth;
+        element.classList.add('field-shake');
+    }
+
+    function validatePlantEmail(id) {
+        const input = document.getElementById(id);
+        if (!input) return true;
+        const feedbackEl = document.getElementById('feedback_' + id);
+        const textEl = document.getElementById('feedback_' + id + '_text');
+        const val = input.value.trim();
+
+        if (!val) {
+            setFieldState(input, feedbackEl, textEl, true, '', true);
+            return true;
+        }
+
+        if (!emailRegex.test(val)) {
+            setFieldState(input, feedbackEl, textEl, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
+            return false;
+        }
+
+        setFieldState(input, feedbackEl, textEl, true);
+        return true;
+    }
+
+    document.getElementById('addPlantForm')?.addEventListener('submit', function(e) {
+        const emailInp = document.getElementById('add_plant_email');
+        if (!validatePlantEmail('add_plant_email')) {
+            e.preventDefault();
+            if (emailInp) {
+                emailInp.focus();
+                triggerShake(emailInp);
+            }
+        }
+    });
+
+    document.getElementById('editPlantForm')?.addEventListener('submit', function(e) {
+        const emailInp = document.getElementById('edit_plant_email');
+        if (!validatePlantEmail('edit_plant_email')) {
+            e.preventDefault();
+            if (emailInp) {
+                emailInp.focus();
+                triggerShake(emailInp);
+            }
+        }
+    });
+
     function openEditPlantModal(btn) {
         const id = btn.getAttribute('data-id');
         const form = document.getElementById('editPlantForm');
@@ -444,6 +566,7 @@
         document.getElementById('edit_plant_phone').value = btn.getAttribute('data-phone') || '';
         document.getElementById('edit_plant_description').value = btn.getAttribute('data-description') || '';
         document.getElementById('edit_plant_is_active').checked = btn.getAttribute('data-is-active') === '1';
+        setTimeout(() => { validatePlantEmail('edit_plant_email'); }, 150);
     }
 </script>
 @endpush

@@ -119,21 +119,24 @@
                 <div class="cms-form-card-body">
                     <div class="row g-3">
                         <div class="col-12 col-md-4">
-                            <label class="form-label-modern" for="email">Official Email</label>
-                            <div class="input-icon-wrapper">
-                                <i class="bi bi-envelope"></i>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="form-label-modern mb-0" for="email">Official Email</label>
+                                <span class="validation-counter text-muted" style="font-size: 0.72rem;">Optional</span>
+                            </div>
+                            <div class="input-icon-group">
+                                <span class="input-icon-badge" id="badge_email"><i class="bi bi-envelope-fill"></i></span>
                                 <input type="email" 
-                                       class="form-control-modern @error('email') is-invalid @enderror" 
+                                       class="form-control form-control-modern @error('email') is-invalid @enderror" 
                                        id="email" 
                                        name="email" 
                                        value="{{ old('email', $company->email) }}" 
-                                       placeholder="contact@company.com"
+                                       placeholder="contact@company.com" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in)."
                                        maxlength="100">
                             </div>
-                            @error('email')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                            <div class="invalid-feedback d-none custom-live-err" id="live_err_email"></div>
+                            <div id="feedback_email" class="validation-feedback-box error {{ $errors->has('email') ? '' : 'd-none' }}">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                <span id="feedback_email_text">{{ $errors->first('email') }}</span>
+                            </div>
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -597,6 +600,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function setFieldState(inputEl, feedbackEl, textEl, isValid, message = '', isEmpty = false) {
+        if (!inputEl) return;
+        if (isEmpty) {
+            inputEl.classList.remove('is-valid', 'is-invalid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+            return;
+        }
+        if (isValid) {
+            inputEl.classList.remove('is-invalid');
+            inputEl.classList.add('is-valid');
+            if (feedbackEl) feedbackEl.classList.add('d-none');
+            if (textEl) textEl.textContent = '';
+        } else {
+            inputEl.classList.remove('is-valid');
+            inputEl.classList.add('is-invalid');
+            if (feedbackEl) {
+                feedbackEl.classList.remove('d-none');
+                feedbackEl.classList.add('error');
+            }
+            if (textEl) textEl.textContent = message;
+        }
+    }
+
+    function triggerShake(element) {
+        if (!element) return;
+        element.classList.remove('field-shake');
+        void element.offsetWidth;
+        element.classList.add('field-shake');
+    }
+
+    function validateCompanyEmail() {
+        if (!emailInput) return true;
+        const feedbackEl = document.getElementById('feedback_email');
+        const textEl = document.getElementById('feedback_email_text');
+        const val = emailInput.value.trim();
+
+        if (!val) {
+            setFieldState(emailInput, feedbackEl, textEl, true, '', true);
+            return true;
+        }
+
+        if (!emailRegex.test(val)) {
+            setFieldState(emailInput, feedbackEl, textEl, false, 'Please enter a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).');
+            return false;
+        }
+
+        setFieldState(emailInput, feedbackEl, textEl, true);
+        return true;
+    }
+
     function clearCompanyLiveErr(id) {
         const errEl = document.getElementById('live_err_' + id);
         const input = document.getElementById(id);
@@ -610,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const disallowedChars = /[<>{}\[\]$^*~=\\\|]/g;
     const phoneRegex = /^[6-9][0-9]{9}$/;
     const pinRegex = /^[1-9][0-9]{5}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
 
     function updateLocation() {
         const city = (cityInput ? cityInput.value.trim() : '') || 'Chennai';
@@ -645,34 +699,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (emailInput) {
-        const emailDisallowed = /[^a-zA-Z0-9@._+\-]/;
+        const emailDisallowed = /[^a-zA-Z0-9@._\-]/;
         emailInput.addEventListener('keydown', e => {
             if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && emailDisallowed.test(e.key)) {
                 e.preventDefault();
-                showCompanyLiveErr('email', 'Spaces and symbols other than @, ., _, +, - are not allowed in email.');
+                setFieldState(emailInput, document.getElementById('feedback_email'), document.getElementById('feedback_email_text'), false, 'Spaces and symbols other than @, ., _, - are not allowed in email.');
             }
         });
         emailInput.addEventListener('beforeinput', e => {
             if (e.data && emailDisallowed.test(e.data)) {
                 e.preventDefault();
-                showCompanyLiveErr('email', 'Spaces and symbols other than @, ., _, +, - are not allowed in email.');
+                setFieldState(emailInput, document.getElementById('feedback_email'), document.getElementById('feedback_email_text'), false, 'Spaces and symbols other than @, ., _, - are not allowed in email.');
             }
         });
         emailInput.addEventListener('input', e => {
             if (emailDisallowed.test(e.target.value)) {
-                e.target.value = e.target.value.replace(/[^a-zA-Z0-9@._+\-]/g, '');
-            } else if (emailRegex.test(e.target.value.trim()) || !e.target.value.trim()) {
-                clearCompanyLiveErr('email');
+                e.target.value = e.target.value.replace(/[^a-zA-Z0-9@._\-]/g, '');
             }
+            validateCompanyEmail();
             const el = document.getElementById('liveEmailPreview');
             if (el) el.textContent = e.target.value.trim() || 'contact@company.com';
         });
         emailInput.addEventListener('blur', e => {
-            const val = e.target.value.trim();
-            if (val && !emailRegex.test(val)) {
-                showCompanyLiveErr('email', 'Please enter a valid company email address with domain (e.g. info@company.com).');
-            }
+            validateCompanyEmail();
         });
+
+        if (emailInput.value.trim()) {
+            validateCompanyEmail();
+        }
     }
 
     if (phoneInput) {
@@ -840,9 +894,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (emailInput && emailInput.value.trim()) {
-                if (!emailRegex.test(emailInput.value.trim())) {
+                if (!validateCompanyEmail()) {
                     hasError = true;
-                    showCompanyLiveErr('email', 'Please enter a valid company email address with domain (e.g. info@company.com).', true);
                     if (!firstInvalid) firstInvalid = emailInput;
                 }
             }
@@ -876,6 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (firstInvalid) {
                     firstInvalid.focus();
                     firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    triggerShake(firstInvalid);
                 }
             }
         });

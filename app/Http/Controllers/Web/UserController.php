@@ -181,7 +181,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s]+$~u'],
-            'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
+            'email' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:100', 'required_without:mobile', Rule::unique('users', 'email')->ignore($user?->id)],
             'mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/', 'required_without:email', Rule::unique('users', 'mobile')->ignore($user?->id)],
             'role_id' => 'required|exists:roles,id',
             'department' => ['nullable', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -192,8 +192,8 @@ class UserController extends Controller
             'name.max' => 'Full Name cannot exceed :max characters.',
             'name.regex' => 'Full Name may only contain letters and spaces. Special characters are not allowed.',
 
-            'email.email' => 'Please provide a valid official email address.',
-            'email.regex' => 'Please provide a valid official email address with domain (e.g. name@company.com).',
+            'email.email' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
+            'email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
             'email.required_without' => 'Either Email Address or Mobile Number is required.',
 
             'mobile.regex' => 'Mobile number must be a valid 10-digit number starting with 6, 7, 8, or 9.',
