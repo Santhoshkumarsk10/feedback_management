@@ -134,7 +134,7 @@ class PlantController extends Controller
                 'min:5',
                 'max:100',
                 'email:rfc',
-                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/',
             ],
             'contact_phone' => [
                 'nullable',
@@ -172,8 +172,8 @@ class PlantController extends Controller
             'location.max' => 'Factory Location cannot exceed :max characters.',
             'location.regex' => 'Factory Location may only contain letters, numbers, spaces, and address symbols (,, ., -, /, #, (), &, \').',
 
-            'contact_email.email' => 'Please provide a valid official email address.',
-            'contact_email.regex' => 'Please provide a valid official email address with domain (e.g. plant@shibaura-machine.co.in).',
+            'contact_email.email' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
+            'contact_email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
             'contact_email.min' => 'Operations Contact Email must be at least :min characters.',
             'contact_email.max' => 'Operations Contact Email cannot exceed :max characters.',
 

@@ -124,7 +124,7 @@
                                            class="form-control" 
                                            value="{{ old('email', auth()->user()->email) }}" 
                                            placeholder="e.g. name@company.com" 
-                                           maxlength="100" autocomplete="email">
+                                           maxlength="100" autocomplete="email" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).">
                                 </div>
                                 @error('email')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
@@ -594,8 +594,15 @@
         }
 
         if (profileEmail) {
+            profileEmail.addEventListener('keydown', function(e) {
+                const allowed = /^[a-zA-Z0-9@._\-]$/;
+                if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !allowed.test(e.key)) {
+                    e.preventDefault();
+                    showPassLiveErr('profile_email', 'Spaces and symbols other than @, ., _, - are not allowed in email.');
+                }
+            });
             profileEmail.addEventListener('input', function() {
-                if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.value.trim())) {
+                if (/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/.test(this.value.trim())) {
                     clearPassLiveErr('profile_email');
                 }
             });
@@ -625,9 +632,9 @@
                     showPassLiveErr('profile_email', 'Either Email Address or Mobile Number is required.', true);
                     if (!firstFocus) firstFocus = profileEmail;
                 } else {
-                    if (emailVal && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
+                    if (emailVal && !/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/.test(emailVal)) {
                         hasErr = true;
-                        showPassLiveErr('profile_email', 'Please provide a valid official email address with domain.', true);
+                        showPassLiveErr('profile_email', 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).', true);
                         if (!firstFocus) firstFocus = profileEmail;
                     }
                     if (mobileVal && !/^[6-9][0-9]{9}$/.test(mobileVal)) {

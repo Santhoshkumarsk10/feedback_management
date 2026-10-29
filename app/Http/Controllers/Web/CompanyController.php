@@ -27,7 +27,7 @@ class CompanyController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
-            'email' => ['nullable', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'email' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:100'],
             'phone' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'alter_phone' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'address' => ['nullable', 'string', 'min:3', 'max:150', 'regex:~^[\p{L}\p{N}\s,\.\-/#()&\'’]+$~u'],
@@ -40,8 +40,8 @@ class CompanyController extends Controller
         ], [
             'name.required' => 'Company Name is required.',
             'name.regex' => 'Company Name may only contain letters, numbers, spaces, and allowed symbols (&, -, —, _, /, ., ,, (), \').',
-            'email.email' => 'Please provide a valid company email address.',
-            'email.regex' => 'Please provide a valid company email address with domain (e.g. info@company.com).',
+            'email.email' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
+            'email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
             'phone.regex' => 'Primary Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.',
             'alter_phone.regex' => 'Alternate Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.',
             'address.regex' => 'Address may only contain letters, numbers, spaces, and valid address symbols (,, ., -, /, #, (), &, \').',

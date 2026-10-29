@@ -166,10 +166,10 @@ class AuthController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'email' => ['required', 'string', 'email:rfc', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'max:100'],
+            'email' => ['required', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:100'],
             'password' => 'required|string|min:8|max:100|confirmed',
         ], [
-            'email.regex' => 'Please provide a valid email address with domain.',
+            'email.regex' => 'Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in).',
         ]);
 
         $status = Password::broker()->reset(
