@@ -278,8 +278,8 @@
                     Showing <b>{{ $banners->firstItem() ?? 0 }}</b> to <b>{{ $banners->lastItem() ?? 0 }}</b> of
                     <b>{{ $banners->total() }}</b> banners
                 </div>
-                <div>
-                    {{ $banners->links() }}
+                <div class="saas-pagination">
+                    {{ $banners->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>

@@ -266,8 +266,8 @@
         <div class="saas-footer-text">
             Showing <b>{{ $feedbacks->firstItem() ?? 0 }}</b> to <b>{{ $feedbacks->lastItem() ?? 0 }}</b> of <b>{{ $feedbacks->total() }}</b> reviews ({{ $feedbacks->perPage() }} per page)@if($feedbacks->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
-        <div>
-            {{ $feedbacks->links() }}
+        <div class="saas-pagination">
+            {{ $feedbacks->links('pagination::bootstrap-5') }}
         </div>
     </div>
 </div>

@@ -90,7 +90,7 @@
                     </div>
 
                     <!-- Active Status Switch -->
-                    @if($role->name !== 'superadmin')
+                    @if(!$role->is_system)
                         <div class="p-3 rounded-3 bg-light border border-slate-200">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>

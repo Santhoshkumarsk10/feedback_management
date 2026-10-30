@@ -86,7 +86,11 @@ class PermissionController extends Controller
             ->pluck('module')
             ->all();
 
-        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        $roles = Role::where('is_active', true)
+            ->when(!$isSuperAdmin, fn ($q) => $q->where('name', '!=', 'superadmin'))
+            ->orderBy('name')
+            ->get();
 
         return view('permissions.form', [
             'permission' => new Permission(['module' => 'System Masters']),
@@ -101,6 +105,8 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[a-z0-9\-\.]+$/', 'unique:permissions,name'],
             'display_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -124,7 +130,9 @@ class PermissionController extends Controller
         ]);
 
         if ($request->filled('roles')) {
-            $selectedRoles = Role::whereIn('id', $request->input('roles'))->get();
+            $selectedRoles = Role::whereIn('id', $request->input('roles'))
+                ->when(!$isSuperAdmin, fn ($q) => $q->whereNotIn('name', ['superadmin', 'admin']))
+                ->get();
             foreach ($selectedRoles as $r) {
                 $r->givePermissionTo($permission);
             }
@@ -149,7 +157,11 @@ class PermissionController extends Controller
             ->pluck('module')
             ->all();
 
-        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        $roles = Role::where('is_active', true)
+            ->when(!$isSuperAdmin, fn ($q) => $q->where('name', '!=', 'superadmin'))
+            ->orderBy('name')
+            ->get();
         $assignedRoleIds = $permission->roles->pluck('id')->toArray();
 
         return view('permissions.form', [
@@ -165,6 +177,8 @@ class PermissionController extends Controller
      */
     public function update(Request $request, Permission $permission)
     {
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+
         $validated = $request->validate([
             'display_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'module' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -188,6 +202,9 @@ class PermissionController extends Controller
         foreach ($allRoles as $r) {
             if ($r->name === 'superadmin') {
                 continue; // Superadmin has all permissions
+            }
+            if (!$isSuperAdmin && $r->name === 'admin') {
+                continue; // Admin cannot modify admin permissions
             }
             if (in_array($r->id, $selectedRoleIds)) {
                 $r->givePermissionTo($permission);

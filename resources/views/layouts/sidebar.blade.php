@@ -38,12 +38,14 @@
             $canFeedbackLogs = $currentUser && $currentUser->can('feedbacklogs.view');
             $canViewReports = $currentUser && $currentUser->can('reportsexports.view');
             $canAuditLogs = $currentUser && $currentUser->can('auditlogs.view');
-            $canDatabaseCleanup = $currentUser && $currentUser->can('tabledatacleanup.view');
-            $canSystemConsole =
-                $currentUser &&
-                ($currentUser->can('tabledatacleanup.view') ||
-                    (method_exists($currentUser, 'hasAnyRole') && $currentUser->hasAnyRole(['superadmin', 'admin'])) ||
-                    in_array($currentUser->role ?? '', ['superadmin', 'admin'], true));
+            $isSuperAdmin = $currentUser && (
+                $currentUser->role === 'superadmin' ||
+                (method_exists($currentUser, 'hasRole') && $currentUser->hasRole('superadmin'))
+            );
+
+            // Strictly restricted: ONLY Super Admin can view Database Maintenance & System Console
+            $canDatabaseCleanup = $isSuperAdmin;
+            $canSystemConsole = $isSuperAdmin;
         @endphp
 
         {{-- Operations: All Authenticated Roles --}}

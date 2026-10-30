@@ -300,8 +300,8 @@
         <div class="saas-footer-text">
             Showing <b>{{ $visits->firstItem() ?? 0 }}</b> to <b>{{ $visits->lastItem() ?? 0 }}</b> of <b>{{ $visits->total() }}</b> visitors ({{ $visits->perPage() }} per page)@if($visits->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
-        <div>
-            {{ $visits->links() }}
+        <div class="saas-pagination">
+            {{ $visits->links('pagination::bootstrap-5') }}
         </div>
     </div>
 </div>
