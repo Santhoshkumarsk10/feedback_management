@@ -22,6 +22,13 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        if ($request->has('email') && !$request->has('login')) {
+            $request->merge(['login' => $request->input('email')]);
+        }
+        if ($request->filled('login')) {
+            $request->merge(['login' => trim($request->input('login'))]);
+        }
+
         $data = $request->validate([
             'login' => ['required', 'string', 'min:3', 'max:100', 'regex:~^[a-zA-Z0-9@._+\-]+$~'],
             'password' => ['required', 'string', 'max:100'],

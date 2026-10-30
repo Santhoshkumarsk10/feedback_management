@@ -29,7 +29,7 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
 
-Route::middleware(['auth:api', 'role:staff,organizer,admin,superadmin'])->group(function () {
+Route::middleware(['auth:api', 'role:superadmin,admin,coordinator'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
