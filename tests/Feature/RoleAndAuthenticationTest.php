@@ -109,13 +109,43 @@ class RoleAndAuthenticationTest extends TestCase
 
     public function test_mobile_login_permissions(): void
     {
-        $staff = $this->getUser('staff');
-
-        // Staff can log into mobile via API
-        $staffResponse = $this->postJson('/api/login', [
-            'login' => $staff->email,
+        // 1. Coordinator can log in and access organizer dashboard
+        $coordinator = $this->getUser('coordinator');
+        $coordResponse = $this->postJson('/api/login', [
+            'login' => $coordinator->email,
             'password' => 'password',
         ]);
-        $staffResponse->assertStatus(200)->assertJsonStructure(['access_token', 'user']);
+        $coordResponse->assertStatus(200)->assertJsonStructure(['access_token', 'user']);
+        $coordToken = $coordResponse->json('access_token');
+
+        $coordDashboard = $this->withHeader('Authorization', 'Bearer ' . $coordToken)
+            ->getJson('/api/organizer/dashboard');
+        $coordDashboard->assertStatus(200);
+
+        // 2. Admin can log in and access organizer dashboard
+        $admin = $this->getUser('admin');
+        $adminResponse = $this->postJson('/api/login', [
+            'login' => $admin->email,
+            'password' => 'password',
+        ]);
+        $adminResponse->assertStatus(200)->assertJsonStructure(['access_token', 'user']);
+        $adminToken = $adminResponse->json('access_token');
+
+        $adminDashboard = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+            ->getJson('/api/organizer/dashboard');
+        $adminDashboard->assertStatus(200);
+
+        // 3. Superadmin can log in and access organizer dashboard
+        $super = $this->getUser('superadmin');
+        $superResponse = $this->postJson('/api/login', [
+            'login' => $super->email,
+            'password' => 'password',
+        ]);
+        $superResponse->assertStatus(200)->assertJsonStructure(['access_token', 'user']);
+        $superToken = $superResponse->json('access_token');
+
+        $superDashboard = $this->withHeader('Authorization', 'Bearer ' . $superToken)
+            ->getJson('/api/organizer/dashboard');
+        $superDashboard->assertStatus(200);
     }
 }
