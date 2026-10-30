@@ -204,12 +204,6 @@
                 </button>
             </div>
         </div>
-
-        <!-- Removable Chips / Tags Row -->
-        <div class="section-chips-container mt-3 pt-2 border-top d-flex flex-wrap align-items-center gap-2"
-            id="sectionChipsContainer">
-            <!-- Rendered dynamically via JavaScript -->
-        </div>
     </div>
 
     <!-- Section-Wise Grouped Question Cards -->
@@ -610,42 +604,6 @@
             font-weight: 600;
         }
 
-        /* Removable Chips Styling */
-        .section-chip {
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            line-height: 1.2;
-            cursor: default;
-            background: #ffffff;
-            border: 1.5px solid var(--slate-200);
-            border-radius: 50px;
-            padding: 0.28rem 0.65rem;
-        }
-
-        .section-chip:hover {
-            border-color: var(--shibaura-blue);
-            background-color: #f8fafc;
-        }
-
-        .section-chip .btn-close-chip {
-            cursor: pointer;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            color: var(--slate-400);
-            border: none;
-            background: transparent;
-            padding: 0;
-            margin-left: 0.35rem;
-            font-size: 0.85rem;
-            transition: color 0.15s ease, transform 0.15s ease;
-        }
-
-        .section-chip .btn-close-chip:hover {
-            color: #ef4444;
-            transform: scale(1.15);
-        }
-
         .section-card-header {
             transition: background-color 0.15s ease;
         }
@@ -686,7 +644,6 @@
                 const checkboxesList = document.getElementById('sectionCheckboxesList');
                 const checkboxes = Array.from(checkboxesList ? checkboxesList.querySelectorAll('.section-filter-cb') :
                 []);
-                const chipsContainer = document.getElementById('sectionChipsContainer');
                 const summaryBadge = document.getElementById('filterSectionsSummaryBadge');
                 const totalVisQuestions = document.getElementById('totalVisibleQuestionsBadge');
                 const totalVisSections = document.getElementById('totalVisibleSectionsBadge');
@@ -778,14 +735,14 @@
                 if (btnSelectAll) {
                     btnSelectAll.addEventListener('click', function() {
                         checkboxes.forEach(cb => cb.checked = true);
-                        updateSummaryBadgeAndChips();
+                        updateSummaryBadge();
                     });
                 }
 
                 if (btnDeselectAll) {
                     btnDeselectAll.addEventListener('click', function() {
                         checkboxes.forEach(cb => cb.checked = false);
-                        updateSummaryBadgeAndChips();
+                        updateSummaryBadge();
                     });
                 }
 
@@ -844,11 +801,11 @@
                         totalVisSections.textContent = `${visibleSectionsCount} Sections`;
                     }
 
-                    updateSummaryBadgeAndChips();
+                    updateSummaryBadge();
                 }
 
                 // Update summary badge & render chips
-                function updateSummaryBadgeAndChips() {
+                function updateSummaryBadge() {
                     const total = checkboxes.length;
                     const selected = checkboxes.filter(cb => cb.checked);
                     const selectedCount = selected.length;
@@ -866,68 +823,7 @@
                             summaryBadge.className = 'badge bg-info text-dark rounded-pill px-2 py-1';
                         }
                     }
-
-                    // Render chips
-                    if (!chipsContainer) return;
-                    chipsContainer.innerHTML = '';
-
-                    if (selectedCount === 0) {
-                        chipsContainer.innerHTML = `
-                <div class="d-flex align-items-center gap-2 small text-danger py-1">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    <span>All sections hidden by filter.</span>
-                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-semibold" onclick="resetAllSectionFilters()">
-                        Show All Sections
-                    </button>
-                </div>
-            `;
-                        return;
-                    }
-
-                    // Header label for chips
-                    const labelEl = document.createElement('span');
-                    labelEl.className = 'small fw-bold text-muted d-flex align-items-center gap-1 me-1';
-                    labelEl.innerHTML = `<i class="bi bi-tags-fill text-primary"></i> Active Sections:`;
-                    chipsContainer.appendChild(labelEl);
-
-                    // Render individual chip for each selected section
-                    selected.forEach(cb => {
-                        const slug = cb.value;
-                        const title = cb.getAttribute('data-title') || '';
-                        const count = cb.getAttribute('data-count') || '0';
-
-                        const chip = document.createElement('div');
-                        chip.className = 'section-chip d-inline-flex align-items-center gap-1 shadow-xs';
-                        chip.setAttribute('data-sec-slug', slug);
-                        chip.innerHTML = `
-                <span class="text-dark fw-medium text-truncate" style="max-width: 250px;" title="${title}">${title}</span>
-                <span class="badge bg-light text-secondary border ms-1 py-0 px-1" style="font-size: 0.68rem;">${count}</span>
-                <button type="button" class="btn-close-chip" title="Remove ${title}" onclick="removeSectionChip('${slug}')">
-                    <i class="bi bi-x-circle-fill"></i>
-                </button>
-            `;
-                        chipsContainer.appendChild(chip);
-                    });
-
-                    // "Reset All" quick link if fewer than all are selected
-                    if (selectedCount < total) {
-                        const resetBtn = document.createElement('button');
-                        resetBtn.type = 'button';
-                        resetBtn.className = 'btn btn-link btn-sm text-decoration-none text-muted p-0 ms-2 small';
-                        resetBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> Reset to All`;
-                        resetBtn.onclick = resetAllSectionFilters;
-                        chipsContainer.appendChild(resetBtn);
-                    }
                 }
-
-                // Remove single chip
-                window.removeSectionChip = function(slug) {
-                    const cb = document.getElementById('cb_sec_' + slug);
-                    if (cb) {
-                        cb.checked = false;
-                        applyFilters();
-                    }
-                };
 
                 // Reset all filters
                 window.resetAllSectionFilters = function() {

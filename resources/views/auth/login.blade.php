@@ -396,92 +396,7 @@
             transform: scale(0.99);
         }
 
-        /* Quick Demo Login Box */
-        .quick-demo-box {
-            margin-top: 1.5rem;
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 12px 14px;
-        }
 
-        .quick-demo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .quick-demo-title {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #334155;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .quick-demo-title i {
-            color: #f59e0b;
-        }
-
-        .badge-access {
-            background: #e0f2fe;
-            color: #0369a1;
-            font-size: 0.68rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            border: 1px solid #bae6fd;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .demo-roles-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .demo-role-btn {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: var(--brand-navy);
-            border-radius: 6px;
-            padding: 5px 12px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            user-select: none;
-        }
-
-        .demo-role-btn:hover {
-            background: #f0f7ff;
-            border-color: var(--brand-blue);
-            color: var(--brand-blue);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(11, 77, 156, 0.12);
-        }
-
-        .demo-role-btn:active {
-            transform: translateY(0);
-        }
-
-        .demo-footer-note {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.72rem;
-            color: #64748b;
-        }
-
-        .demo-footer-note strong {
-            color: var(--brand-navy);
-        }
 
         /* Live error display */
         .custom-live-err {
@@ -762,33 +677,7 @@
             </button>
         </form>
 
-        <!-- Quick Demo Login Section -->
-        <div class="quick-demo-box">
-            <div class="quick-demo-header">
-                <div class="quick-demo-title">
-                    <i class="bi bi-lightning-charge-fill"></i>
-                    <span>Quick Demo Login (Click to Login):</span>
-                </div>
-                <span class="badge-access">1-Click Access</span>
-            </div>
-            <div class="demo-roles-grid">
-                <button type="button" class="demo-role-btn" onclick="quickLogin('superadmin@plant.test', 'password', 'Super Admin')" title="Super Admin: All 14 modules & 70 capabilities">
-                    <span>👑</span>
-                    <span>Super Admin</span>
-                </button>
-                <button type="button" class="demo-role-btn" onclick="quickLogin('admin@plant.test', 'password', 'Admin')" title="Admin: Plant masters, User directory, Audits & Reports">
-                    <span>🛡️</span>
-                    <span>Admin</span>
-                </button>
-                <button type="button" class="demo-role-btn" onclick="quickLogin('coordinator@plant.test', 'password', 'Coordinator')" title="Coordinator: Visitors, Feedback forms & Analytics">
-                    <span>📋</span>
-                    <span>Coordinator</span>
-                </button>
-            </div>
-            <div class="demo-footer-note">
-                <i class="bi bi-info-circle me-1 text-primary"></i> Click any role button above for instant 1-click login. Default password: <strong>password</strong>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -809,30 +698,7 @@ function togglePassVisibility() {
     }
 }
 
-function quickLogin(login, password, label) {
-    const loginInp = document.getElementById('loginInput');
-    const passInp = document.getElementById('passwordInput');
-    const submitBtn = document.getElementById('submitBtn');
 
-    if (loginInp) loginInp.value = login;
-    if (passInp) passInp.value = password;
-    clearLoginLiveErr('loginInput');
-    clearLoginLiveErr('passwordInput');
-
-    if (submitBtn) {
-        submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Signing in as ${label}...`;
-        submitBtn.disabled = true;
-    }
-
-    const form = document.getElementById('loginForm');
-    if (form) {
-        if (typeof form.requestSubmit === 'function') {
-            form.requestSubmit();
-        } else {
-            form.submit();
-        }
-    }
-}
 
 function showLoginLiveErr(id, msg, persistent = false) {
     const errEl = document.getElementById('live_err_' + id);

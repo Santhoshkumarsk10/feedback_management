@@ -157,30 +157,33 @@ Route::prefix('admin')->middleware(['auth', 'role:superadmin,admin,coordinator,s
         Route::resource('banners', BannerController::class)->except('show');
         Route::patch('banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
 
-        // Database Maintenance & Table Data Cleanup
-        Route::get('database-cleanup', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'index'])->name('database_cleanup.index');
-        Route::post('database-cleanup/clear', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'clearTables'])->name('database_cleanup.clear');
-        Route::post('database-cleanup/reseed', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'reseed'])->name('database_cleanup.reseed');
+        // Strictly Superadmin Only: Database Maintenance & System Console
+        Route::middleware(['role:superadmin'])->group(function () {
+            // Database Maintenance & Table Data Cleanup
+            Route::get('database-cleanup', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'index'])->name('database_cleanup.index');
+            Route::post('database-cleanup/clear', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'clearTables'])->name('database_cleanup.clear');
+            Route::post('database-cleanup/reseed', [\App\Http\Controllers\Web\DatabaseMaintenanceController::class, 'reseed'])->name('database_cleanup.reseed');
+
+            // System Maintenance & Artisan Console (Restricted strictly to Superadmin)
+            Route::get('system-console', [SystemConsoleController::class, 'index'])->name('system_console.index');
+            Route::post('system-console/execute', [SystemConsoleController::class, 'executeCommand'])->name('system_console.execute');
+            Route::get('system/clear-cache', [SystemConsoleController::class, 'directClearCache'])->name('system_console.direct_clear_cache');
+            Route::get('system/optimize', [SystemConsoleController::class, 'directOptimize'])->name('system_console.direct_optimize');
+            Route::get('system/migrate', [SystemConsoleController::class, 'directMigrate'])->name('system_console.direct_migrate');
+            Route::get('system/seed-daily-visits', [SystemConsoleController::class, 'directSeedDailyVisits'])->name('system_console.direct_seed_daily');
+            Route::get('system/sync-external', [SystemConsoleController::class, 'directSyncExternal'])->name('system_console.direct_sync_external');
+            Route::get('system/storage-link', [SystemConsoleController::class, 'directStorageLink'])->name('system_console.direct_storage_link');
+            Route::get('system-console/logs', [SystemConsoleController::class, 'viewLogs'])->name('system_console.logs');
+            Route::post('system-console/clear-logs', [SystemConsoleController::class, 'clearLogs'])->name('system_console.clear_logs');
+            Route::get('system-console/download-logs', [SystemConsoleController::class, 'downloadLogs'])->name('system_console.download_logs');
+            Route::post('system-console/maintenance-toggle', [SystemConsoleController::class, 'toggleMaintenance'])->name('system_console.maintenance_toggle');
+        });
     });
 });
 
-// System Maintenance & Artisan Console (Direct Developer Access without auth/login)
-Route::prefix('admin')->group(function () {
-    Route::get('system-console', [SystemConsoleController::class, 'index'])->name('system_console.index');
-    Route::post('system-console/execute', [SystemConsoleController::class, 'executeCommand'])->name('system_console.execute');
-    Route::get('system/clear-cache', [SystemConsoleController::class, 'directClearCache'])->name('system_console.direct_clear_cache');
-    Route::get('system/optimize', [SystemConsoleController::class, 'directOptimize'])->name('system_console.direct_optimize');
-    Route::get('system/migrate', [SystemConsoleController::class, 'directMigrate'])->name('system_console.direct_migrate');
-    Route::get('system/seed-daily-visits', [SystemConsoleController::class, 'directSeedDailyVisits'])->name('system_console.direct_seed_daily');
-    Route::get('system/sync-external', [SystemConsoleController::class, 'directSyncExternal'])->name('system_console.direct_sync_external');
-    Route::get('system/storage-link', [SystemConsoleController::class, 'directStorageLink'])->name('system_console.direct_storage_link');
-    Route::get('system-console/logs', [SystemConsoleController::class, 'viewLogs'])->name('system_console.logs');
-    Route::post('system-console/clear-logs', [SystemConsoleController::class, 'clearLogs'])->name('system_console.clear_logs');
-    Route::get('system-console/download-logs', [SystemConsoleController::class, 'downloadLogs'])->name('system_console.download_logs');
-    Route::post('system-console/maintenance-toggle', [SystemConsoleController::class, 'toggleMaintenance'])->name('system_console.maintenance_toggle');
-});
-
-// Standalone direct developer console access
-Route::match(['get', 'post'], 'system-console', [SystemConsoleController::class, 'index'])->name('system_console.standalone');
+// Standalone direct developer console access (Strictly Superadmin Only)
+Route::match(['get', 'post'], 'system-console', [SystemConsoleController::class, 'standaloneAccess'])
+    ->middleware(['auth', 'role:superadmin'])
+    ->name('system_console.standalone');
 
 

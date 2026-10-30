@@ -4772,3 +4772,17 @@ input[type="checkbox"].saas-switch-input:not(+ .saas-switch-slider):not(+ .saas-
     color: #64748b;
     margin: 0;
 }
+
+/* Ensure pagination never displays duplicate 'Showing x to y results' text on the right */
+.saas-table-footer nav p.small.text-muted,
+.saas-table-footer nav .small.text-muted,
+.saas-table-footer nav div > p,
+.saas-pagination nav p.small.text-muted,
+.saas-pagination nav .small.text-muted,
+.saas-pagination nav div > p {
+    display: none !important;
+}
+
+.saas-table-footer .pagination {
+    margin-bottom: 0 !important;
+}

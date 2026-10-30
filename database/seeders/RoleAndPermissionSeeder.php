@@ -118,8 +118,8 @@ class RoleAndPermissionSeeder extends Seeder
             'auditlogs.view', 'auditlogs.export',
             // User Directory: View, Create, Edit, Export
             'userdirectory.view', 'userdirectory.create', 'userdirectory.edit', 'userdirectory.export',
-            // Role Master: View
-            'rolemaster.view',
+            // Role Master: View, Edit
+            'rolemaster.view', 'rolemaster.edit',
             // Permission Master: View
             'permissionmaster.view',
             // User Profile: View, Edit

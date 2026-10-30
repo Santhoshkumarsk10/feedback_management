@@ -10,9 +10,11 @@
             <span>Add Role</span>
         </a>
     @else
-        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
-            <i class="bi bi-eye"></i> View Only
-        </span>
+        @cannot('rolemaster.edit')
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
+                <i class="bi bi-eye"></i> View Only
+            </span>
+        @endcannot
     @endcan
     @can('permissionmaster.view')
         <a href="{{ route('permissions.index') }}" class="btn-modern-secondary btn-sm">
@@ -225,24 +227,32 @@
                     </td>
                     <td class="text-end text-nowrap">
                         <div class="d-inline-flex gap-2 align-items-center">
-                            @can('rolemaster.edit')
+                            @php
+                                $isSuperAdmin = auth()->user()?->isSuperAdmin();
+                                $canEditThisRole = auth()->user()->can('rolemaster.edit') && (
+                                    $isSuperAdmin || $r->name !== 'admin'
+                                );
+                                $canDeleteThisRole = auth()->user()->can('rolemaster.delete') && !$r->is_system;
+                            @endphp
+
+                            @if($canEditThisRole)
                                 <a href="{{ route('roles.edit', $r) }}" class="btn-action-edit-pill" title="Edit role & permissions">
                                     <i class="bi bi-pencil-fill"></i>
                                     <span>Edit</span>
                                 </a>
-                            @endcan
-                            @can('rolemaster.delete')
-                                @if(!$r->is_system)
-                                    <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
-                                          data-confirm="Are you sure you want to delete role '{{ $r->display_name ?: $r->name }}'?">
-                                        @csrf @method('DELETE')
-                                        <button class="btn-action-delete-pill" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                            @endcan
-                            @if(!auth()->user()->can('rolemaster.edit') && !auth()->user()->can('rolemaster.delete'))
+                            @endif
+
+                            @if($canDeleteThisRole)
+                                <form method="POST" action="{{ route('roles.destroy', $r) }}" class="d-inline"
+                                      data-confirm="Are you sure you want to delete role '{{ $r->display_name ?: $r->name }}'?">
+                                    @csrf @method('DELETE')
+                                    <button class="btn-action-delete-pill" type="submit" title="Delete role" @disabled(($r->assigned_users_count ?? $r->users_count) > 0)>
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if(!$canEditThisRole && !$canDeleteThisRole)
                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-1 px-2" style="font-size: 0.72rem;">
                                     <i class="bi bi-eye"></i> View Only
                                 </span>

@@ -9,8 +9,19 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class DatabaseMaintenanceController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class DatabaseMaintenanceController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'role:superadmin',
+        ];
+    }
+
     /**
      * Exact tables strictly protected from any truncation/clear operations.
      * Master data (Users, Roles, Permissions, Questions, Banners, Companies, Plants)

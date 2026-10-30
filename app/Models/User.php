@@ -84,4 +84,20 @@ class User extends Authenticatable implements JWTSubject
     {
         return (bool) $this->is_active;
     }
+
+    /**
+     * Check if the user has superadmin role.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin' || (method_exists($this, 'hasRole') && $this->hasRole('superadmin'));
+    }
+
+    /**
+     * Check if the user has admin role.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin' || (method_exists($this, 'hasRole') && $this->hasRole('admin'));
+    }
 }

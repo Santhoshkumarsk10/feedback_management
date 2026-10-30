@@ -18,8 +18,19 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
-class SystemConsoleController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class SystemConsoleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'role:superadmin',
+        ];
+    }
+
     /**
      * Whitelist of safe allowed Artisan commands for web execution.
      */
@@ -72,25 +83,14 @@ class SystemConsoleController extends Controller
      */
     public function standaloneAccess(Request $request)
     {
-        // 1. Allow if authenticated with admin/superadmin role
         if (auth()->check()) {
             $user = auth()->user();
-            if ($user->hasAnyRole(['superadmin', 'admin']) || in_array($user->role, ['superadmin', 'admin'], true)) {
+            if ($user->hasRole('superadmin') || $user->role === 'superadmin') {
                 return $this->index($request);
             }
         }
 
-        // 2. Allow if valid developer key provided in query string or session
-        $devKey = $request->query('key') ?? session('dev_console_authorized_key');
-        $validKey = env('DEV_CONSOLE_KEY') ?: substr(md5(config('app.key') . 'system_console'), 0, 16);
-
-        if ($devKey && hash_equals($validKey, (string) $devKey)) {
-            session(['dev_console_authorized_key' => $validKey]);
-            return $this->index($request);
-        }
-
-        // 3. Otherwise redirect to login with notification
-        return redirect()->route('login')->with('info', 'System Console requires Superadmin or Administrator authentication.');
+        abort(403, 'Unauthorized access. System Console & Tools is strictly restricted to Superadmin.');
     }
 
     /**
@@ -418,8 +418,10 @@ class SystemConsoleController extends Controller
      */
     protected function ensureAuthorized(Request $request): void
     {
-        // Unrestricted developer console access
-        return;
+        $user = $request->user();
+        if (!$user || ($user->role !== 'superadmin' && (!method_exists($user, 'hasRole') || !$user->hasRole('superadmin')))) {
+            abort(403, 'Unauthorized access. System Console & Tools is strictly restricted to Superadmin.');
+        }
     }
 
     /**

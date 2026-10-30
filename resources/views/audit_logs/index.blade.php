@@ -276,8 +276,8 @@
         <div class="saas-footer-text">
             Showing <b>{{ $logs->firstItem() ?? 0 }}</b> to <b>{{ $logs->lastItem() ?? 0 }}</b> of <b>{{ $logs->total() }}</b> audit events ({{ $logs->perPage() }} per page)@if($logs->total() >= 1000) <span class="badge bg-secondary-subtle text-secondary py-0 px-1 ms-1 fs-xs">Recent 1,000 max</span>@endif
         </div>
-        <div>
-            {{ $logs->links() }}
+        <div class="saas-pagination">
+            {{ $logs->links('pagination::bootstrap-5') }}
         </div>
     </div>
 </div>
