@@ -18,11 +18,13 @@ class OrganizerController extends Controller
     public function dashboard()
     {
         $id = auth('api')->id();
-        $feedback = fn () => Feedback::where('organizer_id', $id);
+        $user = auth('api')->user();
 
-        $todayBase = Visit::where(function ($q) use ($id) {
-            $q->where('organizer_id', $id)->orWhereNull('organizer_id');
-        })->whereDate('visit_date', today());
+        if (! in_array($user?->role, ['superadmin', 'admin', 'coordinator'])) {
+            abort(403, 'Forbidden: You do not have the required access role.');
+        }
+
+        $todayBase = Visit::whereDate('visit_date', today());
 
         $todayCounts = [
             'all' => (clone $todayBase)->count(),
@@ -54,17 +56,16 @@ class OrganizerController extends Controller
         return [
             'today_counts' => $todayCounts,
             'today_visitors' => $todayVisitors,
-            'total_visitors' => Visit::where('organizer_id', $id)->count(),
-            'average_rating' => round((float) $feedback()->avg('overall_rating'), 2),
-            'low_ratings' => $feedback()->where('overall_rating', '<=', 2)->count(),
-            'rating_distribution' => $feedback()->whereNotNull('overall_rating')
+            'total_visitors' => Visit::count(),
+            'average_rating' => round((float) (Feedback::avg('overall_rating') ?: 5.0), 2),
+            'low_ratings' => Feedback::where('overall_rating', '<=', 2)->count(),
+            'rating_distribution' => Feedback::whereNotNull('overall_rating')
                 ->selectRaw('overall_rating, COUNT(*) as c')
                 ->groupBy('overall_rating')->orderBy('overall_rating')->pluck('c', 'overall_rating'),
-            'visits_per_month' => Visit::where('organizer_id', $id)
-                ->where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
+            'visits_per_month' => Visit::where('visit_date', '>=', now()->subMonths(5)->startOfMonth())
                 ->selectRaw("DATE_FORMAT(visit_date, '%Y-%m') as ym, COUNT(*) as c")
                 ->groupBy('ym')->orderBy('ym')->pluck('c', 'ym'),
-            'recent_feedback' => $feedback()->with('visit.visitor')
+            'recent_feedback' => Feedback::with('visit.visitor')
                 ->latest('submitted_at')->limit(5)
                 ->get(['id', 'visit_id', 'overall_rating', 'comments', 'submitted_at']),
         ];
@@ -78,19 +79,22 @@ class OrganizerController extends Controller
             'to' => 'nullable|date',
             'tab' => 'nullable|string|in:all,pending,completed',
             'today' => 'nullable|boolean',
+            'organizer_id' => 'nullable|integer|exists:users,id',
             'q' => ['nullable', 'string', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
         ]);
 
+        $user = auth('api')->user();
+        if (! in_array($user?->role, ['superadmin', 'admin', 'coordinator'])) {
+            abort(403, 'Forbidden: You do not have the required access role.');
+        }
+
         $tab = $request->input('tab', 'all');
         $isToday = $request->boolean('today');
-        $id = auth('api')->id();
 
-        return Visit::where(function ($q) use ($id) {
-                $q->where('organizer_id', $id)->orWhereNull('organizer_id');
-            })
-            ->with([
+        return Visit::with([
                 'feedback:id,visit_id,overall_rating,submitted_at',
             ])
+            ->when($request->filled('organizer_id'), fn ($q) => $q->where('organizer_id', $request->input('organizer_id')))
             ->when($isToday, fn ($q) => $q->whereDate('visit_date', today()))
             ->when(! $isToday && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
             ->when(! $isToday && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
@@ -107,6 +111,11 @@ class OrganizerController extends Controller
     /** Poll & sync visitors from external 3rd-party API */
     public function syncVisitors(Request $request, \App\Services\ExternalVisitorSyncService $syncService)
     {
+        $user = auth('api')->user();
+        if (! in_array($user?->role, ['superadmin', 'admin', 'coordinator'])) {
+            abort(403, 'Forbidden: You do not have the required access role.');
+        }
+
         $result = $syncService->syncVisitors(
             $request->input('date'),
             auth('api')->id()
@@ -118,12 +127,16 @@ class OrganizerController extends Controller
     /** One feedback with every question + answer. */
     public function feedbackDetail(int $id)
     {
-        return Feedback::where('organizer_id', auth('api')->id())
-            ->with([
-                'visit:id,visitor_id,visitor_code,visit_date,purpose',
-                'visit.visitor',
-                'answers.question:id,question,type',
-            ])->findOrFail($id);
+        $user = auth('api')->user();
+        if (! in_array($user?->role, ['superadmin', 'admin', 'coordinator'])) {
+            abort(403, 'Forbidden: You do not have the required access role.');
+        }
+
+        return Feedback::with([
+            'visit:id,visitor_id,visitor_code,visit_date,purpose',
+            'visit.visitor',
+            'answers.question:id,question,type',
+        ])->findOrFail($id);
     }
 
     /** Submit feedback on behalf of a visitor. */
@@ -208,8 +221,12 @@ class OrganizerController extends Controller
             abort(401, 'Unauthenticated.');
         }
 
+        if (! in_array($organizer->role, ['superadmin', 'admin', 'coordinator'])) {
+            abort(403, 'Forbidden: You do not have the required access role.');
+        }
+
         if (!$organizer->is_active) {
-            abort(403, 'Your staff account is inactive.');
+            abort(403, 'Your account is inactive.');
         }
 
         // Calculate overall_rating if omitted or null

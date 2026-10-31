@@ -47,13 +47,6 @@ class EnsureRole
             $hasAccess = true;
         }
 
-        // 3. Coordinator / Organizer alias compatibility
-        if (! $hasAccess) {
-            if (in_array('coordinator', $allowedRoles, true) && in_array($user->role, ['coordinator', 'organizer'], true)) {
-                $hasAccess = true;
-            }
-        }
-
         if (! $hasAccess) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json(['message' => 'Forbidden: You do not have the required access role.'], 403);
