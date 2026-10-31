@@ -19,6 +19,7 @@ class VisitorController extends Controller
     public function organizers()
     {
         return User::where('is_active', true)
+            ->whereIn('role', ['superadmin', 'admin', 'coordinator'])
             ->orderBy('name')->get(['id', 'name', 'department', 'role']);
     }
 
