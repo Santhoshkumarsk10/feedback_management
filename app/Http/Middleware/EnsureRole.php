@@ -52,12 +52,6 @@ class EnsureRole
             if (in_array('coordinator', $allowedRoles, true) && in_array($user->role, ['coordinator', 'organizer'], true)) {
                 $hasAccess = true;
             }
-            if (in_array('organizer', $allowedRoles, true) && in_array($user->role, ['coordinator', 'organizer'], true)) {
-                $hasAccess = true;
-            }
-            if (in_array('staff', $allowedRoles, true) && in_array($user->role, ['staff', 'organizer'], true)) {
-                $hasAccess = true;
-            }
         }
 
         if (! $hasAccess) {

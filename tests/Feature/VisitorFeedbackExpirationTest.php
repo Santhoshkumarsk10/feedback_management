@@ -28,7 +28,7 @@ class VisitorFeedbackExpirationTest extends TestCase
         ]);
 
         $this->staff = User::factory()->create([
-            'role' => 'staff',
+            'role' => 'coordinator',
             'is_active' => true,
         ]);
 
