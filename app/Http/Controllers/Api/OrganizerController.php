@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Feedback;
+use App\Models\Plant;
 use App\Models\Question;
+use App\Models\User;
 use App\Models\Visit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -127,7 +129,7 @@ class OrganizerController extends Controller
     /** Submit feedback on behalf of a visitor. */
     public function submitFeedbackOnBehalf(Request $request, Visit $visit)
     {
-        if ($visit->feedback) {
+        if ($visit->feedback || $visit->feedback()->exists()) {
             abort(422, 'Feedback already submitted for this visit.');
         }
 
@@ -135,7 +137,13 @@ class OrganizerController extends Controller
             abort(422, 'Feedback submission has expired for this visit. Feedback must be submitted on the day of the visit.');
         }
 
-        $rawPlant = $request->input('plant_id') ?: $request->input('plant') ?: $request->input('facility') ?: $visit->plant_id;
+        $rawPlant = $request->input('plant_id')
+            ?: $request->input('plant')
+            ?: $request->input('facility')
+            ?: $visit->plant_id
+            ?: Plant::where('is_active', true)->value('id')
+            ?: Plant::value('id');
+
         if (!empty($rawPlant)) {
             if (is_numeric($rawPlant) && Plant::where('id', (int) $rawPlant)->exists()) {
                 $request->merge(['plant_id' => (int) $rawPlant]);
@@ -143,6 +151,7 @@ class OrganizerController extends Controller
                 $plantStr = trim((string) $rawPlant);
                 $plant = Plant::where('code', $plantStr)->first()
                     ?? Plant::where('name', $plantStr)->first()
+                    ?? (preg_match('/PLANT-\d+/i', $plantStr, $m) ? Plant::where('code', strtoupper($m[0]))->first() : null)
                     ?? Plant::where('name', 'like', "%{$plantStr}%")->first();
                 if ($plant) {
                     $request->merge(['plant_id' => $plant->id]);
@@ -152,10 +161,40 @@ class OrganizerController extends Controller
             $request->merge(['plant_id' => $visit->plant_id]);
         }
 
+        // Normalize answers if passed as associative map [question_id => answer] or [question_id => [answer, reason]]
+        $rawAnswers = $request->input('answers');
+        if (is_array($rawAnswers) && !empty($rawAnswers)) {
+            $firstVal = reset($rawAnswers);
+            if (!is_array($firstVal) || !isset($firstVal['question_id'])) {
+                $normalizedAnswers = [];
+                foreach ($rawAnswers as $qId => $val) {
+                    if (is_array($val)) {
+                        $normalizedAnswers[] = [
+                            'question_id' => $val['question_id'] ?? $qId,
+                            'answer' => $val['answer'] ?? null,
+                            'reason' => $val['reason'] ?? null,
+                        ];
+                    } else {
+                        $normalizedAnswers[] = [
+                            'question_id' => $qId,
+                            'answer' => $val,
+                            'reason' => null,
+                        ];
+                    }
+                }
+                $request->merge(['answers' => $normalizedAnswers]);
+            }
+        }
+
+        // Normalize organizer_id if empty string
+        if ($request->has('organizer_id') && empty($request->input('organizer_id'))) {
+            $request->merge(['organizer_id' => null]);
+        }
+
         $data = $request->validate([
             'plant_id' => 'required|integer|exists:plants,id',
             'organizer_id' => 'nullable|integer|exists:users,id',
-            'overall_rating' => 'required|integer|between:1,5',
+            'overall_rating' => 'nullable|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',
             'answers' => 'required|array|min:1',
             'answers.*.question_id' => 'required|exists:questions,id',
@@ -163,20 +202,33 @@ class OrganizerController extends Controller
             'answers.*.reason' => 'nullable',
         ]);
 
-        $organizer = auth('api')->user();
+        $organizer = auth('api')->user() ?: $request->user();
+
+        if (!$organizer) {
+            abort(401, 'Unauthenticated.');
+        }
 
         if (!$organizer->is_active) {
             abort(403, 'Your staff account is inactive.');
         }
 
-        $feedback = DB::transaction(function () use ($data, $visit, $organizer) {
+        // Calculate overall_rating if omitted or null
+        $overallRating = $data['overall_rating'] ?? null;
+        if (empty($overallRating)) {
+            $ratings = collect($data['answers'])
+                ->filter(fn ($a) => is_numeric($a['answer'] ?? null) && (int) $a['answer'] >= 1 && (int) $a['answer'] <= 5)
+                ->pluck('answer');
+            $overallRating = $ratings->isNotEmpty() ? (int) round($ratings->avg()) : 5;
+        }
+
+        $feedback = DB::transaction(function () use ($data, $visit, $organizer, $overallRating) {
             $organizerId = $data['organizer_id'] ?? $visit->organizer_id ?? $organizer->id;
 
             $feedback = Feedback::create([
                 'visit_id' => $visit->id,
                 'plant_id' => $data['plant_id'],
                 'organizer_id' => $organizerId,
-                'overall_rating' => $data['overall_rating'],
+                'overall_rating' => $overallRating,
                 'comments' => $data['comments'] ?? null,
                 'submitted_mode' => 'staff_assisted',
                 'submitted_by_staff_id' => $organizer->id,
@@ -200,10 +252,14 @@ class OrganizerController extends Controller
                 ]);
             }
 
+            $visitorName = $visit->visitor_name ?: ($visit->visitor?->name ?? 'Visitor');
+            $company = $visit->visitor_company ?: ($visit->visitor?->company ?? '');
+            $companyStr = $company ? " ({$company})" : '';
+
             AuditLog::record(
                 'create',
                 'feedbacks',
-                "Organizer {$organizer->name} submitted evaluation on behalf of {$visit->visitor_name} ({$visit->visitor_company}) via API",
+                "Organizer {$organizer->name} submitted evaluation on behalf of {$visitorName}{$companyStr} via API",
                 ['visit_id' => $visit->id, 'rating' => $feedback->overall_rating],
                 $organizer
             );
@@ -211,9 +267,11 @@ class OrganizerController extends Controller
             return $feedback;
         });
 
+        $visitorName = $visit->visitor_name ?: ($visit->visitor?->name ?? 'visitor');
+
         return response()->json([
             'success' => true,
-            'message' => "Feedback recorded successfully on behalf of {$visit->visitor_name}!",
+            'message' => "Feedback recorded successfully on behalf of {$visitorName}!",
             'feedback_id' => $feedback->id,
         ], 201);
     }
