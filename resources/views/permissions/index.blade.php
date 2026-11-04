@@ -31,64 +31,64 @@
 <div class="row g-3">
     <!-- 1. Total Permissions -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/total-permissions.svg" width="46" height="46" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalPerms) }}</div>
-                        <div class="saas-stat-label">Total permissions</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-key-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Total Permissions</div>
+                <div class="saas-metric-value">{{ number_format($totalPerms) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <span>Policies</span>
                 </div>
-                <span class="saas-stat-badge slate">Policies</span>
             </div>
         </div>
     </div>
 
     <!-- 2. Security Modules -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/security-modules.svg" width="46" height="46" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalMods) }}</div>
-                        <div class="saas-stat-label">Security modules</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Security Modules</div>
+                <div class="saas-metric-value">{{ number_format($totalMods) }}</div>
+                <div class="saas-trend-badge green">
+                    <span>Core domain</span>
                 </div>
-                <span class="saas-stat-badge emerald">Core domain</span>
             </div>
         </div>
     </div>
 
     <!-- 3. Active Scope -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/filtered-scope.svg" width="46" height="46" alt="">
-                    <div>
-                        <div class="saas-stat-value fs-5 text-truncate" style="max-width: 140px;">{{ $currentMod ? ucfirst($currentMod) : 'All' }}</div>
-                        <div class="saas-stat-label">Filtered scope</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-funnel-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Filtered Scope</div>
+                <div class="saas-metric-value fs-5 text-truncate" style="max-width: 140px;">{{ $currentMod ? ucfirst($currentMod) : 'All' }}</div>
+                <div class="saas-trend-badge amber">
+                    <span>Module filter</span>
                 </div>
-                <span class="saas-stat-badge amber">Module filter</span>
             </div>
         </div>
     </div>
 
     <!-- 4. Auth Protocol -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/rbac.svg" width="46" height="46" alt="">
-                    <div>
-                        <div class="saas-stat-value fs-5">RBAC</div>
-                        <div class="saas-stat-label">Gate policy</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Gate Policy</div>
+                <div class="saas-metric-value fs-5">RBAC</div>
+                <div class="saas-trend-badge indigo">
+                    <span>Protected</span>
                 </div>
-                <span class="saas-stat-badge indigo">Protected</span>
             </div>
         </div>
     </div>

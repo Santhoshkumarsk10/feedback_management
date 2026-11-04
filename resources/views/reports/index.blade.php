@@ -63,56 +63,62 @@
 <!-- Aggregate Metric Summary Cards -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="stat-card-widget cyan">
-            <div class="stat-widget-header">
-                <span class="stat-label-text">Tours In Period</span>
-                <div class="stat-icon-bubble cyan">
-                    <i class="bi bi-compass-fill"></i>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-compass-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Tours In Period</div>
+                <div class="saas-metric-value">{{ number_format($totalVisits) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <i class="bi bi-calendar3 me-1"></i><span>Total Tours</span>
                 </div>
             </div>
-            <div class="stat-metric-number">{{ number_format($totalVisits) }}</div>
-            <span class="stat-pill-trend neutral"><i class="bi bi-calendar3"></i> Total Tours</span>
         </div>
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card-widget emerald">
-            <div class="stat-widget-header">
-                <span class="stat-label-text">Feedback Rate</span>
-                <div class="stat-icon-bubble emerald">
-                    <i class="bi bi-pie-chart-fill"></i>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-pie-chart-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Feedback Rate</div>
+                <div class="saas-metric-value">{{ $overallRate }}%</div>
+                <div class="saas-trend-badge green">
+                    <i class="bi bi-check-circle me-1"></i><span>{{ $totalFeedbacks }} Responses</span>
                 </div>
             </div>
-            <div class="stat-metric-number">{{ $overallRate }}%</div>
-            <span class="stat-pill-trend up"><i class="bi bi-check-circle"></i> {{ $totalFeedbacks }} Responses</span>
         </div>
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card-widget amber">
-            <div class="stat-widget-header">
-                <span class="stat-label-text">Period Mean Score</span>
-                <div class="stat-icon-bubble amber">
-                    <i class="bi bi-star-fill"></i>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Period Mean Score</div>
+                <div class="saas-metric-value">{{ $meanRating == round($meanRating) ? (int)$meanRating : number_format($meanRating, 1) }} <span class="fs-6 text-muted fw-normal">/ 5</span></div>
+                <div class="saas-trend-badge amber">
+                    <i class="bi bi-trophy me-1"></i><span>Overall Quality</span>
                 </div>
             </div>
-            <div class="stat-metric-number">{{ number_format($meanRating, 1) }}<span class="fs-5 text-muted fw-normal">/5</span></div>
-            <span class="stat-pill-trend {{ $meanRating >= 4 ? 'up' : 'neutral' }}">
-                <i class="bi bi-trophy"></i> Overall Quality
-            </span>
         </div>
     </div>
 
     <div class="col-6 col-md-3">
-        <div class="stat-card-widget indigo">
-            <div class="stat-widget-header">
-                <span class="stat-label-text">Active Staff</span>
-                <div class="stat-icon-bubble indigo">
-                    <i class="bi bi-people-fill"></i>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Active Staff</div>
+                <div class="saas-metric-value">{{ $rows->filter(fn($r) => $r->visits_count > 0)->count() }}</div>
+                <div class="saas-trend-badge indigo">
+                    <i class="bi bi-person-check me-1"></i><span>On Duty</span>
                 </div>
             </div>
-            <div class="stat-metric-number">{{ $rows->filter(fn($r) => $r->visits_count > 0)->count() }}</div>
-            <span class="stat-pill-trend neutral"><i class="bi bi-person-check"></i> On Duty</span>
         </div>
     </div>
 </div>

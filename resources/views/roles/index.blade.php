@@ -33,64 +33,64 @@
 <div class="row g-3">
     <!-- 1. Total Roles -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/total-roles.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalRoles) }}</div>
-                        <div class="saas-stat-label">Total roles</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-shield-shaded"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Total Roles</div>
+                <div class="saas-metric-value">{{ number_format($totalRoles) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <span>Personas</span>
                 </div>
-                <span class="saas-stat-badge slate">Personas</span>
             </div>
         </div>
     </div>
 
     <!-- 2. Active Roles -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/system-roles.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($activeRoles) }}</div>
-                        <div class="saas-stat-label">Active Roles</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-shield-fill-check"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Active Roles</div>
+                <div class="saas-metric-value">{{ number_format($activeRoles) }}</div>
+                <div class="saas-trend-badge green">
+                    <span>Operational</span>
                 </div>
-                <span class="saas-stat-badge emerald">Operational</span>
             </div>
         </div>
     </div>
 
     <!-- 3. Inactive Roles -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/custom-roles.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($inactiveRoles) }}</div>
-                        <div class="saas-stat-label">Inactive Roles</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-shield-fill-x"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Inactive Roles</div>
+                <div class="saas-metric-value">{{ number_format($inactiveRoles) }}</div>
+                <div class="saas-trend-badge amber">
+                    <span>Standby</span>
                 </div>
-                <span class="saas-stat-badge amber">Standby</span>
             </div>
         </div>
     </div>
 
     <!-- 4. Permission Grants -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/permissions.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">Granted</div>
-                        <div class="saas-stat-label">Permissions</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-key-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Permissions</div>
+                <div class="saas-metric-value">Granted</div>
+                <div class="saas-trend-badge purple">
+                    <span>Matrix access</span>
                 </div>
-                <span class="saas-stat-badge amber">Matrix access</span>
             </div>
         </div>
     </div>

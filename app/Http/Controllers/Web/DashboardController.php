@@ -62,7 +62,7 @@ class DashboardController extends Controller
                     $endDate = (clone $now)->endOfDay();
                     $prevStartDate = (clone $now)->subDays(13)->startOfDay();
                     $prevEndDate = (clone $now)->subDays(7)->endOfDay();
-                    $rangeLabel = $startDate->format('d M') . ' - ' . $endDate->format('d M Y');
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
                     $growthSubtext = 'vs prev 7 days';
                     break;
 
@@ -71,7 +71,7 @@ class DashboardController extends Controller
                     $endDate = (clone $now)->endOfDay();
                     $prevStartDate = (clone $now)->subDays(59)->startOfDay();
                     $prevEndDate = (clone $now)->subDays(30)->endOfDay();
-                    $rangeLabel = $startDate->format('d M') . ' - ' . $endDate->format('d M Y');
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
                     $growthSubtext = 'vs prev 30 days';
                     break;
 
@@ -163,13 +163,15 @@ class DashboardController extends Controller
             $prevAvg = Feedback::whereBetween('submitted_at', [$prevStartDate, $prevEndDate])->avg('overall_rating');
             if ($prevAvg !== null && $totalFeedbacksCount > 0 && $prevFeedbacks > 0) {
                 $rDiff = round($overallAvg - (float) $prevAvg, 1);
-                $ratingGrowthText = ($rDiff >= 0 ? '+' : '') . $rDiff . ' pts';
+                $formattedDiff = fmod($rDiff, 1) == 0.0 ? (int) $rDiff : number_format($rDiff, 1);
+                $ratingGrowthText = ($rDiff >= 0 ? '+' : '') . $formattedDiff . ' pts';
                 $ratingGrowthDir = $rDiff > 0 ? 'up' : ($rDiff < 0 ? 'down' : 'neutral');
             } elseif ($totalFeedbacksCount > 0) {
-                $ratingGrowthText = '+' . number_format($overallAvg, 1) . ' pts';
+                $formattedAvg = fmod($overallAvg, 1) == 0.0 ? (int) $overallAvg : number_format($overallAvg, 1);
+                $ratingGrowthText = '+' . $formattedAvg . ' pts';
                 $ratingGrowthDir = 'up';
             } else {
-                $ratingGrowthText = '0.0 pts';
+                $ratingGrowthText = '0 pts';
                 $ratingGrowthDir = 'neutral';
             }
 
@@ -219,7 +221,7 @@ class DashboardController extends Controller
                 'subtext' => ($totalFeedbacksCount > 0 || $prevFeedbacks > 0) ? $growthSubtext : 'No data in period',
             ],
             'average_rating' => [
-                'value' => ($totalFeedbacksCount > 0 ? number_format($overallAvg, 1) : '0.0') . ' / 5',
+                'value' => ($totalFeedbacksCount > 0 ? (fmod($overallAvg, 1) == 0.0 ? (int) $overallAvg : number_format($overallAvg, 1)) : '0') . ' / 5',
                 'growth' => $ratingGrowthText,
                 'dir' => $ratingGrowthDir,
                 'subtext' => $totalFeedbacksCount > 0 ? $growthSubtext : 'No ratings in period',
@@ -274,30 +276,7 @@ class DashboardController extends Controller
         $trendsData = $allTrends['30'];
         $hasTrendsData = $trendsData['has_data'];
 
-        // Rating Distribution Donut
-        $dist = (clone $feedbacksQuery)->whereNotNull('overall_rating')
-            ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
-
-        $c5 = (int) ($dist[5] ?? 0);
-        $c4 = (int) ($dist[4] ?? 0);
-        $c3 = (int) ($dist[3] ?? 0);
-        $c2 = (int) ($dist[2] ?? 0);
-        $c1 = (int) ($dist[1] ?? 0);
-        $sumRatings = $c5 + $c4 + $c3 + $c2 + $c1;
-        $denomRatings = max(1, $sumRatings);
-
-        $ratingDist = [
-            'total' => $sumRatings,
-            'items' => [
-                ['label' => '5 Star', 'count' => $c5, 'percent' => $sumRatings > 0 ? round(($c5 / $denomRatings) * 100) : 0, 'color' => '#2563eb'],
-                ['label' => '4 Star', 'count' => $c4, 'percent' => $sumRatings > 0 ? round(($c4 / $denomRatings) * 100) : 0, 'color' => '#38bdf8'],
-                ['label' => '3 Star', 'count' => $c3, 'percent' => $sumRatings > 0 ? round(($c3 / $denomRatings) * 100) : 0, 'color' => '#f59e0b'],
-                ['label' => '2 Star', 'count' => $c2, 'percent' => $sumRatings > 0 ? round(($c2 / $denomRatings) * 100) : 0, 'color' => '#fb923c'],
-                ['label' => '1 Star', 'count' => $c1, 'percent' => $sumRatings > 0 ? round(($c1 / $denomRatings) * 100) : 0, 'color' => '#ef4444'],
-            ],
-        ];
-
-        // Dynamic Feedback by Category from questions in database
+        // Static configurations for widgets
         $sec4Questions = Question::where('section', 'like', '%Section 4%')
             ->orderBy('id')
             ->get();
@@ -312,145 +291,36 @@ class DashboardController extends Controller
             'Facilities Rating: Overall Professional Experience' => 'Overall Experience',
         ];
 
-        $hasCategoryData = false;
-        $categoryFeedback = [];
-        $catIdx = 0;
-        foreach ($sec4Questions as $question) {
-            $shortName = $cleanCatNames[$question->question] ?? str_replace('Facilities Rating: ', '', $question->question);
-            
-            $ansQuery = FeedbackAnswer::where('question_id', $question->id);
-            if (!$isAllTime && $startDate && $endDate) {
-                $ansQuery->whereHas('feedback', fn ($fq) => $fq->whereBetween('submitted_at', [$startDate, $endDate]));
-            }
-            
-            $cnt = $ansQuery->count();
-            if ($cnt > 0) {
-                $hasCategoryData = true;
-            }
-            $avg = $cnt > 0 ? (float) $ansQuery->avg('answer') : 0.0;
-            $percent = $cnt > 0 ? min(100, round(($avg / 5.0) * 100)) : 0;
-
-            $categoryFeedback[] = [
-                'name' => $shortName,
-                'count' => $cnt,
-                'percent' => $percent,
-                'avg' => $avg,
-                'color' => $catColors[$catIdx % count($catColors)],
-            ];
-            $catIdx++;
-        }
-
-        // Top Locations / Plant Facilities from visits table
-        $locQuery = Visit::leftJoin('users', 'visits.organizer_id', '=', 'users.id');
-        if (!$isAllTime && $startDate && $endDate) {
-            $locQuery->whereBetween('visits.visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
-        }
-        $totalLocVisits = (clone $locQuery)->count() ?: 1;
-
-        $locRows = $locQuery->selectRaw('COALESCE(NULLIF(visits.department,""), NULLIF(users.department,""), "Main Technical Centre") as loc_name, count(*) as count')
-            ->groupBy('loc_name')
-            ->orderByDesc('count')
-            ->limit(6)
-            ->get();
-
-        $locColors = ['#2563eb', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#a855f7'];
-        $topLocations = [];
-        $rank = 1;
-        foreach ($locRows as $loc) {
-            $pct = round(($loc->count / $totalLocVisits) * 100);
-            $topLocations[] = [
-                'rank' => $rank,
-                'name' => $loc->loc_name,
-                'percent' => $pct,
-                'count' => (int) $loc->count,
-                'color' => $locColors[($rank - 1) % count($locColors)],
-            ];
-            $rank++;
-        }
-        $hasTopLocations = count($topLocations) > 0 && array_sum(array_column($topLocations, 'count')) > 0;
-
-        // Recent Feedbacks Stream
-        $recentQuery = Feedback::with(['visit.visitor', 'organizer']);
-        if (!$isAllTime && $startDate && $endDate) {
-            $recentQuery->whereBetween('submitted_at', [$startDate, $endDate]);
-        }
-        $recentFeedbacksList = $recentQuery->latest('submitted_at')->limit(5)->get();
-
         $avatarBgColors = ['#eff6ff', '#ecfdf5', '#fef3c7', '#fff1f2', '#f3e8ff'];
         $avatarTextColors = ['#1d4ed8', '#047857', '#b45309', '#be123c', '#7e22ce'];
 
-        $recentFeedbacks = $recentFeedbacksList->map(function ($f, $idx) use ($avatarBgColors, $avatarTextColors) {
-            $name = $f->visit?->visitor_name ?? ($f->visit?->visitor?->name ?? 'Guest Visitor');
-            $parts = explode(' ', trim($name));
-            $initials = count($parts) >= 2
-                ? strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1))
-                : strtoupper(substr($name, 0, 2));
-
-            return [
-                'id' => $f->id,
-                'name' => $name,
-                'initials' => $initials ?: 'VI',
-                'bg_color' => $avatarBgColors[$idx % count($avatarBgColors)],
-                'text_color' => $avatarTextColors[$idx % count($avatarTextColors)],
-                'date_time' => $f->submitted_at ? $f->submitted_at->diffForHumans() : 'Recently',
-                'full_date' => $f->submitted_at ? $f->submitted_at->format('d M Y, h:i A') : '—',
-                'rating' => (int) ($f->overall_rating ?? 5),
-                'comment' => $f->comments ? Str::limit($f->comments, 65) : 'Visitor feedback submitted.',
-                'url' => route('feedbacks.show', $f),
-            ];
-        });
-
-        // Visitor Types segmentation
-        $periodVisitorsCount = $totalVisitorsCount;
-        $trialsCount = (clone $visitsQuery)->where(function($q) {
-            $q->where('purpose', 'like', '%Trial%')->orWhere('purpose', 'like', '%Demo%');
-        })->count();
-        $discussionCount = (clone $visitsQuery)->where(function($q) {
-            $q->where('purpose', 'like', '%Discussion%')->orWhere('purpose', 'like', '%Evaluation%')->orWhere('purpose', 'like', '%Meeting%');
-        })->count();
-        $auditCount = (clone $visitsQuery)->where(function($q) {
-            $q->where('purpose', 'like', '%Inspection%')->orWhere('purpose', 'like', '%Audit%');
-        })->count();
-        $maintCount = (clone $visitsQuery)->where(function($q) {
-            $q->where('purpose', 'like', '%Maintenance%')->orWhere('purpose', 'like', '%Review%')->orWhere('purpose', 'like', '%Assessment%');
-        })->count();
-        $toursCount = (clone $visitsQuery)->where(function($q) {
-            $q->where('purpose', 'like', '%Tour%')->orWhere('purpose', 'like', '%VR%');
-        })->count();
-        $otherPurposesCount = max(0, $periodVisitorsCount - ($trialsCount + $discussionCount + $auditCount + $maintCount + $toursCount));
-        $sumVisitorSegments = max(1, $periodVisitorsCount);
-
-        $visitorTypes = [
-            'total' => $periodVisitorsCount,
-            'items' => [
-                ['label' => 'Audits & Compliance',     'percent' => $periodVisitorsCount > 0 ? round(($auditCount / $sumVisitorSegments) * 100) : 0, 'count' => $auditCount, 'color' => '#2563eb'],
-                ['label' => 'Technical Discussion',    'percent' => $periodVisitorsCount > 0 ? round(($discussionCount / $sumVisitorSegments) * 100) : 0, 'count' => $discussionCount, 'color' => '#10b981'],
-                ['label' => 'Maintenance & Reviews',   'percent' => $periodVisitorsCount > 0 ? round(($maintCount / $sumVisitorSegments) * 100) : 0, 'count' => $maintCount, 'color' => '#f59e0b'],
-                ['label' => 'Machine Trials & Demo',   'percent' => $periodVisitorsCount > 0 ? round(($trialsCount / $sumVisitorSegments) * 100) : 0, 'count' => $trialsCount, 'color' => '#f97316'],
-                ['label' => 'Plant & VR Tours',        'percent' => $periodVisitorsCount > 0 ? round(($toursCount / $sumVisitorSegments) * 100) : 0, 'count' => $toursCount, 'color' => '#8b5cf6'],
-                ['label' => 'General / Other Visits',  'percent' => $periodVisitorsCount > 0 ? round(($otherPurposesCount / $sumVisitorSegments) * 100) : 0, 'count' => $otherPurposesCount, 'color' => '#64748b'],
-            ],
+        $presetDefinitions = [
+            'month'  => [(clone $now)->startOfMonth(), (clone $now)->endOfMonth(), false, $now->startOfMonth()->format('d M Y') . ' - ' . $now->endOfMonth()->format('d M Y')],
+            'today'  => [(clone $now)->startOfDay(), (clone $now)->endOfDay(), false, $now->format('d M Y')],
+            '7days'  => [(clone $now)->subDays(6)->startOfDay(), (clone $now)->endOfDay(), false, $now->subDays(6)->format('d M Y') . ' - ' . $now->format('d M Y')],
+            '30days' => [(clone $now)->subDays(29)->startOfDay(), (clone $now)->endOfDay(), false, $now->subDays(29)->format('d M Y') . ' - ' . $now->format('d M Y')],
+            'all'    => [null, null, true, 'All Time Records'],
         ];
 
-        // Dynamic Feedback Status from database
-        $reviewedCount = $totalFeedbacksCount;
-        $pendingCount = $pendingActionsCount;
-        $escalatedQuery = Feedback::where('overall_rating', '<=', 2);
-        if (!$isAllTime && $startDate && $endDate) {
-            $escalatedQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        $allWidgetsData = [];
+        foreach ($presetDefinitions as $key => [$sDate, $eDate, $isAll, $lbl]) {
+            $data = $this->getWidgetDatasetForRange($sDate, $eDate, $isAll, $sec4Questions, $cleanCatNames, $catColors, $avatarBgColors, $avatarTextColors);
+            $data['label'] = $lbl;
+            $allWidgetsData[$key] = $data;
         }
-        $escalatedCount = $escalatedQuery->count();
-        $sumStatus = $reviewedCount + $pendingCount + $escalatedCount;
-        $denomStatus = max(1, $sumStatus);
 
-        $feedbackStatuses = [
-            'total' => $sumStatus,
-            'items' => [
-                ['label' => 'Reviewed',  'percent' => $sumStatus > 0 ? round(($reviewedCount / $denomStatus) * 100) : 0, 'count' => $reviewedCount, 'color' => '#2563eb'],
-                ['label' => 'Pending',   'percent' => $sumStatus > 0 ? round(($pendingCount / $denomStatus) * 100) : 0, 'count' => $pendingCount, 'color' => '#f59e0b'],
-                ['label' => 'Escalated', 'percent' => $sumStatus > 0 ? round(($escalatedCount / $denomStatus) * 100) : 0, 'count' => $escalatedCount, 'color' => '#ef4444'],
-            ],
-        ];
+        $activeData = ($selectedRange !== 'custom' && isset($allWidgetsData[$selectedRange]))
+            ? $allWidgetsData[$selectedRange]
+            : $this->getWidgetDatasetForRange($startDate, $endDate, $isAllTime, $sec4Questions, $cleanCatNames, $catColors, $avatarBgColors, $avatarTextColors);
+
+        $topLocations = $activeData['topLocations'];
+        $hasTopLocations = $activeData['hasTopLocations'];
+        $visitorTypes = $activeData['visitorTypes'];
+        $feedbackStatuses = $activeData['feedbackStatuses'];
+        $categoryFeedback = $activeData['categoryFeedback'];
+        $hasCategoryData = $activeData['hasCategoryData'];
+        $ratingDist = $activeData['ratingDist'];
+        $recentFeedbacks = collect($activeData['recentFeedbacks']);
 
         $todayCounts = [
             'all' => $todayTotalVisitors,
@@ -462,13 +332,91 @@ class DashboardController extends Controller
             'stats', 'saasMetrics', 'trendsData', 'allTrends', 'hasTrendsData', 'ratingDist', 'categoryFeedback', 'hasCategoryData',
             'topLocations', 'hasTopLocations', 'recentFeedbacks', 'visitorTypes', 'feedbackStatuses',
             'currentUser', 'todayCounts',
-            'selectedRange', 'rangeLabel'
+            'selectedRange', 'rangeLabel', 'allWidgetsData'
         ));
     }
 
     /**
      * Unified Global Search for Visitors, Feedbacks, and Staff Directory
      */
+    /**
+     * AJAX endpoint to fetch filtered dataset for an individual widget
+     */
+    public function widgetData(Request $request)
+    {
+        $widget = $request->input('widget');
+        $range = $request->input('range', 'month');
+        $now = now();
+        $isAllTime = false;
+        $startDate = null;
+        $endDate = null;
+        $rangeLabel = '';
+
+        if ($request->filled('from') && $request->filled('to')) {
+            try {
+                $startDate = Carbon::parse($request->input('from'))->startOfDay();
+                $endDate = Carbon::parse($request->input('to'))->endOfDay();
+                $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+            } catch (\Throwable $e) {
+                $startDate = (clone $now)->startOfMonth();
+                $endDate = (clone $now)->endOfMonth();
+                $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+            }
+        } else {
+            switch ($range) {
+                case 'today':
+                    $startDate = (clone $now)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $rangeLabel = $now->format('d M Y');
+                    break;
+                case '7days':
+                    $startDate = (clone $now)->subDays(6)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+                    break;
+                case '30days':
+                    $startDate = (clone $now)->subDays(29)->startOfDay();
+                    $endDate = (clone $now)->endOfDay();
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+                    break;
+                case 'all':
+                    $isAllTime = true;
+                    $rangeLabel = 'All Time Records';
+                    break;
+                case 'month':
+                default:
+                    $startDate = (clone $now)->startOfMonth();
+                    $endDate = (clone $now)->endOfMonth();
+                    $rangeLabel = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+                    break;
+            }
+        }
+
+        $sec4Questions = Question::where('section', 'like', '%Section 4%')->orderBy('id')->get();
+        $catColors = ['#2563eb', '#10b981', '#f59e0b', '#f97316', '#f43f5e', '#8b5cf6'];
+        $cleanCatNames = [
+            'Facilities Rating: Facility & Infrastructure' => 'Facility & Infrastructure',
+            'Facilities Rating: Machine Demonstration Area' => 'Machine Demonstration Area',
+            'Facilities Rating: Cleanliness & Presentation' => 'Cleanliness & Presentation',
+            'Facilities Rating: Training Facilities' => 'Training Facilities',
+            'Facilities Rating: VR Zone' => 'VR Zone & Technology',
+            'Facilities Rating: Overall Professional Experience' => 'Overall Experience',
+        ];
+        $avatarBgColors = ['#eff6ff', '#ecfdf5', '#fef3c7', '#fff1f2', '#f3e8ff'];
+        $avatarTextColors = ['#1d4ed8', '#047857', '#b45309', '#be123c', '#7e22ce'];
+
+        $dataset = $this->getWidgetDatasetForRange(
+            $startDate, $endDate, $isAllTime,
+            $sec4Questions, $cleanCatNames, $catColors, $avatarBgColors, $avatarTextColors
+        );
+
+        return response()->json(array_merge([
+            'success' => true,
+            'widget' => $widget,
+            'range_label' => $rangeLabel,
+        ], $dataset));
+    }
+
     public function globalSearch(Request $request)
     {
         $term = trim($request->input('q', ''));
@@ -771,5 +719,192 @@ class DashboardController extends Controller
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Compute widget datasets (Top Departments, Visitor Types, Feedback Status, Category Ratings, Rating Distribution, Recent Feedbacks)
+     * for a given date range.
+     */
+    private function getWidgetDatasetForRange($startDate, $endDate, $isAllTime, $sec4Questions, $cleanCatNames, $catColors, $avatarBgColors, $avatarTextColors)
+    {
+        $visitsQuery = Visit::query();
+        $feedbacksQuery = Feedback::query();
+
+        if (!$isAllTime && $startDate && $endDate) {
+            $visitsQuery->whereBetween('visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
+            $feedbacksQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        }
+
+        $totalVisitorsCount = (clone $visitsQuery)->count();
+        $totalFeedbacksCount = (clone $feedbacksQuery)->count();
+        $pendingActionsCount = (clone $visitsQuery)->doesntHave('feedback')->count();
+
+        // 1. Rating Distribution Donut
+        $dist = (clone $feedbacksQuery)->whereNotNull('overall_rating')
+            ->selectRaw('overall_rating, COUNT(*) as c')->groupBy('overall_rating')->pluck('c', 'overall_rating');
+
+        $c5 = (int) ($dist[5] ?? 0);
+        $c4 = (int) ($dist[4] ?? 0);
+        $c3 = (int) ($dist[3] ?? 0);
+        $c2 = (int) ($dist[2] ?? 0);
+        $c1 = (int) ($dist[1] ?? 0);
+        $sumRatings = $c5 + $c4 + $c3 + $c2 + $c1;
+        $denomRatings = max(1, $sumRatings);
+
+        $ratingDist = [
+            'total' => $sumRatings,
+            'has_data' => $sumRatings > 0,
+            'items' => [
+                ['label' => '5 Star', 'count' => $c5, 'percent' => $sumRatings > 0 ? round(($c5 / $denomRatings) * 100) : 0, 'color' => '#2563eb'],
+                ['label' => '4 Star', 'count' => $c4, 'percent' => $sumRatings > 0 ? round(($c4 / $denomRatings) * 100) : 0, 'color' => '#38bdf8'],
+                ['label' => '3 Star', 'count' => $c3, 'percent' => $sumRatings > 0 ? round(($c3 / $denomRatings) * 100) : 0, 'color' => '#f59e0b'],
+                ['label' => '2 Star', 'count' => $c2, 'percent' => $sumRatings > 0 ? round(($c2 / $denomRatings) * 100) : 0, 'color' => '#fb923c'],
+                ['label' => '1 Star', 'count' => $c1, 'percent' => $sumRatings > 0 ? round(($c1 / $denomRatings) * 100) : 0, 'color' => '#ef4444'],
+            ],
+        ];
+
+        // 2. Dynamic Feedback by Category from questions in database
+        $hasCategoryData = false;
+        $categoryFeedback = [];
+        $catIdx = 0;
+        foreach ($sec4Questions as $question) {
+            $shortName = $cleanCatNames[$question->question] ?? str_replace('Facilities Rating: ', '', $question->question);
+
+            $ansQuery = FeedbackAnswer::where('question_id', $question->id);
+            if (!$isAllTime && $startDate && $endDate) {
+                $ansQuery->whereHas('feedback', fn ($fq) => $fq->whereBetween('submitted_at', [$startDate, $endDate]));
+            }
+
+            $cnt = $ansQuery->count();
+            if ($cnt > 0) {
+                $hasCategoryData = true;
+            }
+            $avg = $cnt > 0 ? (float) $ansQuery->avg('answer') : 0.0;
+            $percent = $cnt > 0 ? min(100, round(($avg / 5.0) * 100)) : 0;
+
+            $categoryFeedback[] = [
+                'name' => $shortName,
+                'count' => $cnt,
+                'percent' => $percent,
+                'avg' => round($avg, 1),
+                'color' => $catColors[$catIdx % count($catColors)],
+            ];
+            $catIdx++;
+        }
+
+        // 3. Top Locations / Plant Facilities from visits table
+        $locQuery = Visit::leftJoin('users', 'visits.organizer_id', '=', 'users.id');
+        if (!$isAllTime && $startDate && $endDate) {
+            $locQuery->whereBetween('visits.visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
+        }
+        $totalLocVisits = (clone $locQuery)->count() ?: 1;
+
+        $locRows = $locQuery->selectRaw('COALESCE(NULLIF(visits.department,""), NULLIF(users.department,""), "Main Technical Centre") as loc_name, count(*) as count')
+            ->groupBy('loc_name')
+            ->orderByDesc('count')
+            ->limit(6)
+            ->get();
+
+        $locColors = ['#2563eb', '#10b981', '#f59e0b', '#f97316', '#8b5cf6', '#a855f7'];
+        $topLocations = [];
+        $rank = 1;
+        foreach ($locRows as $loc) {
+            $pct = round(($loc->count / $totalLocVisits) * 100);
+            $topLocations[] = [
+                'rank' => $rank,
+                'name' => $loc->loc_name,
+                'percent' => $pct,
+                'count' => (int) $loc->count,
+                'color' => $locColors[($rank - 1) % count($locColors)],
+            ];
+            $rank++;
+        }
+        $hasTopLocations = count($topLocations) > 0 && array_sum(array_column($topLocations, 'count')) > 0;
+
+        // 4. Visitor Types segmentation
+        $trialsCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Trial%')->orWhere('purpose', 'like', '%Demo%');
+        })->count();
+        $discussionCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Discussion%')->orWhere('purpose', 'like', '%Evaluation%')->orWhere('purpose', 'like', '%Meeting%');
+        })->count();
+        $auditCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Inspection%')->orWhere('purpose', 'like', '%Audit%');
+        })->count();
+        $maintCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Maintenance%')->orWhere('purpose', 'like', '%Review%')->orWhere('purpose', 'like', '%Assessment%');
+        })->count();
+        $toursCount = (clone $visitsQuery)->where(function($q) {
+            $q->where('purpose', 'like', '%Tour%')->orWhere('purpose', 'like', '%VR%');
+        })->count();
+        $otherPurposesCount = max(0, $totalVisitorsCount - ($trialsCount + $discussionCount + $auditCount + $maintCount + $toursCount));
+        $sumVisitorSegments = max(1, $totalVisitorsCount);
+
+        $visitorTypes = [
+            'total' => $totalVisitorsCount,
+            'has_data' => $totalVisitorsCount > 0,
+            'items' => [
+                ['label' => 'Audits & Compliance',     'percent' => $totalVisitorsCount > 0 ? round(($auditCount / $sumVisitorSegments) * 100) : 0, 'count' => $auditCount, 'color' => '#2563eb'],
+                ['label' => 'Technical Discussion',    'percent' => $totalVisitorsCount > 0 ? round(($discussionCount / $sumVisitorSegments) * 100) : 0, 'count' => $discussionCount, 'color' => '#10b981'],
+                ['label' => 'Maintenance & Reviews',   'percent' => $totalVisitorsCount > 0 ? round(($maintCount / $sumVisitorSegments) * 100) : 0, 'count' => $maintCount, 'color' => '#f59e0b'],
+                ['label' => 'Machine Trials & Demo',   'percent' => $totalVisitorsCount > 0 ? round(($trialsCount / $sumVisitorSegments) * 100) : 0, 'count' => $trialsCount, 'color' => '#f97316'],
+                ['label' => 'Plant & VR Tours',        'percent' => $totalVisitorsCount > 0 ? round(($toursCount / $sumVisitorSegments) * 100) : 0, 'count' => $toursCount, 'color' => '#8b5cf6'],
+                ['label' => 'General / Other Visits',  'percent' => $totalVisitorsCount > 0 ? round(($otherPurposesCount / $sumVisitorSegments) * 100) : 0, 'count' => $otherPurposesCount, 'color' => '#64748b'],
+            ],
+        ];
+
+        // 5. Dynamic Feedback Status from database
+        $reviewedCount = $totalFeedbacksCount;
+        $pendingCount = $pendingActionsCount;
+        $escalatedQuery = Feedback::where('overall_rating', '<=', 2);
+        if (!$isAllTime && $startDate && $endDate) {
+            $escalatedQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        }
+        $escalatedCount = $escalatedQuery->count();
+        $sumStatus = $reviewedCount + $pendingCount + $escalatedCount;
+        $denomStatus = max(1, $sumStatus);
+
+        $feedbackStatuses = [
+            'total' => $sumStatus,
+            'has_data' => $sumStatus > 0,
+            'items' => [
+                ['label' => 'Reviewed',  'percent' => $sumStatus > 0 ? round(($reviewedCount / $denomStatus) * 100) : 0, 'count' => $reviewedCount, 'color' => '#2563eb'],
+                ['label' => 'Pending',   'percent' => $sumStatus > 0 ? round(($pendingCount / $denomStatus) * 100) : 0, 'count' => $pendingCount, 'color' => '#f59e0b'],
+                ['label' => 'Escalated', 'percent' => $sumStatus > 0 ? round(($escalatedCount / $denomStatus) * 100) : 0, 'count' => $escalatedCount, 'color' => '#ef4444'],
+            ],
+        ];
+
+        // 6. Recent Feedbacks Stream
+        $recentQuery = Feedback::with(['visit.visitor', 'organizer']);
+        if (!$isAllTime && $startDate && $endDate) {
+            $recentQuery->whereBetween('submitted_at', [$startDate, $endDate]);
+        }
+        $recentFeedbacksList = $recentQuery->latest('submitted_at')->limit(5)->get();
+
+        $recentFeedbacks = $recentFeedbacksList->map(function ($f, $idx) use ($avatarBgColors, $avatarTextColors) {
+            $name = $f->visit?->visitor_name ?? ($f->visit?->visitor?->name ?? 'Guest Visitor');
+            $parts = explode(' ', trim($name));
+            $initials = count($parts) >= 2
+                ? strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1))
+                : strtoupper(substr($name, 0, 2));
+
+            return [
+                'id' => $f->id,
+                'name' => $name,
+                'initials' => $initials ?: 'VI',
+                'bg_color' => $avatarBgColors[$idx % count($avatarBgColors)],
+                'text_color' => $avatarTextColors[$idx % count($avatarTextColors)],
+                'date_time' => $f->submitted_at ? $f->submitted_at->diffForHumans() : 'Recently',
+                'full_date' => $f->submitted_at ? $f->submitted_at->format('d M Y, h:i A') : '—',
+                'rating' => (int) ($f->overall_rating ?? 5),
+                'comment' => $f->comments ? Str::limit($f->comments, 65) : 'Visitor feedback submitted.',
+                'url' => route('feedbacks.show', $f),
+            ];
+        })->values()->toArray();
+
+        return compact(
+            'topLocations', 'hasTopLocations', 'visitorTypes', 'feedbackStatuses',
+            'categoryFeedback', 'hasCategoryData', 'ratingDist', 'recentFeedbacks'
+        );
     }
 }

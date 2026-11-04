@@ -46,122 +46,165 @@
             // Strictly restricted: ONLY Super Admin can view Database Maintenance & System Console
             $canDatabaseCleanup = $isSuperAdmin;
             $canSystemConsole = $isSuperAdmin;
+
+            // Determine if any route in a category is currently active
+            $isOperationsActive = request()->routeIs('shift_queue*') || request()->routeIs('visits.*');
+            $isSystemMastersActive = request()->routeIs('plants.*') || request()->routeIs('roles.*') || request()->routeIs('permissions.*') || request()->routeIs('users.*') || request()->routeIs('questions.*');
+            $isBrandCMSActive = request()->routeIs('company.*') || request()->routeIs('banners.*');
+            $isInsightsActive = request()->routeIs('feedbacks.*') || request()->routeIs('reports.*') || request()->routeIs('audit-logs.*') || request()->routeIs('database_cleanup.*') || request()->routeIs('system_console.*');
         @endphp
 
         {{-- Operations: All Authenticated Roles --}}
-        <div class="menu-category">Operations & Visits</div>
-        <a class="nav-item-link {{ request()->routeIs('shift_queue*') ? 'active' : '' }}"
-            href="{{ route('shift_queue') }}">
-            <i class="bi bi-calendar2-day-fill"></i>
-            <span>Today's Visitor Queue</span>
-        </a>
-        <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}"
-            href="{{ route('visits.index') }}">
-            <i class="bi bi-person-badge-fill"></i>
-            <span>Visitors</span>
-        </a>
+        <div class="sidebar-category-group">
+            <button type="button" class="menu-category-toggle {{ $isOperationsActive ? '' : 'collapsed' }}"
+                data-bs-toggle="collapse" data-bs-target="#menuOperations"
+                aria-expanded="{{ $isOperationsActive ? 'true' : 'false' }}">
+                <span>Operations & Visits</span>
+                <i class="bi bi-chevron-down category-chevron"></i>
+            </button>
+            <div class="collapse {{ $isOperationsActive ? 'show' : '' }}" id="menuOperations">
+                <a class="nav-item-link {{ request()->routeIs('shift_queue*') ? 'active' : '' }}"
+                    href="{{ route('shift_queue') }}">
+                    <i class="bi bi-calendar2-day-fill"></i>
+                    <span>Today's Visitor Queue</span>
+                </a>
+                <a class="nav-item-link {{ request()->routeIs('visits.*') ? 'active' : '' }}"
+                    href="{{ route('visits.index') }}">
+                    <i class="bi bi-person-badge-fill"></i>
+                    <span>Visitors</span>
+                </a>
+            </div>
+        </div>
+
         {{-- Masters & Configuration --}}
         @if ($hasSystemMasters)
-            <div class="menu-category">System Masters</div>
-            @if ($canPlantMaster)
-                <a class="nav-item-link {{ request()->routeIs('plants.*') ? 'active' : '' }}"
-                    href="{{ route('plants.index') }}">
-                    <i class="bi bi-buildings-fill"></i>
-                    <span>Plant Master</span>
-                </a>
-            @endif
-            @if ($canRoleMaster)
-                <a class="nav-item-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"
-                    href="{{ route('roles.index') }}">
-                    <i class="bi bi-shield-lock-fill"></i>
-                    <span>Role Master</span>
-                </a>
-            @endif
-            @if ($canPermissionMaster)
-                <a class="nav-item-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}"
-                    href="{{ route('permissions.index') }}">
-                    <i class="bi bi-key-fill"></i>
-                    <span>Permission Master</span>
-                </a>
-            @endif
-            @if ($canUserDirectory)
-                <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
-                    href="{{ route('users.index') }}">
-                    <i class="bi bi-people-fill"></i>
-                    <span>User Directory</span>
-                </a>
-            @endif
-            @if ($canFeedbackForm)
-                <a class="nav-item-link {{ request()->routeIs('questions.*') ? 'active' : '' }}"
-                    href="{{ route('questions.index') }}">
-                    <i class="bi bi-patch-question-fill"></i>
-                    <span>Feedback Form</span>
-                </a>
-            @endif
+            <div class="sidebar-category-group">
+                <button type="button" class="menu-category-toggle {{ $isSystemMastersActive ? '' : 'collapsed' }}"
+                    data-bs-toggle="collapse" data-bs-target="#menuSystemMasters"
+                    aria-expanded="{{ $isSystemMastersActive ? 'true' : 'false' }}">
+                    <span>System Masters</span>
+                    <i class="bi bi-chevron-down category-chevron"></i>
+                </button>
+                <div class="collapse {{ $isSystemMastersActive ? 'show' : '' }}" id="menuSystemMasters">
+                    @if ($canPlantMaster)
+                        <a class="nav-item-link {{ request()->routeIs('plants.*') ? 'active' : '' }}"
+                            href="{{ route('plants.index') }}">
+                            <i class="bi bi-buildings-fill"></i>
+                            <span>Plant Master</span>
+                        </a>
+                    @endif
+                    @if ($canRoleMaster)
+                        <a class="nav-item-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"
+                            href="{{ route('roles.index') }}">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Role Master</span>
+                        </a>
+                    @endif
+                    @if ($canPermissionMaster)
+                        <a class="nav-item-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}"
+                            href="{{ route('permissions.index') }}">
+                            <i class="bi bi-key-fill"></i>
+                            <span>Permission Master</span>
+                        </a>
+                    @endif
+                    @if ($canUserDirectory)
+                        <a class="nav-item-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                            href="{{ route('users.index') }}">
+                            <i class="bi bi-people-fill"></i>
+                            <span>User Directory</span>
+                        </a>
+                    @endif
+                    @if ($canFeedbackForm)
+                        <a class="nav-item-link {{ request()->routeIs('questions.*') ? 'active' : '' }}"
+                            href="{{ route('questions.index') }}">
+                            <i class="bi bi-patch-question-fill"></i>
+                            <span>Feedback Form</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
         @endif
 
         {{-- Brand & CMS --}}
         @if ($hasBrandCMS)
-            <div class="menu-category">Brand & Content CMS</div>
-            @if ($canCompany)
-                <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}"
-                    href="{{ route('company.edit') }}">
-                    <i class="bi bi-building-gear"></i>
-                    <span>Company Profile</span>
-                </a>
-            @endif
-            @if ($canBanner)
-                <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}"
-                    href="{{ route('banners.index') }}">
-                    <i class="bi bi-images"></i>
-                    <span>Banner CMS</span>
-                </a>
-            @endif
+            <div class="sidebar-category-group">
+                <button type="button" class="menu-category-toggle {{ $isBrandCMSActive ? '' : 'collapsed' }}"
+                    data-bs-toggle="collapse" data-bs-target="#menuBrandCMS"
+                    aria-expanded="{{ $isBrandCMSActive ? 'true' : 'false' }}">
+                    <span>Brand & Content CMS</span>
+                    <i class="bi bi-chevron-down category-chevron"></i>
+                </button>
+                <div class="collapse {{ $isBrandCMSActive ? 'show' : '' }}" id="menuBrandCMS">
+                    @if ($canCompany)
+                        <a class="nav-item-link {{ request()->routeIs('company.*') ? 'active' : '' }}"
+                            href="{{ route('company.edit') }}">
+                            <i class="bi bi-building-gear"></i>
+                            <span>Company Profile</span>
+                        </a>
+                    @endif
+                    @if ($canBanner)
+                        <a class="nav-item-link {{ request()->routeIs('banners.*') ? 'active' : '' }}"
+                            href="{{ route('banners.index') }}">
+                            <i class="bi bi-images"></i>
+                            <span>Banner CMS</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
         @endif
 
         {{-- Insights & Logs --}}
-        <div class="menu-category">Insights & Logs</div>
-        @if ($canFeedbackLogs)
-            <a class="nav-item-link {{ request()->routeIs('feedbacks.*') ? 'active' : '' }}"
-                href="{{ route('feedbacks.index') }}">
-                <i class="bi bi-chat-square-heart-fill"></i>
-                <span>Feedback Logs</span>
-            </a>
-        @endif
+        <div class="sidebar-category-group">
+            <button type="button" class="menu-category-toggle {{ $isInsightsActive ? '' : 'collapsed' }}"
+                data-bs-toggle="collapse" data-bs-target="#menuInsights"
+                aria-expanded="{{ $isInsightsActive ? 'true' : 'false' }}">
+                <span>Insights & Logs</span>
+                <i class="bi bi-chevron-down category-chevron"></i>
+            </button>
+            <div class="collapse {{ $isInsightsActive ? 'show' : '' }}" id="menuInsights">
+                @if ($canFeedbackLogs)
+                    <a class="nav-item-link {{ request()->routeIs('feedbacks.*') ? 'active' : '' }}"
+                        href="{{ route('feedbacks.index') }}">
+                        <i class="bi bi-chat-square-heart-fill"></i>
+                        <span>Feedback Logs</span>
+                    </a>
+                @endif
 
-        @if ($canViewReports)
-            <a class="nav-item-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
-                href="{{ route('reports.index') }}">
-                <i class="bi bi-bar-chart-line-fill"></i>
-                <span>Reports & Exports</span>
-            </a>
-        @endif
+                @if ($canViewReports)
+                    <a class="nav-item-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
+                        href="{{ route('reports.index') }}">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <span>Reports & Exports</span>
+                    </a>
+                @endif
 
-        @if ($canAuditLogs)
-            <a class="nav-item-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}"
-                id="sidebarAuditLogsLink"
-                href="{{ route('audit-logs.index') }}"
-                onclick="window.scrollTo({top: 0, left: 0, behavior: 'instant'}); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; const mainEl = document.querySelector('.app-main'); if (mainEl) mainEl.scrollTop = 0;">
-                <i class="bi bi-clock-history"></i>
-                <span>Audit Logs</span>
-            </a>
-        @endif
+                @if ($canAuditLogs)
+                    <a class="nav-item-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}"
+                        id="sidebarAuditLogsLink"
+                        href="{{ route('audit-logs.index') }}"
+                        onclick="window.scrollTo({top: 0, left: 0, behavior: 'instant'}); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; const mainEl = document.querySelector('.app-main'); if (mainEl) mainEl.scrollTop = 0;">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Audit Logs</span>
+                    </a>
+                @endif
 
-        @if ($canDatabaseCleanup)
-            <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}"
-                href="{{ route('database_cleanup.index') }}">
-                <i class="bi bi-database-fill-gear"></i>
-                <span>Database Maintenance</span>
-            </a>
-        @endif
+                @if ($canDatabaseCleanup)
+                    <a class="nav-item-link {{ request()->routeIs('database_cleanup.*') ? 'active' : '' }}"
+                        href="{{ route('database_cleanup.index') }}">
+                        <i class="bi bi-database-fill-gear"></i>
+                        <span>Database Maintenance</span>
+                    </a>
+                @endif
 
-        @if ($canSystemConsole)
-            <a class="nav-item-link {{ request()->routeIs('system_console.*') ? 'active' : '' }}"
-                href="{{ route('system_console.index') }}">
-                <i class="bi bi-terminal-fill text-warning"></i>
-                <span>System Console & Tools</span>
-            </a>
-        @endif
+                @if ($canSystemConsole)
+                    <a class="nav-item-link {{ request()->routeIs('system_console.*') ? 'active' : '' }}"
+                        href="{{ route('system_console.index') }}">
+                        <i class="bi bi-terminal-fill text-warning"></i>
+                        <span>System Console & Tools</span>
+                    </a>
+                @endif
+            </div>
+        </div>
         
     </div>
 
