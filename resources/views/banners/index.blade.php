@@ -116,22 +116,22 @@
                     header-title="Banner Suggestions" />
 
                 <!-- Target device filter dropdown -->
-                <div style="min-width: 150px;">
-                    <x-custom-select name="target" :options="[
-                        ['value' => 'all', 'label' => 'All Targets'],
-                        ['value' => 'mobile', 'label' => 'Mobile Only'],
-                        ['value' => 'tablet', 'label' => 'Tablet Only'],
-                        ['value' => 'web', 'label' => 'Web Only'],
-                    ]"
-                    :value="request('target', 'all')"
-                    placeholder="Device Target"
-                    icon="bi-display"
-                    auto-submit
-                    />
-                </div>
+                <x-custom-select name="target" :options="[
+                    ['value' => 'all', 'label' => 'All Targets'],
+                    ['value' => 'mobile', 'label' => 'Mobile Only'],
+                    ['value' => 'tablet', 'label' => 'Tablet Only'],
+                    ['value' => 'web', 'label' => 'Web Only'],
+                ]"
+                :value="request('target', 'all')"
+                placeholder="Device Target"
+                icon="bi-display"
+                min-width="150px"
+                auto-submit
+                />
 
-                <button type="submit" class="saas-btn-filter">
-                    <i class="bi bi-funnel"></i> Filter
+                <button type="submit" class="saas-btn-filter" title="Apply Filters">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filter</span>
                 </button>
 
                 @if(request()->hasAny(['q', 'tab', 'target']))

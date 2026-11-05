@@ -15,9 +15,12 @@
 @endsection
 
 @section('summary_cards')
+    @php
+        $cardCol = auth()->user()?->isSuperAdmin() ? 'col-lg-3 col-6' : 'col-lg-4 col-md-6 col-12';
+    @endphp
     <div class="row g-3">
         <!-- 1. Total Users -->
-        <div class="col-6 col-lg-3">
+        <div class="{{ $cardCol }}">
             <div class="saas-metric-card h-100">
                 <div class="saas-icon-box blue">
                     <i class="bi bi-people-fill"></i>
@@ -32,8 +35,9 @@
             </div>
         </div>
 
+        @if(auth()->user()?->isSuperAdmin())
         <!-- 2. Super Admins -->
-        <div class="col-6 col-lg-3">
+        <div class="{{ $cardCol }}">
             <div class="saas-metric-card h-100">
                 <div class="saas-icon-box purple">
                     <i class="bi bi-shield-check"></i>
@@ -47,9 +51,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- 3. Administrators -->
-        <div class="col-6 col-lg-3">
+        <div class="{{ $cardCol }}">
             <div class="saas-metric-card h-100">
                 <div class="saas-icon-box amber">
                     <i class="bi bi-person-badge-fill"></i>
@@ -65,7 +70,7 @@
         </div>
 
         <!-- 4. Organizers & Staff -->
-        <div class="col-6 col-lg-3">
+        <div class="{{ $cardCol }}">
             <div class="saas-metric-card h-100">
                 <div class="saas-icon-box green">
                     <i class="bi bi-person-video3"></i>
@@ -316,12 +321,21 @@
                                             class="bi bi-shield-lock"></i></span>
                                     <select name="role_id" id="add_user_role"
                                         class="form-select form-control-modern border-start-0" required>
-                                        <option value="" disabled selected>Select Role...</option>
-                                        @foreach ($roleModels as $rm)
-                                            <option value="{{ $rm->id }}">{{ $rm->display_name ?: $rm->name }}
-                                                ({{ $rm->slug }})
-                                            </option>
-                                        @endforeach
+                                        @if(auth()->user()?->isSuperAdmin())
+                                            <option value="" disabled selected>Select Role...</option>
+                                            @foreach ($roleModels as $rm)
+                                                <option value="{{ $rm->id }}">{{ $rm->display_name ?: $rm->name }}
+                                                    ({{ $rm->slug }})
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            @php
+                                                $coordRole = $roleModels->firstWhere('slug', 'coordinator');
+                                            @endphp
+                                            @if($coordRole)
+                                                <option value="{{ $coordRole->id }}" selected>{{ $coordRole->display_name ?: 'Coordinator' }} (coordinator)</option>
+                                            @endif
+                                        @endif
                                     </select>
                                 </div>
                             </div>
@@ -446,6 +460,9 @@
                                     <select name="role_id" id="edit_user_role_id"
                                         class="form-select form-control-modern border-start-0" required>
                                         @foreach ($roleModels as $rm)
+                                            @if(!auth()->user()?->isSuperAdmin() && $rm->slug !== 'coordinator')
+                                                @continue
+                                            @endif
                                             <option value="{{ $rm->id }}">{{ $rm->display_name ?: $rm->name }}
                                                 ({{ $rm->slug }})
                                             </option>

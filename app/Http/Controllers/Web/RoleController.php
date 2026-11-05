@@ -26,9 +26,10 @@ class RoleController extends Controller
             $perPage = 10;
         }
 
+        // In Admin login, only Admin and Coordinator roles should be visible and manageable
         $query = Role::withCount(['assignedUsers', 'permissions'])
             ->with('permissions')
-            ->when(!$isSuperAdmin, fn ($q) => $q->where('name', '!=', 'superadmin'))
+            ->when(!$isSuperAdmin, fn ($q) => $q->whereIn('name', ['admin', 'coordinator']))
             ->when($tab === 'active', fn ($q) => $q->where('is_active', true))
             ->when($tab === 'inactive', fn ($q) => $q->where('is_active', false))
             ->when($tab === 'system', fn ($q) => $q->where('is_system', true))
@@ -41,15 +42,18 @@ class RoleController extends Controller
                   ->orWhere('description', 'like', "%$v%");
             }));
 
-        $baseCountQuery = Role::query()->when(!$isSuperAdmin, fn ($q) => $q->where('name', '!=', 'superadmin'));
+        $baseCountQuery = Role::query()->when(!$isSuperAdmin, fn ($q) => $q->whereIn('name', ['admin', 'coordinator']));
         $totalCount = (clone $baseCountQuery)->count();
         $activeCount = (clone $baseCountQuery)->where('is_active', true)->count();
         $inactiveCount = (clone $baseCountQuery)->where('is_active', false)->count();
+        $totalPermissions = Permission::query()
+            ->when(!$isSuperAdmin, fn ($q) => $q->where('module', '!=', 'Table Data Cleanup')->whereHas('roles', fn ($rq) => $rq->whereIn('name', ['admin', 'coordinator'])))
+            ->count();
 
         $roles = $query->orderByDesc('is_system')->orderBy('name')->paginateCapped($perPage, 1000);
 
         $roleSuggestions = Role::select('id', 'name', 'display_name', 'slug', 'description', 'is_system')
-            ->when(!$isSuperAdmin, fn ($q) => $q->where('name', '!=', 'superadmin'))
+            ->when(!$isSuperAdmin, fn ($q) => $q->whereIn('name', ['admin', 'coordinator']))
             ->orderByDesc('is_system')
             ->orderBy('name')
             ->get()
@@ -69,6 +73,7 @@ class RoleController extends Controller
                 'total' => $totalCount,
                 'active' => $activeCount,
                 'inactive' => $inactiveCount,
+                'permissions' => $totalPermissions,
             ],
             'currentTab' => $tab,
             'roleSuggestions' => $roleSuggestions,
@@ -77,9 +82,8 @@ class RoleController extends Controller
 
     public function create()
     {
-        abort_unless(auth()->user()?->can('rolemaster.create'), 403, 'Unauthorized to create new roles.');
-
         $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        abort_unless($isSuperAdmin, 403, 'Only Superadmin can create new roles.');
 
         $groupedPermissions = Permission::orderBy('module')->orderBy('id')->get()
             ->reject(function ($p) use ($isSuperAdmin) {
@@ -104,9 +108,8 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        abort_unless(auth()->user()?->can('rolemaster.create'), 403, 'Unauthorized to create new roles.');
-
         $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        abort_unless($isSuperAdmin, 403, 'Only Superadmin can create new roles.');
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -147,8 +150,10 @@ class RoleController extends Controller
             $perms = $request->input('permissions', []);
             $perms = array_filter($perms, fn($p) => !str_starts_with($p, 'tabledatacleanup.'));
             if (!$isSuperAdmin) {
-                $perms = array_filter($perms, function ($p) {
-                    return !str_starts_with($p, 'rolemaster.') && !str_starts_with($p, 'permissionmaster.');
+                $adminRole = Role::where('name', 'admin')->first();
+                $adminPermNames = $adminRole ? $adminRole->permissions->pluck('name')->all() : [];
+                $perms = array_filter($perms, function ($p) use ($adminPermNames) {
+                    return in_array($p, $adminPermNames, true) && !str_starts_with($p, 'rolemaster.') && !str_starts_with($p, 'permissionmaster.');
                 });
             }
             $role->syncPermissions($perms);
@@ -171,17 +176,27 @@ class RoleController extends Controller
         }
 
         if ($role->name === 'admin' && !$isSuperAdmin) {
-            abort(403, 'Administrators are not permitted to modify their own role permissions.');
+            abort(403, 'Administrators are not permitted to modify their own role permissions. Only Coordinator permissions can be managed.');
+        }
+
+        if (!$isSuperAdmin && $role->name !== 'coordinator') {
+            abort(403, 'Administrators can only manage and update Coordinator permissions.');
         }
 
         abort_unless(auth()->user()?->can('rolemaster.edit'), 403, 'Unauthorized to edit access roles.');
 
+        $adminRole = Role::where('name', 'admin')->first();
+        $adminPermNames = $adminRole ? $adminRole->permissions->pluck('name')->all() : [];
+
         $groupedPermissions = Permission::orderBy('module')->orderBy('id')->get()
-            ->reject(function ($p) use ($role, $isSuperAdmin) {
+            ->reject(function ($p) use ($role, $isSuperAdmin, $adminPermNames) {
                 if ($role->name !== 'superadmin' && ($p->module === 'Table Data Cleanup' || str_starts_with($p->name, 'tabledatacleanup.'))) {
                     return true;
                 }
                 if (!$isSuperAdmin) {
+                    if (!in_array($p->name, $adminPermNames, true)) {
+                        return true;
+                    }
                     if ($p->module === 'Role Master' || $p->module === 'Permission Master' || str_starts_with($p->name, 'rolemaster.') || str_starts_with($p->name, 'permissionmaster.')) {
                         return true;
                     }
@@ -207,7 +222,11 @@ class RoleController extends Controller
         }
 
         if ($role->name === 'admin' && !$isSuperAdmin) {
-            abort(403, 'Administrators are not permitted to modify their own role permissions.');
+            abort(403, 'Administrators are not permitted to modify their own role permissions. Only Coordinator permissions can be managed.');
+        }
+
+        if (!$isSuperAdmin && $role->name !== 'coordinator') {
+            abort(403, 'Administrators can only manage and update Coordinator permissions.');
         }
 
         abort_unless(auth()->user()?->can('rolemaster.edit'), 403, 'Unauthorized to edit access roles.');
@@ -250,8 +269,10 @@ class RoleController extends Controller
             $perms = $request->input('permissions', []);
             $perms = array_filter($perms, fn($p) => !str_starts_with($p, 'tabledatacleanup.'));
             if (!$isSuperAdmin) {
-                $perms = array_filter($perms, function ($p) {
-                    return !str_starts_with($p, 'rolemaster.') && !str_starts_with($p, 'permissionmaster.');
+                $adminRole = Role::where('name', 'admin')->first();
+                $adminPermNames = $adminRole ? $adminRole->permissions->pluck('name')->all() : [];
+                $perms = array_filter($perms, function ($p) use ($adminPermNames) {
+                    return in_array($p, $adminPermNames, true) && !str_starts_with($p, 'rolemaster.') && !str_starts_with($p, 'permissionmaster.');
                 });
             }
             $role->syncPermissions($perms);
@@ -268,6 +289,7 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        abort_unless($isSuperAdmin, 403, 'Administrators cannot delete access roles.');
 
         if ($role->name === 'superadmin' && !$isSuperAdmin) {
             abort(404);

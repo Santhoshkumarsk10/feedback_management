@@ -41,6 +41,7 @@
                                    placeholder="e.g. Shibaura Machine India Private Limited" 
                                    minlength="2"
                                    maxlength="150"
+                                   readonly
                                    required>
                         </div>
                         @error('name')
@@ -60,7 +61,8 @@
                                    name="website" 
                                    value="{{ old('website', $company->website) }}" 
                                    placeholder="https://www.shibaura-machine.co.in"
-                                   maxlength="200">
+                                   maxlength="200"
+                                   readonly>
                         </div>
                         @error('website')
                             <div class="text-danger small mt-1">{{ $message }}</div>
@@ -70,11 +72,12 @@
                     <!-- Logo Upload Dropzone -->
                     <div>
                         <label class="form-label-modern" for="logo">Corporate Logo Graphic</label>
-                        <div class="modern-upload-dropzone" id="logoDropzone">
+                        <div class="modern-upload-dropzone readonly-mode" id="logoDropzone">
                             <input type="file" 
                                    id="logo" 
                                    name="logo" 
                                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                   disabled
                                    onchange="handleLogoSelect(this)">
                             <div class="upload-dropzone-content">
                                 <div class="upload-logo-current-preview">
@@ -92,7 +95,7 @@
                                         PNG, JPG, WebP, SVG (Transparent background recommended • Max 3MB)
                                     </p>
                                 </div>
-                                <button type="button" class="btn-modern-secondary btn-sm px-3" style="pointer-events: none;">
+                                <button type="button" class="btn-modern-secondary btn-sm px-3" id="btnLogoBrowse" style="pointer-events: none;">
                                     Browse
                                 </button>
                             </div>
@@ -131,7 +134,8 @@
                                        name="email" 
                                        value="{{ old('email', $company->email) }}" 
                                        placeholder="contact@company.com" pattern="^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$" title="Please provide a valid email format (e.g. user@gmail.com, john.doe@yahoo.com, user123@outlook.com, john_smith@example.co.in)."
-                                       maxlength="100">
+                                       maxlength="100"
+                                       readonly>
                             </div>
                             <div id="feedback_email" class="validation-feedback-box error {{ $errors->has('email') ? '' : 'd-none' }}">
                                 <i class="bi bi-exclamation-circle-fill"></i>
@@ -152,7 +156,8 @@
                                        maxlength="10"
                                        minlength="10"
                                        pattern="^[6-9][0-9]{9}$"
-                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9">
+                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9"
+                                       readonly>
                             </div>
                             @error('phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -173,7 +178,8 @@
                                        maxlength="10"
                                        minlength="10"
                                        pattern="^[6-9][0-9]{9}$"
-                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9">
+                                       title="10-digit mobile/phone number starting with 6, 7, 8, or 9"
+                                       readonly>
                             </div>
                             @error('alter_phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -206,7 +212,8 @@
                                   rows="3" 
                                   placeholder="Plant Plot No, Chennai-Bangalore Highway, Industrial Estate, Landmark"
                                   minlength="3"
-                                  maxlength="150">{{ old('address', $company->address) }}</textarea>
+                                  maxlength="150"
+                                  readonly>{{ old('address', $company->address) }}</textarea>
                         @error('address')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -225,7 +232,8 @@
                                        value="{{ old('city', $company->city) }}" 
                                        placeholder="Chennai"
                                        minlength="2"
-                                       maxlength="100">
+                                       maxlength="100"
+                                       readonly>
                             </div>
                             @error('city')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -243,7 +251,8 @@
                                        value="{{ old('state', $company->state) }}" 
                                        placeholder="Tamil Nadu"
                                        minlength="2"
-                                       maxlength="100">
+                                       maxlength="100"
+                                       readonly>
                             </div>
                             @error('state')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -263,7 +272,8 @@
                                        minlength="6"
                                        maxlength="6"
                                        pattern="^[1-9][0-9]{5}$"
-                                       title="6-digit postal PIN code">
+                                       title="6-digit postal PIN code"
+                                       readonly>
                             </div>
                             @error('pincode')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
@@ -293,7 +303,8 @@
                               rows="3" 
                               placeholder="Brief summary of company manufacturing capabilities, engineering heritage, and customer excellence mission..."
                               minlength="5"
-                              maxlength="1000">{{ old('description', $company->description) }}</textarea>
+                              maxlength="1000"
+                              readonly>{{ old('description', $company->description) }}</textarea>
                     @error('description')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
@@ -308,11 +319,21 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     @can('companyprofile.edit')
-                        <button type="reset" class="btn-modern-secondary px-3" onclick="resetLivePreview()">
-                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        <!-- Default: Edit button only -->
+                        <button type="button" class="btn-modern-primary px-4 shadow-sm" id="btnEditCompany" onclick="enableEditMode()">
+                            <i class="bi bi-pencil-square me-1"></i>
+                            <span>Edit</span>
                         </button>
-                        <button type="submit" class="btn-modern-primary px-4 shadow-sm" id="btnSaveCompany">
-                            <i class="bi bi-check2-circle fs-6"></i>
+
+                        <!-- Hidden by default: shown after clicking Edit -->
+                        <button type="button" class="btn-modern-secondary px-3 d-none" id="btnCancelEdit" onclick="cancelEditMode()">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                        </button>
+                        <button type="button" class="btn-modern-secondary px-3 d-none" id="btnResetCompany" onclick="resetFormToSaved()">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                        </button>
+                        <button type="submit" class="btn-modern-primary px-4 shadow-sm d-none" id="btnSaveCompany">
+                            <i class="bi bi-check2-circle fs-6 me-1"></i>
                             <span>Save Company Profile</span>
                         </button>
                     @else
@@ -325,7 +346,7 @@
 
         <!-- Right Column: Executive Brand Passport Preview -->
         <div class="col-12 col-xl-5">
-            <div class="sticky-top" style="top: 85px;">
+            <div class="sticky-top" style="top: 85px; z-index: 10;">
                 
                 <!-- Section Header -->
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -469,6 +490,50 @@
 </form>
 
 <style>
+/* Readonly form styling */
+.form-control-modern[readonly] {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #475569 !important;
+    cursor: default;
+    box-shadow: none !important;
+}
+
+.form-control-modern[readonly]:focus {
+    border-color: #e2e8f0 !important;
+    background-color: #f8fafc !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Dropzone readonly state */
+.modern-upload-dropzone.readonly-mode {
+    background-color: #f8fafc !important;
+    border-style: solid !important;
+    border-color: #e2e8f0 !important;
+    cursor: default !important;
+    opacity: 0.85;
+}
+
+.modern-upload-dropzone.readonly-mode input[type="file"] {
+    display: none;
+    pointer-events: none;
+}
+
+.modern-upload-dropzone.readonly-mode #btnLogoBrowse {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Edit Mode styling */
+.company-form-editing .cms-form-card {
+    border-color: #cbd5e1;
+}
+
+.company-form-editing .form-control-modern:not([readonly]) {
+    background-color: #ffffff !important;
+}
+
 /* Input Icon Wrapper with sleek positioning */
 .input-icon-wrapper {
     position: relative;
@@ -518,6 +583,120 @@
 </style>
 
 <script>
+const initialLogoUrl = @json($company->logo_url);
+const hasServerErrors = {{ (isset($errors) && $errors->any()) ? 'true' : 'false' }};
+
+function enableEditMode() {
+    const form = document.getElementById('companyMasterForm');
+    if (!form) return;
+
+    form.classList.add('company-form-editing');
+
+    // Remove readonly from inputs and textareas
+    const editableInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), textarea');
+    editableInputs.forEach(input => {
+        input.removeAttribute('readonly');
+    });
+
+    // Unlock file input & dropzone
+    const fileInput = document.getElementById('logo');
+    if (fileInput) fileInput.removeAttribute('disabled');
+    const dropzone = document.getElementById('logoDropzone');
+    if (dropzone) dropzone.classList.remove('readonly-mode');
+    const btnLogoBrowse = document.getElementById('btnLogoBrowse');
+    if (btnLogoBrowse) {
+        btnLogoBrowse.style.pointerEvents = 'auto';
+        btnLogoBrowse.style.opacity = '1';
+    }
+
+    // Bottom action buttons: Hide Edit button, show Cancel, Reset, Save
+    const btnEdit = document.getElementById('btnEditCompany');
+    if (btnEdit) btnEdit.classList.add('d-none');
+
+    const btnCancel = document.getElementById('btnCancelEdit');
+    if (btnCancel) btnCancel.classList.remove('d-none');
+
+    const btnReset = document.getElementById('btnResetCompany');
+    if (btnReset) btnReset.classList.remove('d-none');
+
+    const btnSave = document.getElementById('btnSaveCompany');
+    if (btnSave) btnSave.classList.remove('d-none');
+
+    // Focus first input
+    const nameInput = document.getElementById('name');
+    if (nameInput) nameInput.focus();
+}
+
+function cancelEditMode() {
+    const form = document.getElementById('companyMasterForm');
+    if (!form) return;
+
+    form.classList.remove('company-form-editing');
+
+    // Reset form to server values
+    form.reset();
+    resetLivePreview();
+
+    // Reset logo previews
+    const liveImg = document.getElementById('liveLogoPreview');
+    const formThumb = document.getElementById('formLogoThumbnail');
+    const nameTxt = document.getElementById('logoFileNameText');
+    if (liveImg) liveImg.src = initialLogoUrl;
+    if (formThumb) formThumb.src = initialLogoUrl;
+    if (nameTxt) nameTxt.textContent = 'Upload New Logo or Drag & Drop';
+
+    // Make inputs readonly again
+    const editableInputs = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), textarea');
+    editableInputs.forEach(input => {
+        input.setAttribute('readonly', 'readonly');
+        input.classList.remove('is-invalid', 'is-valid');
+    });
+
+    // Disable file input & dropzone
+    const fileInput = document.getElementById('logo');
+    if (fileInput) {
+        fileInput.setAttribute('disabled', 'disabled');
+        fileInput.value = '';
+    }
+    const dropzone = document.getElementById('logoDropzone');
+    if (dropzone) dropzone.classList.add('readonly-mode');
+    const btnLogoBrowse = document.getElementById('btnLogoBrowse');
+    if (btnLogoBrowse) {
+        btnLogoBrowse.style.pointerEvents = 'none';
+        btnLogoBrowse.style.opacity = '0.5';
+    }
+
+    // Clear live errors
+    ['name', 'email', 'phone', 'alter_phone', 'pincode'].forEach(id => {
+        const errEl = document.getElementById('live_err_' + id);
+        if (errEl) {
+            errEl.classList.remove('d-block');
+            errEl.classList.add('d-none');
+        }
+    });
+    const fbEmail = document.getElementById('feedback_email');
+    if (fbEmail) fbEmail.classList.add('d-none');
+
+    // Bottom action buttons: Show Edit button ONLY, hide Cancel, Reset, Save
+    const btnEdit = document.getElementById('btnEditCompany');
+    if (btnEdit) btnEdit.classList.remove('d-none');
+
+    const btnCancel = document.getElementById('btnCancelEdit');
+    if (btnCancel) btnCancel.classList.add('d-none');
+
+    const btnReset = document.getElementById('btnResetCompany');
+    if (btnReset) btnReset.classList.add('d-none');
+
+    const btnSave = document.getElementById('btnSaveCompany');
+    if (btnSave) btnSave.classList.add('d-none');
+}
+
+function resetFormToSaved() {
+    const form = document.getElementById('companyMasterForm');
+    if (form) form.reset();
+    resetLivePreview();
+}
+
 // Live file selection preview
 function handleLogoSelect(input) {
     if (input.files && input.files[0]) {
@@ -879,6 +1058,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (form) {
         form.addEventListener('submit', function(e) {
+            if (!form.classList.contains('company-form-editing')) {
+                e.preventDefault();
+                return;
+            }
+
             let hasError = false;
             let firstInvalid = null;
 
@@ -940,16 +1124,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dropzone) {
         ['dragenter', 'dragover'].forEach(name => {
             dropzone.addEventListener(name, e => {
+                if (dropzone.classList.contains('readonly-mode')) return;
                 e.preventDefault();
                 dropzone.classList.add('dragover');
             });
         });
         ['dragleave', 'drop'].forEach(name => {
             dropzone.addEventListener(name, e => {
+                if (dropzone.classList.contains('readonly-mode')) return;
                 e.preventDefault();
                 dropzone.classList.remove('dragover');
             });
         });
+    }
+
+    if (hasServerErrors) {
+        enableEditMode();
     }
 });
 

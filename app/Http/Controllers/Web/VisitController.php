@@ -60,6 +60,8 @@ class VisitController extends Controller
         $totalCount = min((clone $baseCount)->count(), 1000);
         $completedCount = min((clone $baseCount)->has('feedback')->count(), 1000);
         $pendingCount = min((clone $baseCount)->doesntHave('feedback')->count(), 1000);
+        $todayCount = Visit::whereDate('visit_date', today())->count();
+        $responseRate = $totalCount > 0 ? round(($completedCount / max($totalCount, 1)) * 100) : 0;
 
         $visits = $query->latest('visit_date')->latest('id')->paginateCapped($perPage, 1000);
 
@@ -78,12 +80,14 @@ class VisitController extends Controller
 
         return view('visits.index', [
             'visits' => $visits,
-            'organizers' => User::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'organizers' => User::where('is_active', true)->orderBy('name')->get(['id', 'name', 'department']),
             'tabCounts' => [
                 'all' => $totalCount,
                 'completed' => $completedCount,
                 'pending' => $pendingCount,
+                'today' => $todayCount,
             ],
+            'responseRate' => $responseRate,
             'currentTab' => $tab,
             'isTodayFilter' => $isTodayFilter,
             'visitSuggestions' => $visitSuggestions,

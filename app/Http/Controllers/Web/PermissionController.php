@@ -23,13 +23,28 @@ class PermissionController extends Controller
             'per_page' => 'nullable|integer',
         ]);
 
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
         $moduleFilter = $request->input('module');
         $perPage = (int) $request->input('per_page', 10);
         if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
         }
 
-        $query = Permission::with('roles')
+        // Base scoped query: In Admin login, do not display Superadmin permissions
+        $basePermQuery = Permission::query()
+            ->when(!$isSuperAdmin, function ($q) {
+                $q->where('module', '!=', 'Table Data Cleanup')
+                  ->where('name', 'not like', 'tabledatacleanup.%')
+                  ->whereHas('roles', function ($rq) {
+                      $rq->whereIn('name', ['admin', 'coordinator']);
+                  });
+            });
+
+        // Query with eager loaded roles: In Admin login, do not display Superadmin role
+        $query = (clone $basePermQuery)
+            ->with(['roles' => function ($rq) use ($isSuperAdmin) {
+                $rq->when(!$isSuperAdmin, fn ($q) => $q->whereIn('name', ['admin', 'coordinator']));
+            }])
             ->when(!empty($moduleFilter) && $moduleFilter !== 'all', fn ($q) => $q->where('module', $moduleFilter))
             ->when($request->filled('q'), fn ($q) => $q->where(function ($w) use ($request) {
                 $v = $request->q;
@@ -39,21 +54,24 @@ class PermissionController extends Controller
                   ->orWhere('description', 'like', "%$v%");
             }));
 
-        $totalCount = min(Permission::count(), 1000);
-        $allModules = Permission::select('module')
+        $totalCount = min((clone $basePermQuery)->count(), 1000);
+        $allModules = (clone $basePermQuery)
+            ->select('module')
             ->distinct()
             ->orderBy('module')
             ->pluck('module')
             ->all();
 
-        $moduleCounts = Permission::selectRaw('module, count(*) as count')
+        $moduleCounts = (clone $basePermQuery)
+            ->selectRaw('module, count(*) as count')
             ->groupBy('module')
             ->pluck('count', 'module')
             ->all();
 
-        $permissions = $query->orderBy('module')->orderBy('name')->paginate(10)->withQueryString();
+        $permissions = $query->orderBy('module')->orderBy('name')->paginate($perPage)->withQueryString();
 
-        $permissionSuggestions = Permission::select('id', 'name', 'display_name', 'module', 'description')
+        $permissionSuggestions = (clone $basePermQuery)
+            ->select('id', 'name', 'display_name', 'module', 'description')
             ->orderBy('module')
             ->get()
             ->map(function ($p) {
@@ -106,6 +124,7 @@ class PermissionController extends Controller
     public function store(Request $request)
     {
         $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        abort_unless($isSuperAdmin, 403, 'Administrators cannot register new system permissions.');
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[a-z0-9\-\.]+$/', 'unique:permissions,name'],
@@ -179,6 +198,36 @@ class PermissionController extends Controller
     {
         $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
 
+        // In Admin login, Admin can only manage and update Coordinator permissions
+        if (!$isSuperAdmin) {
+            $coordinatorRole = Role::where('name', 'coordinator')->firstOrFail();
+            $adminRole = Role::where('name', 'admin')->first();
+
+            // Verify that this permission is in Admin's scope and not Superadmin-exclusive
+            if ($permission->module === 'Table Data Cleanup' || 
+                str_starts_with($permission->name, 'tabledatacleanup.') || 
+                !($adminRole && $adminRole->hasPermissionTo($permission))) {
+                abort(403, 'Administrators cannot manage permissions outside their authorized scope.');
+            }
+
+            $grantToCoordinator = $request->has('coordinator_access')
+                ? $request->boolean('coordinator_access')
+                : in_array((string)$coordinatorRole->id, (array) $request->input('roles', []));
+
+            if ($grantToCoordinator) {
+                $coordinatorRole->givePermissionTo($permission);
+            } else {
+                $coordinatorRole->revokePermissionTo($permission);
+            }
+
+            AuditLog::record('update', 'permissions', "Updated Coordinator access for permission: {$permission->name}", [
+                'permission' => $permission->name,
+                'coordinator_access' => $grantToCoordinator,
+            ]);
+
+            return redirect()->route('permissions.index')->with('success', "Coordinator access for '{$permission->title}' updated successfully.");
+        }
+
         $validated = $request->validate([
             'display_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'module' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
@@ -225,6 +274,8 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
+        $isSuperAdmin = auth()->user()?->isSuperAdmin() ?? false;
+        abort_unless($isSuperAdmin, 403, 'Administrators cannot delete system permissions.');
         $coreSystemPerms = [
             'dashboard.view',
             'plantmaster.view',

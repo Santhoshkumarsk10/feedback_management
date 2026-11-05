@@ -19,9 +19,9 @@ class UserController extends Controller
 {
     private function manageableSlugs(): array
     {
-        return Auth::user()->role === 'superadmin'
+        return Auth::user()?->isSuperAdmin()
             ? Role::pluck('slug')->all()
-            : ['coordinator', 'supervisor', 'staff', 'organizer'];
+            : ['admin', 'coordinator'];
     }
 
     private function authorizeTarget(User $user): void
@@ -90,19 +90,32 @@ class UserController extends Controller
 
     public function create()
     {
-        $manageableSlugs = $this->manageableSlugs();
-        $roles = Role::whereIn('slug', $manageableSlugs)->where('is_active', true)->orderBy('name')->get();
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+        // In Admin login, Admin can create new users ONLY with Coordinator role
+        $roles = Role::where('is_active', true)
+            ->when(!$isSuperAdmin, fn ($q) => $q->where('slug', 'coordinator'))
+            ->when($isSuperAdmin, fn ($q) => $q->whereIn('slug', $this->manageableSlugs()))
+            ->orderBy('name')
+            ->get();
 
-        $defaultRole = Role::where('slug', 'coordinator')->first() ?? Role::where('slug', 'organizer')->first();
+        $defaultRole = Role::where('slug', 'coordinator')->first();
 
         return view('users.form', [
-            'user' => new User(['is_active' => true, 'role' => $defaultRole?->slug ?? 'coordinator', 'role_id' => $defaultRole?->id]),
+            'user' => new User(['is_active' => true, 'role' => 'coordinator', 'role_id' => $defaultRole?->id]),
             'roles' => $roles,
         ]);
     }
 
     public function store(Request $request)
     {
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+        if (!$isSuperAdmin) {
+            $coordinatorRole = Role::where('slug', 'coordinator')->first();
+            if ((int) $request->input('role_id') !== (int) $coordinatorRole?->id) {
+                return back()->withErrors(['role_id' => 'Administrators can create new users only with the Coordinator role.'])->withInput();
+            }
+        }
+
         $data = $this->validated($request);
         $user = User::create($data);
 
@@ -117,10 +130,20 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $this->authorizeTarget($user);
-        $manageableSlugs = $this->manageableSlugs();
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
 
-        $roles = Role::whereIn('slug', $manageableSlugs)
-            ->where(fn($q) => $q->where('is_active', true)->orWhere('id', $user->role_id))
+        if (!$isSuperAdmin && $user->isSuperAdmin()) {
+            abort(404);
+        }
+
+        if (!$isSuperAdmin && $user->role === 'admin' && $user->id !== Auth::id()) {
+            abort(403, 'Administrators cannot modify other Administrator accounts.');
+        }
+
+        $roles = Role::where('is_active', true)
+            ->when(!$isSuperAdmin, fn ($q) => $q->where('slug', 'coordinator'))
+            ->when($isSuperAdmin, fn ($q) => $q->whereIn('slug', $this->manageableSlugs()))
+            ->orWhere('id', $user->role_id)
             ->orderBy('name')
             ->get();
 
@@ -133,6 +156,23 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $this->authorizeTarget($user);
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+
+        if (!$isSuperAdmin && $user->isSuperAdmin()) {
+            abort(404);
+        }
+
+        if (!$isSuperAdmin && $user->role === 'admin' && $user->id !== Auth::id()) {
+            abort(403, 'Administrators cannot modify other Administrator accounts.');
+        }
+
+        if (!$isSuperAdmin && $user->id !== Auth::id()) {
+            $coordinatorRole = Role::where('slug', 'coordinator')->first();
+            if ((int) $request->input('role_id') !== (int) $coordinatorRole?->id) {
+                return back()->withErrors(['role_id' => 'Administrators can only assign the Coordinator role.'])->withInput();
+            }
+        }
+
         $data = $this->validated($request, $user);
 
         if (empty($data['password'])) {
@@ -144,7 +184,7 @@ class UserController extends Controller
         }
         $user->update($data);
 
-            AuditLog::record('update', 'users', "Updated user account profile: {$user->name}", [
+        AuditLog::record('update', 'users', "Updated user account profile: {$user->name}", [
             'user_id' => $user->id,
             'changes' => $user->getChanges(),
         ]);
@@ -155,6 +195,12 @@ class UserController extends Controller
     public function toggle(User $user)
     {
         $this->authorizeTarget($user);
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+
+        if (!$isSuperAdmin && ($user->isSuperAdmin() || $user->role === 'admin')) {
+            abort(403, 'Administrators can only manage and toggle Coordinator accounts.');
+        }
+
         abort_if($user->id === Auth::id(), 422, 'You cannot deactivate yourself.');
         $user->update(['is_active' => ! $user->is_active]);
         $status = $user->is_active ? 'activated' : 'deactivated';
@@ -167,6 +213,12 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $this->authorizeTarget($user);
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+
+        if (!$isSuperAdmin && ($user->isSuperAdmin() || $user->role === 'admin')) {
+            abort(403, 'Administrators can only manage and delete Coordinator accounts.');
+        }
+
         abort_if($user->id === Auth::id(), 422, 'You cannot delete yourself.');
         $name = $user->name;
         $role = $user->role;
