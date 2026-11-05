@@ -108,9 +108,9 @@
     </div>
 
     <!-- 2. Dual Charts Row: Feedback Trends & Rating Distribution -->
-    <div class="row g-3 mb-4">
+    <div class="saas-dual-charts-grid">
         <!-- Feedback Trends (Smooth Dual-Line Area Chart) -->
-        <div class="col-12 col-xl-7">
+        <div class="feedback-trends-col">
             <div class="saas-panel-card h-100 d-flex flex-column justify-content-between">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Trends</h5>
@@ -142,7 +142,7 @@
         </div>
 
         <!-- Feedback Rating Distribution Donut -->
-        <div class="col-12 col-xl-5">
+        <div class="feedback-rating-col">
             <div class="saas-panel-card h-100 d-flex flex-column justify-content-between">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Rating Distribution</h5>
@@ -400,11 +400,16 @@
                         <div class="col-12 col-sm-7">
                             <div class="d-flex flex-column gap-1">
                                 @foreach($visitorTypes['items'] as $vt)
-                                    <div class="saas-legend-item">
-                                        <span class="saas-legend-dot" style="background: {{ $vt['color'] }};"></span>
-                                        <span class="saas-legend-name">{{ $vt['label'] }}</span>
-                                        <span class="saas-legend-pct">{{ $vt['percent'] }}%</span>
-                                        <span class="saas-legend-cnt">{{ $vt['count'] }}</span>
+                                    <div class="saas-legend-item-with-bar">
+                                        <div class="saas-legend-item">
+                                            <span class="saas-legend-dot" style="background: {{ $vt['color'] }};"></span>
+                                            <span class="saas-legend-name">{{ $vt['label'] }}</span>
+                                            <span class="saas-legend-pct">{{ $vt['percent'] }}%</span>
+                                            <span class="saas-legend-cnt">{{ $vt['count'] }}</span>
+                                        </div>
+                                        <div class="saas-legend-bar-track">
+                                            <div class="saas-legend-bar-fill" style="width: {{ $vt['percent'] }}%; background: {{ $vt['color'] }};"></div>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -479,11 +484,16 @@
                         <div class="col-12 col-sm-7">
                             <div class="d-flex flex-column gap-1">
                                 @foreach($feedbackStatuses['items'] as $fs)
-                                    <div class="saas-legend-item">
-                                        <span class="saas-legend-dot" style="background: {{ $fs['color'] }};"></span>
-                                        <span class="saas-legend-name">{{ $fs['label'] }}</span>
-                                        <span class="saas-legend-pct">{{ $fs['percent'] }}%</span>
-                                        <span class="saas-legend-cnt">{{ $fs['count'] }}</span>
+                                    <div class="saas-legend-item-with-bar">
+                                        <div class="saas-legend-item">
+                                            <span class="saas-legend-dot" style="background: {{ $fs['color'] }};"></span>
+                                            <span class="saas-legend-name">{{ $fs['label'] }}</span>
+                                            <span class="saas-legend-pct">{{ $fs['percent'] }}%</span>
+                                            <span class="saas-legend-cnt">{{ $fs['count'] }}</span>
+                                        </div>
+                                        <div class="saas-legend-bar-track">
+                                            <div class="saas-legend-bar-fill" style="width: {{ $fs['percent'] }}%; background: {{ $fs['color'] }};"></div>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
@@ -674,11 +684,16 @@ function renderVisitorType(vtData) {
     let legendHtml = '';
     (vtData.items || []).forEach(item => {
         legendHtml += `
-            <div class="saas-legend-item">
-                <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
-                <span class="saas-legend-name">${escapeHtml(item.label)}</span>
-                <span class="saas-legend-pct">${item.percent}%</span>
-                <span class="saas-legend-cnt">${item.count}</span>
+            <div class="saas-legend-item-with-bar">
+                <div class="saas-legend-item">
+                    <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
+                    <span class="saas-legend-name">${escapeHtml(item.label)}</span>
+                    <span class="saas-legend-pct">${item.percent}%</span>
+                    <span class="saas-legend-cnt">${item.count}</span>
+                </div>
+                <div class="saas-legend-bar-track">
+                    <div class="saas-legend-bar-fill" style="width: ${item.percent}%; background: ${escapeHtml(item.color)};"></div>
+                </div>
             </div>
         `;
     });
@@ -726,11 +741,16 @@ function renderFeedbackStatus(fsData) {
     let legendHtml = '';
     (fsData.items || []).forEach(item => {
         legendHtml += `
-            <div class="saas-legend-item">
-                <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
-                <span class="saas-legend-name">${escapeHtml(item.label)}</span>
-                <span class="saas-legend-pct">${item.percent}%</span>
-                <span class="saas-legend-cnt">${item.count}</span>
+            <div class="saas-legend-item-with-bar">
+                <div class="saas-legend-item">
+                    <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
+                    <span class="saas-legend-name">${escapeHtml(item.label)}</span>
+                    <span class="saas-legend-pct">${item.percent}%</span>
+                    <span class="saas-legend-cnt">${item.count}</span>
+                </div>
+                <div class="saas-legend-bar-track">
+                    <div class="saas-legend-bar-fill" style="width: ${item.percent}%; background: ${escapeHtml(item.color)};"></div>
+                </div>
             </div>
         `;
     });

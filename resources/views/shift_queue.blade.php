@@ -5,11 +5,15 @@
 
 @section('topbar_actions')
     <div class="d-flex align-items-center gap-2">
-        <a href="{{ route('dashboard') }}" class="btn-modern-secondary btn-sm" title="Go to Executive Dashboard">
-            <i class="bi bi-grid-1x2-fill"></i>
-            <span class="d-none d-sm-inline">Dashboard</span>
-        </a>
-        <a href="{{ route('visits.create') }}" class="btn-modern-primary btn-sm">
+        <form action="{{ route('visits.sync') }}" method="POST" class="d-inline m-0">
+            @csrf
+            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1"
+                title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                <i class="bi bi-arrow-repeat"></i>
+                <span class="d-none d-sm-inline">Sync Gate API</span>
+            </button>
+        </form>
+        <a href="{{ route('visits.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-xs">
             <i class="bi bi-person-plus-fill"></i>
             <span>Register Visitor</span>
         </a>
@@ -17,54 +21,6 @@
 @endsection
 
 @section('content')
-    <!-- Live Daily Operations & Staff Monitor -->
-    <div class="card-modern mb-4"
-        style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid var(--shibaura-blue);">
-        <div class="card-body p-3 p-md-4">
-            <div class="row g-3 align-items-center">
-                <div class="col-12 col-lg-7">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span
-                            class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
-                            <span class="spinner-grow spinner-grow-sm text-success" style="width: 0.65rem; height: 0.65rem;"
-                                role="status"></span>
-                            LIVE VISITOR OPERATIONS
-                        </span>
-                        <span class="small text-muted" id="liveClockDisplay">
-                            <i class="bi bi-clock me-1"></i>
-                            {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('h:i:s A') }} IST
-                        </span>
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-baseline gap-2">
-                        <h4 class="fw-bold text-dark mb-0">
-                            Today's Plant Operations
-                        </h4>
-                        <span class="badge bg-primary text-white fs-6 px-3 py-1">
-                            {{ now(config('app.plant_timezone', 'Asia/Kolkata'))->format('d M Y') }}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-5 text-lg-end">
-                    <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
-                        <a href="{{ route('visits.create') }}"
-                            class="btn btn-primary btn-sm px-3 py-2 fw-semibold shadow-sm">
-                            <i class="bi bi-person-plus-fill me-1"></i> Register New Visitor
-                        </a>
-                        <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-success btn-sm px-3 py-2 fw-semibold shadow-sm"
-                                title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                                <i class="bi bi-arrow-repeat me-1"></i> Sync Gate API
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Section: Today's Feedback Metrics -->
     <div class="row g-3 mb-4">
         <!-- Visitors Today -->
@@ -161,16 +117,18 @@
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <!-- Scope toggle: All Visitors vs My Visitors -->
-                <div class="btn-group btn-group-sm" role="group">
-                    <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'all'])) }}"
-                        class="btn {{ ($scope ?? 'all') === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        All Visitors ({{ $todayCounts['scope_all'] }})
-                    </a>
-                    <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'my'])) }}"
-                        class="btn {{ ($scope ?? '') === 'my' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        My Visitors ({{ $todayCounts['scope_my'] }})
-                    </a>
-                </div>
+                <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'all'])) }}"
+                    class="saas-btn-filter text-decoration-none {{ ($scope ?? 'all') === 'all' ? 'active' : '' }}"
+                    title="Show all today's visitors">
+                    <i class="bi bi-people-fill me-1 text-primary"></i>
+                    <span>All Visitors ({{ $todayCounts['scope_all'] }})</span>
+                </a>
+                <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'my'])) }}"
+                    class="saas-btn-filter text-decoration-none {{ ($scope ?? '') === 'my' ? 'active' : '' }}"
+                    title="Show only my assigned visitors">
+                    <i class="bi bi-person-badge-fill me-1 text-info"></i>
+                    <span>My Visitors ({{ $todayCounts['scope_my'] }})</span>
+                </a>
 
                 <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="saas-btn-filter text-decoration-none" title="Export today pending list to CSV">
                     <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export Pending

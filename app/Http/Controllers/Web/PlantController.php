@@ -11,7 +11,8 @@ class PlantController extends Controller
 {
     public function index(Request $request)
     {
-        $statusTab = $request->input('tab', 'all');
+        $statusTab = $request->input('status', $request->input('tab', 'all'));
+        $locationFilter = $request->input('location', 'all');
         $perPage = (int) $request->input('per_page', 10);
         if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
@@ -29,6 +30,7 @@ class PlantController extends Controller
         $query = Plant::withCount(['feedbacks', 'visits'])
             ->when($statusTab === 'active', fn ($q) => $q->where('is_active', true))
             ->when($statusTab === 'inactive', fn ($q) => $q->where('is_active', false))
+            ->when(!empty($locationFilter) && $locationFilter !== 'all', fn ($q) => $q->where('location', 'like', "%$locationFilter%"))
             ->when($request->filled('q'), fn ($q) => $q->where(function ($w) use ($request) {
                 $v = $request->q;
                 $w->where('name', 'like', "%$v%")
@@ -47,6 +49,16 @@ class PlantController extends Controller
             ->orderBy('code')
             ->get();
 
+        $allLocations = $allPlantSuggestions
+            ->pluck('location')
+            ->filter()
+            ->map(function ($loc) {
+                $parts = explode(',', $loc);
+                return trim($parts[0] ?? $loc);
+            })
+            ->unique()
+            ->values();
+
         return view('plants.index', [
             'plants' => $plants,
             'tabCounts' => [
@@ -55,7 +67,9 @@ class PlantController extends Controller
                 'inactive' => $inactiveCount,
             ],
             'currentTab' => $statusTab,
+            'currentLocation' => $locationFilter,
             'allPlantSuggestions' => $allPlantSuggestions,
+            'allLocations' => $allLocations,
         ]);
     }
 

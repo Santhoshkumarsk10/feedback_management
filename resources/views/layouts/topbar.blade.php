@@ -35,12 +35,22 @@
             <i class="bi bi-list"></i>
         </button>
         <div class="topbar-title-wrapper">
+            @if(View::hasSection('page_category'))
+                <div class="topbar-category-tag d-inline-flex align-items-center gap-1">
+                    @yield('page_category')
+                </div>
+            @endif
             <h1 class="topbar-main-title">@yield('page_title', View::getSection('title', 'Dashboard'))</h1>
             <p class="topbar-sub-title">@yield('page_subtitle', "Welcome back! Here's an overview of your visitor feedback.")</p>
         </div>
     </div>
 
     <div class="topbar-right-clean">
+        @if(View::hasSection('topbar_banner'))
+            <div class="topbar-banner-wrapper d-none d-xl-flex align-items-center me-2">
+                @yield('topbar_banner')
+            </div>
+        @endif
         @if(View::hasSection('topbar_actions'))
             <div class="topbar-actions-group d-flex align-items-center gap-2 me-1">
                 @yield('topbar_actions')

@@ -349,6 +349,7 @@ class ReportController extends Controller
                 });
 
             return [
+                'id' => $q->id,
                 'section' => $q->section ?: 'General Questionnaire',
                 'question' => $q->question,
                 'count' => (clone $base)->count(),
