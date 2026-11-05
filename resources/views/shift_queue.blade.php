@@ -69,84 +69,84 @@
     <div class="row g-3 mb-4">
         <!-- Visitors Today -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/visitors-today.svg" width="48" height="48" alt="Visitors Today">
-                        <div>
-                            <div class="saas-stat-value" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
-                            <div class="saas-stat-label">Visitors Today</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Visitors Today</div>
+                    <div class="saas-metric-value" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
+                    <div class="saas-trend-badge cyan">
+                        <span>Arrivals</span>
                     </div>
-                    <span class="saas-stat-badge cyan">Arrivals</span>
                 </div>
             </div>
         </div>
 
         <!-- Feedback Given -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/feedback-given.svg" width="48" height="48" alt="Feedback Given">
-                        <div>
-                            <div class="saas-stat-value" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
-                            <div class="saas-stat-label">Feedback Given</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box green">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Feedback Given</div>
+                    <div class="saas-metric-value" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
+                    <div class="saas-trend-badge green">
+                        <span id="cardTodayGivenPct">&#8599; {{ $stats['today_given_pct'] }}% Done</span>
                     </div>
-                    <span class="saas-stat-badge emerald" id="cardTodayGivenPct">{{ $stats['today_given_pct'] }}% Done</span>
                 </div>
             </div>
         </div>
 
         <!-- Feedback Pending -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/feedback-pending.svg" width="48" height="48" alt="Feedback Pending">
-                        <div>
-                            <div class="saas-stat-value" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
-                            <div class="saas-stat-label">Feedback Pending</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box amber">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Feedback Pending</div>
+                    <div class="saas-metric-value" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
+                    <div class="saas-trend-badge amber">
+                        <span id="cardTodayPendingPct">&#8600; {{ $stats['today_pending_pct'] }}% Pending</span>
                     </div>
-                    <span class="saas-stat-badge amber" id="cardTodayPendingPct">{{ $stats['today_pending_pct'] }}% Pending</span>
                 </div>
             </div>
         </div>
 
         <!-- Today's Avg Rating -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/average-rating.svg" width="48" height="48" alt="Sentiment">
-                        <div>
-                            <div class="saas-stat-value" id="cardTodayAvg">
-                                {{ $stats['today_avg'] ? number_format($stats['today_avg'], 1) : '—' }}@if($stats['today_avg'])<span class="fs-6 text-muted fw-normal">/5</span>@endif
-                            </div>
-                            <div class="saas-stat-label">Today's Avg Rating</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box yellow">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Today's Avg Rating</div>
+                    <div class="saas-metric-value" id="cardTodayAvg">
+                        {{ $stats['today_avg'] ? (fmod($stats['today_avg'], 1) == 0.0 ? (int)$stats['today_avg'] : number_format($stats['today_avg'], 1)) : '0' }} / 5
                     </div>
-                    <span class="saas-stat-badge indigo">Sentiment</span>
+                    <div class="saas-trend-badge purple">
+                        <span>Sentiment</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- API Sync Time -->
         <div class="col-6 col-md-4 col-xl">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/api-sync.svg" width="48" height="48" alt="Gate Pass Sync">
-                        <div>
-                            <div class="saas-stat-value fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
-                                {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
-                            </div>
-                            <div class="saas-stat-label">API Sync Feed</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box purple">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">API Sync Feed</div>
+                    <div class="saas-metric-value fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
+                        {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
                     </div>
-                    <span class="saas-stat-badge slate">Gate Pass</span>
+                    <div class="saas-trend-badge gray">
+                        <span>Gate Pass</span>
+                    </div>
                 </div>
             </div>
         </div>

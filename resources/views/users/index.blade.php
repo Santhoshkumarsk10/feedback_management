@@ -18,66 +18,66 @@
     <div class="row g-3">
         <!-- 1. Total Users -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/total-users.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($totalUsers) }}</div>
-                            <div class="saas-stat-label">Total Users</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Total Users</div>
+                    <div class="saas-metric-value">{{ number_format($totalUsers) }}</div>
+                    <div class="saas-trend-badge cyan">
+                        <span>Users</span>
                     </div>
-                    <span class="saas-stat-badge slate">Users</span>
                 </div>
             </div>
         </div>
 
         <!-- 2. Super Admins -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/system-roles.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($roleCounts['superadmin'] ?? 0) }}</div>
-                            <div class="saas-stat-label">Super admins</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box purple">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Super Admins</div>
+                    <div class="saas-metric-value">{{ number_format($roleCounts['superadmin'] ?? 0) }}</div>
+                    <div class="saas-trend-badge purple">
+                        <span>Root Access</span>
                     </div>
-                    <span class="saas-stat-badge indigo">Root access</span>
                 </div>
             </div>
         </div>
 
         <!-- 3. Administrators -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/administrators.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($roleCounts['admin'] ?? 0) }}</div>
-                            <div class="saas-stat-label">Administrators</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box amber">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Administrators</div>
+                    <div class="saas-metric-value">{{ number_format($roleCounts['admin'] ?? 0) }}</div>
+                    <div class="saas-trend-badge amber">
+                        <span>Admin</span>
                     </div>
-                    <span class="saas-stat-badge amber">Admin</span>
                 </div>
             </div>
         </div>
 
         <!-- 4. Organizers & Staff -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/tour-staff.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">
-                                {{ number_format($roleCounts['coordinator'] ?? 0) }}
-                            </div>
-                            <div class="saas-stat-label">Tour Coordinators</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box green">
+                    <i class="bi bi-person-video3"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Tour Coordinators</div>
+                    <div class="saas-metric-value">
+                        {{ number_format($roleCounts['coordinator'] ?? 0) }}
                     </div>
-                    <span class="saas-stat-badge emerald">Coordinator</span>
+                    <div class="saas-trend-badge green">
+                        <span>Coordinator</span>
+                    </div>
                 </div>
             </div>
         </div>

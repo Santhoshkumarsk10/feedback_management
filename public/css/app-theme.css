@@ -253,6 +253,59 @@ h6,
     padding: 0.85rem 0.85rem 0.35rem;
 }
 
+.sidebar-category-group {
+    margin-top: 0.25rem;
+}
+
+.menu-category-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    font-weight: 700;
+    padding: 0.75rem 0.85rem 0.35rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease, background 0.15s ease;
+    text-align: left;
+}
+
+.menu-category-toggle:hover {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.menu-category-toggle:focus {
+    outline: none;
+}
+
+.menu-category-toggle .category-chevron {
+    font-size: 0.65rem;
+    color: #64748b;
+    transition: transform 0.2s ease, color 0.15s ease;
+}
+
+.menu-category-toggle:hover .category-chevron {
+    color: #cbd5e1;
+}
+
+/* When expanded (not collapsed), rotate chevron */
+.menu-category-toggle:not(.collapsed) {
+    color: #94a3b8;
+}
+
+.menu-category-toggle:not(.collapsed) .category-chevron {
+    transform: rotate(180deg);
+    color: #38bdf8;
+}
+
 .nav-item-link {
     display: flex;
     align-items: center;
@@ -756,6 +809,22 @@ h6,
     color: #8b5cf6;
 }
 
+.saas-icon-box.indigo {
+    background: #ede9fe;
+    color: #6366f1;
+}
+
+.saas-icon-box.cyan {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.saas-icon-box.slate,
+.saas-icon-box.gray {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
 .saas-metric-title {
     font-size: 0.82rem;
     font-weight: 500;
@@ -792,8 +861,25 @@ h6,
     color: #94a3b8;
 }
 
+.saas-trend-badge.cyan {
+    color: #0284c7;
+}
+
+.saas-trend-badge.amber {
+    color: #d97706;
+}
+
+.saas-trend-badge.purple,
+.saas-trend-badge.indigo {
+    color: #7c3aed;
+}
+
+.saas-trend-badge.blue {
+    color: #2563eb;
+}
+
 .saas-trend-sub {
-    color: #94a3b8;
+    color: #64748b;
     font-weight: 400;
     margin-left: 0.25rem;
 }
@@ -4785,4 +4871,53 @@ input[type="checkbox"].saas-switch-input:not(+ .saas-switch-slider):not(+ .saas-
 
 .saas-table-footer .pagination {
     margin-bottom: 0 !important;
+}
+
+/* Individual Widget Date Filter Pill & Dropdown */
+.widget-date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f8fafc;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.22rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #334155;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    box-shadow: none;
+}
+.widget-date-pill:hover, .widget-date-pill:focus {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.widget-date-pill::after {
+    margin-left: 0.25rem;
+    vertical-align: 0.15em;
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+.widget-date-dropdown-menu {
+    min-width: 230px;
+    font-size: 0.8rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    z-index: 1060;
+}
+.widget-date-dropdown-menu .dropdown-item {
+    border-radius: 6px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #334155;
+}
+.widget-date-dropdown-menu .dropdown-item:hover {
+    background-color: #eff6ff;
+    color: #1d4ed8;
 }

@@ -24,64 +24,64 @@
 <div class="row g-3">
     <!-- 1. Total Plants -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/total-plants.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalPlants) }}</div>
-                        <div class="saas-stat-label">Total plants</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-buildings-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Total Plants</div>
+                <div class="saas-metric-value">{{ number_format($totalPlants) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <span>Network</span>
                 </div>
-                <span class="saas-stat-badge slate">Network</span>
             </div>
         </div>
     </div>
 
     <!-- 2. Active Plants -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/active-plants.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($activePlants) }}</div>
-                        <div class="saas-stat-label">Active plants</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-building-check"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Active Plants</div>
+                <div class="saas-metric-value">{{ number_format($activePlants) }}</div>
+                <div class="saas-trend-badge green">
+                    <span>Fully Operational</span>
                 </div>
-                <span class="saas-stat-badge emerald">Fully operational</span>
             </div>
         </div>
     </div>
 
     <!-- 3. Inactive Plants -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/inactive-plants.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($inactivePlants) }}</div>
-                        <div class="saas-stat-label">Inactive plants</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-building-dash"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Inactive Plants</div>
+                <div class="saas-metric-value">{{ number_format($inactivePlants) }}</div>
+                <div class="saas-trend-badge amber">
+                    <span>Standby</span>
                 </div>
-                <span class="saas-stat-badge amber">Standby</span>
             </div>
         </div>
     </div>
 
     <!-- 4. Locations -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/locations.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($locationsCount) }}</div>
-                        <div class="saas-stat-label">Locations</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-geo-alt-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Locations</div>
+                <div class="saas-metric-value">{{ number_format($locationsCount) }}</div>
+                <div class="saas-trend-badge purple">
+                    <span>Industrial Zones</span>
                 </div>
-                <span class="saas-stat-badge indigo">Industrial zones</span>
             </div>
         </div>
     </div>

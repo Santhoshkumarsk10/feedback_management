@@ -6,104 +6,102 @@
 @section('content')
 <div class="saas-dashboard-container">
 
-    <!-- 1. Top 5 SaaS Metric Cards Row -->
+    <!-- Top 5 Metric Cards Row (Matching Reference Design) -->
     <div class="saas-metric-grid">
         <!-- 1. Total Visitors -->
         <div class="saas-metric-card">
-            <img src="/icons/total-visitors.svg" width="48" height="48" alt="">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
             <div>
                 <div class="saas-metric-title">Total Visitors</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_visitors']['value'] }}</div>
                 <div class="saas-trend-badge {{ $saasMetrics['total_visitors']['dir'] === 'up' ? 'green' : ($saasMetrics['total_visitors']['dir'] === 'down' ? 'rose' : 'gray') }}">
                     @if($saasMetrics['total_visitors']['dir'] === 'up')
-                        <i class="bi bi-arrow-up-short fs-6"></i>
+                        <span>&#8599;</span>
                     @elseif($saasMetrics['total_visitors']['dir'] === 'down')
-                        <i class="bi bi-arrow-down-short fs-6"></i>
+                        <span>&#8600;</span>
                     @else
-                        <i class="bi bi-dash fs-6"></i>
+                        <span>&#8599;</span>
                     @endif
-                    <span>{{ $saasMetrics['total_visitors']['growth'] }}</span>
-                    <span class="saas-trend-sub">{{ $saasMetrics['total_visitors']['subtext'] }}</span>
+                    <span>{{ ltrim($saasMetrics['total_visitors']['growth'], '+-') }}</span>
+                    <span class="saas-trend-sub">vs. last period</span>
                 </div>
             </div>
         </div>
 
         <!-- 2. Total Feedbacks -->
         <div class="saas-metric-card">
-            <img src="/icons/total-feedbacks.svg" width="48" height="48" alt="">
+            <div class="saas-icon-box green">
+                <i class="bi bi-chat-left-dots"></i>
+            </div>
             <div>
                 <div class="saas-metric-title">Total Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['total_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['total_feedbacks']['dir'] === 'up' ? 'green' : ($saasMetrics['total_feedbacks']['dir'] === 'down' ? 'rose' : 'gray') }}">
-                    @if($saasMetrics['total_feedbacks']['dir'] === 'up')
-                        <i class="bi bi-arrow-up-short fs-6"></i>
-                    @elseif($saasMetrics['total_feedbacks']['dir'] === 'down')
-                        <i class="bi bi-arrow-down-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['total_feedbacks']['dir'] === 'down' ? 'rose' : 'green' }}">
+                    @if($saasMetrics['total_feedbacks']['dir'] === 'down')
+                        <span>&#8600;</span>
                     @else
-                        <i class="bi bi-dash fs-6"></i>
+                        <span>&#8599;</span>
                     @endif
-                    <span>{{ $saasMetrics['total_feedbacks']['growth'] }}</span>
-                    <span class="saas-trend-sub">{{ $saasMetrics['total_feedbacks']['subtext'] }}</span>
+                    <span>{{ ltrim($saasMetrics['total_feedbacks']['growth'], '+-') }}</span>
+                    <span class="saas-trend-sub">vs. last period</span>
                 </div>
             </div>
         </div>
 
         <!-- 3. Average Rating -->
         <div class="saas-metric-card">
-            <img src="/icons/average-rating.svg" width="48" height="48" alt="">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-star"></i>
+            </div>
             <div>
                 <div class="saas-metric-title">Average Rating</div>
                 <div class="saas-metric-value">{{ $saasMetrics['average_rating']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['average_rating']['dir'] === 'up' ? 'green' : ($saasMetrics['average_rating']['dir'] === 'down' ? 'rose' : 'gray') }}">
-                    @if($saasMetrics['average_rating']['dir'] === 'up')
-                        <i class="bi bi-arrow-up-short fs-6"></i>
-                    @elseif($saasMetrics['average_rating']['dir'] === 'down')
-                        <i class="bi bi-arrow-down-short fs-6"></i>
+                <div class="saas-trend-badge {{ $saasMetrics['average_rating']['dir'] === 'down' ? 'rose' : 'green' }}">
+                    @if($saasMetrics['average_rating']['dir'] === 'down')
+                        <span>&#8600;</span>
                     @else
-                        <i class="bi bi-dash fs-6"></i>
+                        <span>&#8599;</span>
                     @endif
-                    <span>{{ $saasMetrics['average_rating']['growth'] }}</span>
-                    <span class="saas-trend-sub">{{ $saasMetrics['average_rating']['subtext'] }}</span>
+                    <span>{{ ltrim($saasMetrics['average_rating']['growth'], '+-') }}</span>
+                    <span class="saas-trend-sub">vs. last period</span>
                 </div>
             </div>
         </div>
 
         <!-- 4. Positive Feedbacks -->
         <div class="saas-metric-card">
-            <img src="/icons/positive-feedbacks.svg" width="48" height="48" alt="">
+            <div class="saas-icon-box rose">
+                <i class="bi bi-hand-thumbs-up"></i>
+            </div>
             <div>
                 <div class="saas-metric-title">Positive Feedbacks</div>
                 <div class="saas-metric-value">{{ $saasMetrics['positive_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['positive_feedbacks']['dir'] === 'up' ? 'green' : ($saasMetrics['positive_feedbacks']['dir'] === 'down' ? 'rose' : 'gray') }}">
-                    @if($saasMetrics['positive_feedbacks']['dir'] === 'up')
-                        <i class="bi bi-arrow-up-short fs-6"></i>
-                    @elseif($saasMetrics['positive_feedbacks']['dir'] === 'down')
-                        <i class="bi bi-arrow-down-short fs-6"></i>
-                    @else
-                        <i class="bi bi-dash fs-6"></i>
-                    @endif
-                    <span>{{ $saasMetrics['positive_feedbacks']['growth'] }}</span>
-                    <span class="saas-trend-sub">{{ $saasMetrics['positive_feedbacks']['subtext'] }}</span>
+                <div class="saas-trend-badge green">
+                    <span>&#8599;</span>
+                    <span>{{ ltrim($saasMetrics['positive_feedbacks']['growth'], '+-') }}</span>
+                    <span class="saas-trend-sub">vs. last period</span>
                 </div>
             </div>
         </div>
 
         <!-- 5. Pending Actions -->
         <div class="saas-metric-card">
-            <img src="/icons/pending-actions.svg" width="48" height="48" alt="">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-card-checklist"></i>
+            </div>
             <div>
                 <div class="saas-metric-title">Pending Actions</div>
                 <div class="saas-metric-value">{{ $saasMetrics['pending_actions']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['pending_actions']['dir'] === 'down' ? 'rose' : ($saasMetrics['pending_actions']['dir'] === 'up' ? 'green' : 'gray') }}">
+                <div class="saas-trend-badge {{ $saasMetrics['pending_actions']['dir'] === 'down' ? 'green' : ($saasMetrics['pending_actions']['dir'] === 'up' ? 'rose' : 'green') }}">
                     @if($saasMetrics['pending_actions']['dir'] === 'down')
-                        <i class="bi bi-arrow-up-short fs-6"></i>
-                    @elseif($saasMetrics['pending_actions']['dir'] === 'up')
-                        <i class="bi bi-arrow-down-short fs-6"></i>
+                        <span>&#8600;</span>
                     @else
-                        <i class="bi bi-dash fs-6"></i>
+                        <span>&#8599;</span>
                     @endif
-                    <span>{{ $saasMetrics['pending_actions']['growth'] }}</span>
-                    <span class="saas-trend-sub">{{ $saasMetrics['pending_actions']['subtext'] }}</span>
+                    <span>{{ ltrim($saasMetrics['pending_actions']['growth'], '+-') }}</span>
+                    <span class="saas-trend-sub">vs. last period</span>
                 </div>
             </div>
         </div>
@@ -113,7 +111,7 @@
     <div class="row g-3 mb-4">
         <!-- Feedback Trends (Smooth Dual-Line Area Chart) -->
         <div class="col-12 col-xl-7">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100 d-flex flex-column justify-content-between">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Trends</h5>
                     <select class="saas-select-pill" id="trendsTimeFilter" onchange="updateTrendsPeriod(this.value)">
@@ -122,7 +120,7 @@
                         <option value="7">Last 7 Days</option>
                     </select>
                 </div>
-                <div style="position: relative; height: 240px; width: 100%;">
+                <div style="position: relative; height: 230px; width: 100%;">
                     <div id="trendsEmptyNotice" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted {{ $hasTrendsData ? 'd-none' : '' }}" style="background: rgba(248, 250, 252, 0.7); border-radius: 8px;">
                         <i class="bi bi-bar-chart-line fs-2 text-secondary opacity-50 mb-1"></i>
                         <div class="fw-semibold small text-dark">No Feedback Trends Available</div>
@@ -130,7 +128,7 @@
                     </div>
                     <canvas id="feedbackTrendsChart" class="{{ !$hasTrendsData ? 'd-none' : '' }}"></canvas>
                 </div>
-                <div class="d-flex align-items-center justify-content-center gap-4 mt-3 pt-2">
+                <div class="d-flex align-items-center justify-content-center gap-4 mt-2 pt-2">
                     <div class="d-flex align-items-center gap-2 small fw-semibold text-secondary">
                         <span style="width: 10px; height: 10px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
                         <span>Total Feedbacks</span>
@@ -145,7 +143,7 @@
 
         <!-- Feedback Rating Distribution Donut -->
         <div class="col-12 col-xl-5">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100 d-flex flex-column justify-content-between">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Rating Distribution</h5>
                     <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Filtered period">
@@ -159,7 +157,7 @@
                                 <canvas id="ratingDistributionDonut"></canvas>
                                 <div class="saas-donut-center">
                                     <div class="saas-donut-number">{{ number_format($ratingDist['total']) }}</div>
-                                    <div class="saas-donut-label">Total Feedbacks</div>
+                                    <div class="saas-donut-label">Total<br>Feedbacks</div>
                                 </div>
                             </div>
                         </div>
@@ -186,12 +184,11 @@
             </div>
         </div>
     </div>
-
-    <!-- 3. Bottom Grid: Feedback by Category, Top Departments, Recent Feedbacks -->
+    <!-- 2. Middle Grid: Feedback by Category, Top Departments, Recent Feedbacks -->
     <div class="row g-3 mb-4">
         <!-- 1. Feedback by Category -->
         <div class="col-12 col-md-6 col-xl-4">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <div>
                         <h5 class="saas-panel-title">Feedback by Category</h5>
@@ -232,16 +229,51 @@
 
         <!-- 2. Top Departments Visited -->
         <div class="col-12 col-md-6 col-xl-4">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <div>
                         <h5 class="saas-panel-title">Top Departments Visited</h5>
                         <div class="text-muted small" style="font-size: 0.72rem;">Visitor volume by Plant Department</div>
                     </div>
-                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Visits by Department for {{ $rangeLabel }}">
-                        <i class="bi bi-diagram-3 me-1 text-primary"></i>{{ $rangeLabel }}
-                    </span>
+                    <div class="dropdown">
+                        <button class="widget-date-pill dropdown-toggle" type="button" id="departmentsDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Top Departments date range">
+                            <i class="bi bi-diagram-3 text-primary"></i>
+                            <span id="departmentsRangeLabel">{{ $rangeLabel }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end widget-date-dropdown-menu" aria-labelledby="departmentsDropdownBtn">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Preset Ranges</div>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('departments', 'today', 'Today')">
+                                <span><i class="bi bi-clock me-2 text-muted"></i>Today</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('departments', '7days', 'Last 7 Days')">
+                                <span><i class="bi bi-calendar-week me-2 text-muted"></i>Last 7 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('departments', 'month', 'This Month')">
+                                <span><i class="bi bi-calendar-month me-2 text-muted"></i>This Month</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('departments', '30days', 'Last 30 Days')">
+                                <span><i class="bi bi-calendar3-range me-2 text-muted"></i>Last 30 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('departments', 'all', 'All Time Records')">
+                                <span><i class="bi bi-database me-2 text-muted"></i>All Time</span>
+                            </a>
+                            <hr class="dropdown-divider my-1">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Custom Range</div>
+                            <form onsubmit="applyWidgetCustomRange(event, 'departments')" class="px-2 py-1 d-flex flex-column gap-2">
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">From</label>
+                                    <input type="date" class="form-control form-control-sm" id="departments-from" required style="font-size: 0.75rem;">
+                                </div>
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">To</label>
+                                    <input type="date" class="form-control form-control-sm" id="departments-to" required style="font-size: 0.75rem;">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100 py-1 mt-1" style="font-size: 0.75rem;">Apply Filter</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                <div id="departmentsWidgetContainer" class="d-flex flex-column flex-grow-1 justify-content-center">
                 @if($hasTopLocations)
                     <div class="d-flex flex-column gap-1 my-auto">
                         @foreach($topLocations as $loc)
@@ -263,12 +295,13 @@
                         <div class="small text-muted" style="font-size: 0.75rem;">No plant department visits recorded in this period.</div>
                     </div>
                 @endif
+                </div>
             </div>
         </div>
 
         <!-- 3. Recent Feedbacks -->
         <div class="col-12 col-xl-4">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Recent Feedbacks</h5>
                     <a href="{{ route('feedbacks.index') }}" class="small fw-semibold text-primary text-decoration-none">
@@ -290,7 +323,6 @@
                                             <i class="bi {{ $i <= $rf['rating'] ? 'bi-star-fill text-warning' : 'bi-star text-muted' }}"></i>
                                         @endfor
                                     </span>
-                                    
                                 </div>
                                 <div class="saas-feedback-comment">{{ $rf['comment'] }}</div>
                             </div>
@@ -308,17 +340,52 @@
         </div>
     </div>
 
-    <!-- 4. Donut Summaries Row: Visitor Type & Feedback Status -->
+    <!-- 3. Donut Summaries Row: Visitor Type & Feedback Status -->
     <div class="row g-3 mb-4">
         <!-- Visitor Type Donut -->
         <div class="col-12 col-md-6">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Visitor Type</h5>
-                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium">
-                        <i class="bi bi-pie-chart me-1 text-primary"></i>{{ $rangeLabel }}
-                    </span>
+                    <div class="dropdown">
+                        <button class="widget-date-pill dropdown-toggle" type="button" id="visitorTypeDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Visitor Type date range">
+                            <i class="bi bi-clock text-primary"></i>
+                            <span id="visitor_typeRangeLabel">{{ $rangeLabel }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end widget-date-dropdown-menu" aria-labelledby="visitorTypeDropdownBtn">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Preset Ranges</div>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('visitor_type', 'today', 'Today')">
+                                <span><i class="bi bi-clock me-2 text-muted"></i>Today</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('visitor_type', '7days', 'Last 7 Days')">
+                                <span><i class="bi bi-calendar-week me-2 text-muted"></i>Last 7 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('visitor_type', 'month', 'This Month')">
+                                <span><i class="bi bi-calendar-month me-2 text-muted"></i>This Month</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('visitor_type', '30days', 'Last 30 Days')">
+                                <span><i class="bi bi-calendar3-range me-2 text-muted"></i>Last 30 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('visitor_type', 'all', 'All Time Records')">
+                                <span><i class="bi bi-database me-2 text-muted"></i>All Time</span>
+                            </a>
+                            <hr class="dropdown-divider my-1">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Custom Range</div>
+                            <form onsubmit="applyWidgetCustomRange(event, 'visitor_type')" class="px-2 py-1 d-flex flex-column gap-2">
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">From</label>
+                                    <input type="date" class="form-control form-control-sm" id="visitor_type-from" required style="font-size: 0.75rem;">
+                                </div>
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">To</label>
+                                    <input type="date" class="form-control form-control-sm" id="visitor_type-to" required style="font-size: 0.75rem;">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100 py-1 mt-1" style="font-size: 0.75rem;">Apply Filter</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                <div id="visitorTypeWidgetContainer" class="d-flex flex-column flex-grow-1 justify-content-center">
                 @if($visitorTypes['total'] > 0)
                     <div class="row align-items-center g-3 my-auto">
                         <div class="col-12 col-sm-5 text-center">
@@ -350,18 +417,54 @@
                         <div class="small text-muted" style="font-size: 0.75rem;">No visitors recorded in the database for this period.</div>
                     </div>
                 @endif
+                </div>
             </div>
         </div>
 
         <!-- Feedback Status Donut -->
         <div class="col-12 col-md-6">
-            <div class="saas-panel-card">
+            <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Status</h5>
-                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium">
-                        <i class="bi bi-check2-circle me-1 text-primary"></i>{{ $rangeLabel }}
-                    </span>
+                    <div class="dropdown">
+                        <button class="widget-date-pill dropdown-toggle" type="button" id="feedbackStatusDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Feedback Status date range">
+                            <i class="bi bi-check2-circle text-primary"></i>
+                            <span id="feedback_statusRangeLabel">{{ $rangeLabel }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end widget-date-dropdown-menu" aria-labelledby="feedbackStatusDropdownBtn">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Preset Ranges</div>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('feedback_status', 'today', 'Today')">
+                                <span><i class="bi bi-clock me-2 text-muted"></i>Today</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('feedback_status', '7days', 'Last 7 Days')">
+                                <span><i class="bi bi-calendar-week me-2 text-muted"></i>Last 7 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('feedback_status', 'month', 'This Month')">
+                                <span><i class="bi bi-calendar-month me-2 text-muted"></i>This Month</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('feedback_status', '30days', 'Last 30 Days')">
+                                <span><i class="bi bi-calendar3-range me-2 text-muted"></i>Last 30 Days</span>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" onclick="switchWidgetRange('feedback_status', 'all', 'All Time Records')">
+                                <span><i class="bi bi-database me-2 text-muted"></i>All Time</span>
+                            </a>
+                            <hr class="dropdown-divider my-1">
+                            <div class="px-2 py-1 text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.04em;">Custom Range</div>
+                            <form onsubmit="applyWidgetCustomRange(event, 'feedback_status')" class="px-2 py-1 d-flex flex-column gap-2">
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">From</label>
+                                    <input type="date" class="form-control form-control-sm" id="feedback_status-from" required style="font-size: 0.75rem;">
+                                </div>
+                                <div>
+                                    <label class="text-muted small mb-0" style="font-size: 0.7rem;">To</label>
+                                    <input type="date" class="form-control form-control-sm" id="feedback_status-to" required style="font-size: 0.75rem;">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100 py-1 mt-1" style="font-size: 0.75rem;">Apply Filter</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                <div id="feedbackStatusWidgetContainer" class="d-flex flex-column flex-grow-1 justify-content-center">
                 @if($feedbackStatuses['total'] > 0)
                     <div class="row align-items-center g-3 my-auto">
                         <div class="col-12 col-sm-5 text-center">
@@ -393,121 +496,439 @@
                         <div class="small text-muted" style="font-size: 0.75rem;">No feedback statuses recorded for this period in the database.</div>
                     </div>
                 @endif
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Operational Operations Footnote / Quick Queue Access -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between p-3 bg-white rounded-3 border gap-2 shadow-xs">
-        <div class="d-flex align-items-center gap-2 small">
-            <span class="badge bg-primary text-white px-2 py-1">Operations</span>
-            <span class="text-secondary">Today's Activity: <strong><span id="footnoteTodayVisitors">{{ $stats['today_total'] }}</span> visitors</strong> logged today</span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('shift_queue') }}" class="btn btn-sm btn-outline-primary px-3 fw-semibold">
-                <i class="bi bi-clock-history me-1"></i> Today's Live Visitor Queue
-            </a>
-            <a href="{{ route('visits.create') }}" class="btn btn-sm btn-primary px-3 fw-semibold">
-                <i class="bi bi-person-plus-fill me-1"></i> Register New Visitor
-            </a>
-        </div>
-    </div>
 </div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
+window.allWidgetsData = @json($allWidgetsData ?? []);
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+let ratingDonutChartInstance = null;
+let visitorTypeChartInstance = null;
+let feedbackStatusChartInstance = null;
+let feedbackTrendsChartInstance = null;
+
+const commonDonutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '72%',
+    plugins: {
+        legend: { display: false }
+    },
+    animation: { duration: 400 }
+};
+
+function initRatingDistributionChart(items) {
+    const canvas = document.getElementById('ratingDistributionDonut');
+    if (!canvas) return;
+    if (ratingDonutChartInstance) {
+        ratingDonutChartInstance.destroy();
+        ratingDonutChartInstance = null;
+    }
+    const hasData = items && items.some(i => i.count > 0);
+    ratingDonutChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: hasData ? items.map(i => i.label) : ['No Feedbacks Yet'],
+            datasets: [{
+                data: hasData ? items.map(i => i.count) : [1],
+                backgroundColor: hasData ? items.map(i => i.color) : ['#e2e8f0'],
+                borderWidth: 0,
+                hoverOffset: hasData ? 3 : 0
+            }]
+        },
+        options: {
+            ...commonDonutOptions,
+            plugins: {
+                ...commonDonutOptions.plugins,
+                tooltip: { enabled: hasData }
+            }
+        }
+    });
+}
+
+function initVisitorTypeChart(items) {
+    const canvas = document.getElementById('visitorTypeDonut');
+    if (!canvas) return;
+    if (visitorTypeChartInstance) {
+        visitorTypeChartInstance.destroy();
+        visitorTypeChartInstance = null;
+    }
+    const hasData = items && items.some(i => i.count > 0);
+    visitorTypeChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: hasData ? items.map(i => i.label) : ['No Visitors Recorded'],
+            datasets: [{
+                data: hasData ? items.map(i => i.count) : [1],
+                backgroundColor: hasData ? items.map(i => i.color) : ['#e2e8f0'],
+                borderWidth: 0,
+                hoverOffset: hasData ? 3 : 0
+            }]
+        },
+        options: {
+            ...commonDonutOptions,
+            plugins: {
+                ...commonDonutOptions.plugins,
+                tooltip: { enabled: hasData }
+            }
+        }
+    });
+}
+
+function initFeedbackStatusChart(items) {
+    const canvas = document.getElementById('feedbackStatusDonut');
+    if (!canvas) return;
+    if (feedbackStatusChartInstance) {
+        feedbackStatusChartInstance.destroy();
+        feedbackStatusChartInstance = null;
+    }
+    const hasData = items && items.some(i => i.count > 0);
+    feedbackStatusChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: hasData ? items.map(i => i.label) : ['No Records'],
+            datasets: [{
+                data: hasData ? items.map(i => i.count) : [1],
+                backgroundColor: hasData ? items.map(i => i.color) : ['#e2e8f0'],
+                borderWidth: 0,
+                hoverOffset: hasData ? 3 : 0
+            }]
+        },
+        options: {
+            ...commonDonutOptions,
+            plugins: {
+                ...commonDonutOptions.plugins,
+                tooltip: { enabled: hasData }
+            }
+        }
+    });
+}
+
+function renderDepartments(locations, hasLocations) {
+    const container = document.getElementById('departmentsWidgetContainer');
+    if (!container) return;
+    if (!hasLocations || !locations || locations.length === 0) {
+        container.innerHTML = `
+            <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                <i class="bi bi-building-slash text-secondary opacity-50 fs-2 mb-2"></i>
+                <div class="fw-semibold small text-dark">No Department Visits Recorded</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">No plant department visits recorded in this period.</div>
+            </div>
+        `;
+        return;
+    }
+
+    let rowsHtml = '';
+    locations.forEach(loc => {
+        rowsHtml += `
+            <div class="saas-rank-row">
+                <span class="saas-rank-num">${escapeHtml(loc.rank)}</span>
+                <span class="saas-rank-name" title="${escapeHtml(loc.name)}">${escapeHtml(loc.name)}</span>
+                <div class="saas-rank-track">
+                    <div class="saas-progress-bar" style="width: ${loc.percent}%; background: ${escapeHtml(loc.color)};"></div>
+                </div>
+                <span class="saas-rank-pct">${loc.percent}%</span>
+                <span class="saas-rank-cnt">${loc.count}</span>
+            </div>
+        `;
+    });
+
+    container.innerHTML = `<div class="d-flex flex-column gap-1 my-auto">${rowsHtml}</div>`;
+}
+
+function renderVisitorType(vtData) {
+    const container = document.getElementById('visitorTypeWidgetContainer');
+    if (!container) return;
+    if (!vtData || !vtData.has_data || vtData.total === 0) {
+        if (visitorTypeChartInstance) {
+            visitorTypeChartInstance.destroy();
+            visitorTypeChartInstance = null;
+        }
+        container.innerHTML = `
+            <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                <i class="bi bi-people text-secondary opacity-50 fs-2 mb-2"></i>
+                <div class="fw-semibold small text-dark">No Visitor Records Available</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">No visitors recorded in the database for this period.</div>
+            </div>
+        `;
+        return;
+    }
+
+    let legendHtml = '';
+    (vtData.items || []).forEach(item => {
+        legendHtml += `
+            <div class="saas-legend-item">
+                <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
+                <span class="saas-legend-name">${escapeHtml(item.label)}</span>
+                <span class="saas-legend-pct">${item.percent}%</span>
+                <span class="saas-legend-cnt">${item.count}</span>
+            </div>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="row align-items-center g-3 my-auto">
+            <div class="col-12 col-sm-5 text-center">
+                <div class="saas-donut-box">
+                    <canvas id="visitorTypeDonut"></canvas>
+                    <div class="saas-donut-center">
+                        <div class="saas-donut-number">${Number(vtData.total).toLocaleString()}</div>
+                        <div class="saas-donut-label">Total Visitors</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-7">
+                <div class="d-flex flex-column gap-1">
+                    ${legendHtml}
+                </div>
+            </div>
+        </div>
+    `;
+
+    initVisitorTypeChart(vtData.items);
+}
+
+function renderFeedbackStatus(fsData) {
+    const container = document.getElementById('feedbackStatusWidgetContainer');
+    if (!container) return;
+    if (!fsData || !fsData.has_data || fsData.total === 0) {
+        if (feedbackStatusChartInstance) {
+            feedbackStatusChartInstance.destroy();
+            feedbackStatusChartInstance = null;
+        }
+        container.innerHTML = `
+            <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
+                <i class="bi bi-clipboard-x text-secondary opacity-50 fs-2 mb-2"></i>
+                <div class="fw-semibold small text-dark">No Feedback Status Records</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">No feedback statuses recorded for this period in the database.</div>
+            </div>
+        `;
+        return;
+    }
+
+    let legendHtml = '';
+    (fsData.items || []).forEach(item => {
+        legendHtml += `
+            <div class="saas-legend-item">
+                <span class="saas-legend-dot" style="background: ${escapeHtml(item.color)};"></span>
+                <span class="saas-legend-name">${escapeHtml(item.label)}</span>
+                <span class="saas-legend-pct">${item.percent}%</span>
+                <span class="saas-legend-cnt">${item.count}</span>
+            </div>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="row align-items-center g-3 my-auto">
+            <div class="col-12 col-sm-5 text-center">
+                <div class="saas-donut-box">
+                    <canvas id="feedbackStatusDonut"></canvas>
+                    <div class="saas-donut-center">
+                        <div class="saas-donut-number">${Number(fsData.total).toLocaleString()}</div>
+                        <div class="saas-donut-label">Total Feedbacks</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-7">
+                <div class="d-flex flex-column gap-1">
+                    ${legendHtml}
+                </div>
+            </div>
+        </div>
+    `;
+
+    initFeedbackStatusChart(fsData.items);
+}
+
+window.switchWidgetRange = function(widgetKey, rangeKey, fallbackLabel) {
+    closeWidgetDropdown(widgetKey);
+
+    if (window.allWidgetsData && window.allWidgetsData[rangeKey]) {
+        const d = window.allWidgetsData[rangeKey];
+        const label = d.label || fallbackLabel;
+        updateWidgetLabel(widgetKey, label);
+
+        if (widgetKey === 'departments') {
+            renderDepartments(d.topLocations, d.hasTopLocations);
+        } else if (widgetKey === 'visitor_type') {
+            renderVisitorType(d.visitorTypes);
+        } else if (widgetKey === 'feedback_status') {
+            renderFeedbackStatus(d.feedbackStatuses);
+        }
+        return;
+    }
+
+    fetchWidgetData(widgetKey, { range: rangeKey });
+};
+
+window.applyWidgetCustomRange = function(event, widgetKey) {
+    event.preventDefault();
+    const fromInput = document.getElementById(widgetKey + '-from');
+    const toInput = document.getElementById(widgetKey + '-to');
+    if (!fromInput || !toInput || !fromInput.value || !toInput.value) return;
+
+    closeWidgetDropdown(widgetKey);
+    fetchWidgetData(widgetKey, { from: fromInput.value, to: toInput.value });
+};
+
+function fetchWidgetData(widgetKey, params) {
+    const url = new URL('{{ route("dashboard.widget_data") }}', window.location.origin);
+    url.searchParams.set('widget', widgetKey);
+    for (const [k, v] of Object.entries(params)) {
+        url.searchParams.set(k, v);
+    }
+
+    const container = document.getElementById(
+        widgetKey === 'departments' ? 'departmentsWidgetContainer' :
+        widgetKey === 'visitor_type' ? 'visitorTypeWidgetContainer' :
+        'feedbackStatusWidgetContainer'
+    );
+    if (container) container.style.opacity = '0.5';
+
+    fetch(url.toString(), {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (container) container.style.opacity = '1';
+        if (!res || !res.success) return;
+
+        if (res.range_label) {
+            updateWidgetLabel(widgetKey, res.range_label);
+        }
+
+        if (widgetKey === 'departments') {
+            renderDepartments(res.topLocations, res.hasTopLocations);
+        } else if (widgetKey === 'visitor_type') {
+            renderVisitorType(res.visitorTypes);
+        } else if (widgetKey === 'feedback_status') {
+            renderFeedbackStatus(res.feedbackStatuses);
+        }
+    })
+    .catch(err => {
+        if (container) container.style.opacity = '1';
+        console.error('Failed to load widget data', err);
+    });
+}
+
+function updateWidgetLabel(widgetKey, label) {
+    const labelEl = document.getElementById(
+        widgetKey === 'departments' ? 'departmentsRangeLabel' :
+        widgetKey === 'visitor_type' ? 'visitor_typeRangeLabel' :
+        'feedback_statusRangeLabel'
+    );
+    if (labelEl) labelEl.textContent = label;
+}
+
+function closeWidgetDropdown(widgetKey) {
+    const btn = document.getElementById(
+        widgetKey === 'departments' ? 'departmentsDropdownBtn' :
+        widgetKey === 'visitor_type' ? 'visitorTypeDropdownBtn' :
+        'feedbackStatusDropdownBtn'
+    );
+    if (btn && window.bootstrap && window.bootstrap.Dropdown) {
+        const instance = bootstrap.Dropdown.getInstance(btn);
+        if (instance) instance.hide();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Dual-Line Feedback Trends Chart with dynamic switching (30, 14, 7 days)
+    // 1. Dual-Line Feedback Trends Chart
     const trendsCtx = document.getElementById('feedbackTrendsChart');
-    let feedbackTrendsChartInstance = null;
     const allTrendsData = @json($allTrends ?? ['30' => $trendsData, '14' => $trendsData, '7' => $trendsData]);
 
     if (trendsCtx) {
         const ctx2d = trendsCtx.getContext('2d');
-        
-        // Soft Blue Gradient
-        const blueGrad = ctx2d.createLinearGradient(0, 0, 0, 240);
-        blueGrad.addColorStop(0, 'rgba(37, 99, 235, 0.18)');
-        blueGrad.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
+        const totalGrad = ctx2d.createLinearGradient(0, 0, 0, 240);
+        totalGrad.addColorStop(0, 'rgba(37, 99, 235, 0.22)');
+        totalGrad.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
 
-        // Soft Green Gradient
-        const greenGrad = ctx2d.createLinearGradient(0, 0, 0, 240);
-        greenGrad.addColorStop(0, 'rgba(16, 185, 129, 0.18)');
-        greenGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+        const posGrad = ctx2d.createLinearGradient(0, 0, 0, 240);
+        posGrad.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+        posGrad.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
 
-        const initialTrends = allTrendsData['30'] || @json($trendsData);
-
-        feedbackTrendsChartInstance = new Chart(trendsCtx, {
+        feedbackTrendsChartInstance = new Chart(ctx2d, {
             type: 'line',
             data: {
-                labels: initialTrends.labels,
+                labels: allTrendsData['30'] ? allTrendsData['30'].labels : [],
                 datasets: [
                     {
                         label: 'Total Feedbacks',
-                        data: initialTrends.total,
+                        data: allTrendsData['30'] ? allTrendsData['30'].total : [],
                         borderColor: '#2563eb',
-                        backgroundColor: blueGrad,
-                        borderWidth: 2.5,
-                        tension: 0.4,
+                        backgroundColor: totalGrad,
                         fill: true,
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
                         pointBackgroundColor: '#2563eb',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
                     },
                     {
                         label: 'Positive Feedbacks',
-                        data: initialTrends.positive,
+                        data: allTrendsData['30'] ? allTrendsData['30'].positive : [],
                         borderColor: '#10b981',
-                        backgroundColor: greenGrad,
-                        borderWidth: 2.5,
-                        tension: 0.4,
+                        backgroundColor: posGrad,
                         fill: true,
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
                         pointBackgroundColor: '#10b981',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: '#0f172a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e8f0',
                         padding: 10,
                         cornerRadius: 8,
-                        titleFont: { size: 12, weight: '600' },
-                        bodyFont: { size: 11 }
                     }
                 },
                 scales: {
                     x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: { size: 11, weight: '500' },
-                            color: '#94a3b8'
-                        }
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11 } }
                     },
                     y: {
                         beginAtZero: true,
-                        grid: {
-                            color: '#f8fafc'
-                        },
+                        grid: { color: '#f1f5f9' },
                         ticks: {
-                            precision: 0,
+                            color: '#94a3b8',
                             font: { size: 11 },
-                            color: '#94a3b8'
+                            stepSize: 1,
+                            precision: 0
                         }
                     }
                 }
@@ -515,152 +936,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Dynamic Period Switcher for Trends Chart
-    window.updateTrendsPeriod = function(period) {
-        if (!feedbackTrendsChartInstance || !allTrendsData[period]) return;
-        const target = allTrendsData[period];
-        const hasData = target.has_data !== undefined ? target.has_data : target.total.some(v => v > 0);
-        const canvas = document.getElementById('feedbackTrendsChart');
+
+    window.updateTrendsPeriod = function(days) {
+        if (!feedbackTrendsChartInstance) return;
+        const nextData = allTrendsData[days] || allTrendsData['30'];
         const emptyNotice = document.getElementById('trendsEmptyNotice');
+        const chartCanvas = document.getElementById('feedbackTrendsChart');
 
-        if (!hasData) {
-            if (canvas) canvas.classList.add('d-none');
-            if (emptyNotice) {
-                emptyNotice.classList.remove('d-none');
-                emptyNotice.classList.add('d-flex');
-            }
-        } else {
-            if (emptyNotice) {
-                emptyNotice.classList.add('d-none');
-                emptyNotice.classList.remove('d-flex');
-            }
-            if (canvas) canvas.classList.remove('d-none');
-            feedbackTrendsChartInstance.data.labels = target.labels;
-            feedbackTrendsChartInstance.data.datasets[0].data = target.total;
-            feedbackTrendsChartInstance.data.datasets[1].data = target.positive;
+        if (nextData && nextData.has_data) {
+            if (emptyNotice) emptyNotice.classList.add('d-none');
+            if (chartCanvas) chartCanvas.classList.remove('d-none');
+
+            feedbackTrendsChartInstance.data.labels = nextData.labels;
+            feedbackTrendsChartInstance.data.datasets[0].data = nextData.total;
+            feedbackTrendsChartInstance.data.datasets[1].data = nextData.positive;
             feedbackTrendsChartInstance.update();
+        } else {
+            if (emptyNotice) emptyNotice.classList.remove('d-none');
+            if (chartCanvas) chartCanvas.classList.add('d-none');
         }
     };
 
-    // Common Donut Options
-    const commonDonutOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '76%',
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#0f172a',
-                padding: 8,
-                cornerRadius: 8
-            }
-        }
-    };
-
-    // 2. Feedback Rating Distribution Donut
-    const ratingDonutCtx = document.getElementById('ratingDistributionDonut');
-    if (ratingDonutCtx) {
-        const ratingItems = @json($ratingDist['items']);
-        const hasRatingData = ratingItems.some(i => i.count > 0);
-        new Chart(ratingDonutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: hasRatingData ? ratingItems.map(i => i.label) : ['No Feedbacks Yet'],
-                datasets: [{
-                    data: hasRatingData ? ratingItems.map(i => i.count) : [1],
-                    backgroundColor: hasRatingData ? ratingItems.map(i => i.color) : ['#e2e8f0'],
-                    borderWidth: 0,
-                    hoverOffset: hasRatingData ? 3 : 0
-                }]
-            },
-            options: {
-                ...commonDonutOptions,
-                plugins: {
-                    ...commonDonutOptions.plugins,
-                    tooltip: {
-                        enabled: hasRatingData
-                    }
-                }
-            }
-        });
+    // 2. Initial Donut Charts
+    const initialRatingItems = @json($ratingDist['items'] ?? []);
+    if (initialRatingItems.length > 0) {
+        initRatingDistributionChart(initialRatingItems);
     }
 
-    // 3. Visitor Type Donut
-    const visitorTypeCtx = document.getElementById('visitorTypeDonut');
-    if (visitorTypeCtx) {
-        const vtItems = @json($visitorTypes['items']);
-        const hasVtData = vtItems.some(i => i.count > 0);
-        new Chart(visitorTypeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: hasVtData ? vtItems.map(i => i.label) : ['No Visitors Recorded'],
-                datasets: [{
-                    data: hasVtData ? vtItems.map(i => i.count) : [1],
-                    backgroundColor: hasVtData ? vtItems.map(i => i.color) : ['#e2e8f0'],
-                    borderWidth: 0,
-                    hoverOffset: hasVtData ? 3 : 0
-                }]
-            },
-            options: {
-                ...commonDonutOptions,
-                plugins: {
-                    ...commonDonutOptions.plugins,
-                    tooltip: {
-                        enabled: hasVtData
-                    }
-                }
-            }
-        });
+    const initialVtItems = @json($visitorTypes['items'] ?? []);
+    if (initialVtItems.length > 0) {
+        initVisitorTypeChart(initialVtItems);
     }
 
-    // 4. Feedback Status Donut
-    const feedbackStatusCtx = document.getElementById('feedbackStatusDonut');
-    if (feedbackStatusCtx) {
-        const fsItems = @json($feedbackStatuses['items']);
-        const hasFsData = fsItems.some(i => i.count > 0);
-        new Chart(feedbackStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: hasFsData ? fsItems.map(i => i.label) : ['No Records'],
-                datasets: [{
-                    data: hasFsData ? fsItems.map(i => i.count) : [1],
-                    backgroundColor: hasFsData ? fsItems.map(i => i.color) : ['#e2e8f0'],
-                    borderWidth: 0,
-                    hoverOffset: hasFsData ? 3 : 0
-                }]
-            },
-            options: {
-                ...commonDonutOptions,
-                plugins: {
-                    ...commonDonutOptions.plugins,
-                    tooltip: {
-                        enabled: hasFsData
-                    }
-                }
-            }
-        });
+    const initialFsItems = @json($feedbackStatuses['items'] ?? []);
+    if (initialFsItems.length > 0) {
+        initFeedbackStatusChart(initialFsItems);
     }
-
-    // 5. Live Feed Real-Time Background Heartbeat (every 30s)
-    setInterval(function() {
-        fetch('{{ route("dashboard.live_feed") }}', {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data || !data.success) return;
-            const footnoteEl = document.getElementById('footnoteTodayVisitors');
-            if (footnoteEl && data.counts && data.counts.all !== undefined) {
-                footnoteEl.textContent = data.counts.all;
-            }
-        })
-        .catch(err => {
-            // Idle background poll
-        });
-    }, 30000);
 });
 </script>
 @endpush

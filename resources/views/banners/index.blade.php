@@ -21,61 +21,61 @@
     <div class="row g-3">
         <!-- 1. Total Banners -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/media-library.svg" width="48" height="48" alt="Media Library">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($totalBanners) }}</div>
-                            <div class="saas-stat-label">Total banners</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box blue">
+                    <i class="bi bi-images"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Total Banners</div>
+                    <div class="saas-metric-value">{{ number_format($totalBanners) }}</div>
+                    <div class="saas-trend-badge cyan">
+                        <span>Media</span>
                     </div>
-                    <span class="saas-stat-badge cyan">Media</span>
                 </div>
             </div>
         </div>
         <!-- 2. Live Banners -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/kiosk-live.svg" width="48" height="48" alt="Live Banners">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($activeBanners) }}</div>
-                            <div class="saas-stat-label">Active on kiosk</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box green">
+                    <i class="bi bi-display"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Active on Kiosk</div>
+                    <div class="saas-metric-value">{{ number_format($activeBanners) }}</div>
+                    <div class="saas-trend-badge green">
+                        <span>Live</span>
                     </div>
-                    <span class="saas-stat-badge emerald">Live</span>
                 </div>
             </div>
         </div>
         <!-- 3. Offline Banners -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/hidden-draft.svg" width="48" height="48" alt="Offline Banners">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($inactiveBanners) }}</div>
-                            <div class="saas-stat-label">Hidden / Draft</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box amber">
+                    <i class="bi bi-eye-slash-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Hidden / Draft</div>
+                    <div class="saas-metric-value">{{ number_format($inactiveBanners) }}</div>
+                    <div class="saas-trend-badge amber">
+                        <span>Offline</span>
                     </div>
-                    <span class="saas-stat-badge amber">Offline</span>
                 </div>
             </div>
         </div>
         <!-- 4. Device Targets -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/devices.svg" width="48" height="48" alt="Device Targets">
-                        <div>
-                            <div class="saas-stat-value">3 Devices</div>
-                            <div class="saas-stat-label">Mobile • Tablet • Web</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box purple">
+                    <i class="bi bi-phone"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Mobile • Tablet • Web</div>
+                    <div class="saas-metric-value">3 Devices</div>
+                    <div class="saas-trend-badge indigo">
+                        <span>Omnichannel</span>
                     </div>
-                    <span class="saas-stat-badge indigo">Omnichannel</span>
                 </div>
             </div>
         </div>

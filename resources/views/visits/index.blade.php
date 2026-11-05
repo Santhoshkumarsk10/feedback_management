@@ -13,64 +13,64 @@
 <div class="row g-3">
     <!-- 1. Total Visitors -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/registered-visitors.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalVisits) }}</div>
-                        <div class="saas-stat-label">Total registered visitors</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Total Registered Visitors</div>
+                <div class="saas-metric-value">{{ number_format($totalVisits) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <span>Delegations</span>
                 </div>
-                <span class="saas-stat-badge cyan">Delegations</span>
             </div>
         </div>
     </div>
 
     <!-- 2. Feedback Submitted -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/surveyed.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($completedVisits) }}</div>
-                        <div class="saas-stat-label">Feedback submitted</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-chat-left-dots-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Feedback Submitted</div>
+                <div class="saas-metric-value">{{ number_format($completedVisits) }}</div>
+                <div class="saas-trend-badge green">
+                    <span>Surveyed</span>
                 </div>
-                <span class="saas-stat-badge emerald">Surveyed</span>
             </div>
         </div>
     </div>
 
     <!-- 3. Pending Feedback -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/awaiting-feedback.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($pendingVisits) }}</div>
-                        <div class="saas-stat-label">Pending feedback</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Pending Feedback</div>
+                <div class="saas-metric-value">{{ number_format($pendingVisits) }}</div>
+                <div class="saas-trend-badge amber">
+                    <span>Awaiting</span>
                 </div>
-                <span class="saas-stat-badge amber">Awaiting</span>
             </div>
         </div>
     </div>
 
     <!-- 4. Response Rate -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/engagement.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ $completionRate }}%</div>
-                        <div class="saas-stat-label">Feedback response rate</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box purple">
+                <i class="bi bi-pie-chart-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Feedback Response Rate</div>
+                <div class="saas-metric-value">{{ $completionRate }}%</div>
+                <div class="saas-trend-badge purple">
+                    <span>Engagement</span>
                 </div>
-                <span class="saas-stat-badge indigo">Engagement</span>
             </div>
         </div>
     </div>

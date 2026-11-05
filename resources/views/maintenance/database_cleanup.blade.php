@@ -21,47 +21,47 @@
     <!-- KPI Summary Overview -->
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
-            <div class="stat-card-widget cyan h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">TOTAL TABLES</span>
-                    <div class="stat-icon-bubble cyan">
-                        <i class="bi bi-database-fill"></i>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box cyan">
+                    <i class="bi bi-database-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Total Tables</div>
+                    <div class="saas-metric-value">{{ count($unshieldedTables) + count($protectedTables) }}</div>
+                    <div class="saas-trend-badge cyan">
+                        <i class="bi bi-layers me-1"></i><span>Schema Tables</span>
                     </div>
                 </div>
-                <div class="stat-metric-number">{{ count($unshieldedTables) + count($protectedTables) }}</div>
-                <span class="stat-pill-trend neutral">
-                    <i class="bi bi-layers"></i> Schema Tables
-                </span>
             </div>
         </div>
 
         <div class="col-12 col-md-4">
-            <div class="stat-card-widget emerald h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">UNSHIELDED (CLEARABLE)</span>
-                    <div class="stat-icon-bubble emerald">
-                        <i class="bi bi-unlock-fill"></i>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box green">
+                    <i class="bi bi-unlock-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Unshielded Tables</div>
+                    <div class="saas-metric-value">{{ count($unshieldedTables) }}</div>
+                    <div class="saas-trend-badge green">
+                        <i class="bi bi-table me-1"></i><span>{{ number_format($totalUnshieldedRows) }} Total Rows</span>
                     </div>
                 </div>
-                <div class="stat-metric-number">{{ count($unshieldedTables) }}</div>
-                <span class="stat-pill-trend up">
-                    <i class="bi bi-table"></i> {{ number_format($totalUnshieldedRows) }} Total Rows
-                </span>
             </div>
         </div>
 
         <div class="col-12 col-md-4">
-            <div class="stat-card-widget rose h-100">
-                <div class="stat-widget-header">
-                    <span class="stat-label-text">PROTECTED (SHIELDED)</span>
-                    <div class="stat-icon-bubble rose">
-                        <i class="bi bi-shield-lock-fill"></i>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box rose">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Protected Tables</div>
+                    <div class="saas-metric-value">{{ count($protectedTables) }}</div>
+                    <div class="saas-trend-badge rose">
+                        <i class="bi bi-lock-fill me-1"></i><span>{{ number_format($totalProtectedRows) }} Rows Locked</span>
                     </div>
                 </div>
-                <div class="stat-metric-number">{{ count($protectedTables) }}</div>
-                <span class="stat-pill-trend down">
-                    <i class="bi bi-lock-fill"></i> {{ number_format($totalProtectedRows) }} Rows Locked
-                </span>
             </div>
         </div>
     </div>

@@ -23,64 +23,64 @@
     <div class="row g-3">
         <!-- 1. Total Questions -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/total-questions.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($totalQuestions) }}</div>
-                            <div class="saas-stat-label">Total questions</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box blue">
+                    <i class="bi bi-patch-question-fill"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Total Questions</div>
+                    <div class="saas-metric-value">{{ number_format($totalQuestions) }}</div>
+                    <div class="saas-trend-badge cyan">
+                        <span>Survey criteria</span>
                     </div>
-                    <span class="saas-stat-badge slate">Survey criteria</span>
                 </div>
             </div>
         </div>
 
         <!-- 2. Active Sections -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/active-sections.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($totalSections) }}</div>
-                            <div class="saas-stat-label">Active sections</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box green">
+                    <i class="bi bi-ui-checks-grid"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Active Sections</div>
+                    <div class="saas-metric-value">{{ number_format($totalSections) }}</div>
+                    <div class="saas-trend-badge green">
+                        <span>Questions Category</span>
                     </div>
-                    <span class="saas-stat-badge emerald">Questions Category</span>
                 </div>
             </div>
         </div>
 
         <!-- 3. Mandatory Fields -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/mandatory-fields.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($mandatoryCount) }}</div>
-                            <div class="saas-stat-label">Mandatory Questions</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box amber">
+                    <i class="bi bi-asterisk"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Mandatory Questions</div>
+                    <div class="saas-metric-value">{{ number_format($mandatoryCount) }}</div>
+                    <div class="saas-trend-badge amber">
+                        <span>Required</span>
                     </div>
-                    <span class="saas-stat-badge amber">Required</span>
                 </div>
             </div>
         </div>
 
         <!-- 4. Live Status -->
         <div class="col-6 col-lg-3">
-            <div class="saas-stat-card">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="/icons/live-status.svg" width="48" height="48" alt="">
-                        <div>
-                            <div class="saas-stat-value">{{ number_format($activeQuestions) }}</div>
-                            <div class="saas-stat-label">Live status</div>
-                        </div>
+            <div class="saas-metric-card h-100">
+                <div class="saas-icon-box purple">
+                    <i class="bi bi-broadcast"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">Live Status</div>
+                    <div class="saas-metric-value">{{ number_format($activeQuestions) }}</div>
+                    <div class="saas-trend-badge indigo">
+                        <span>Published</span>
                     </div>
-                    <span class="saas-stat-badge indigo">Published</span>
                 </div>
             </div>
         </div>

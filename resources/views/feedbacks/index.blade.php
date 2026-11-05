@@ -13,64 +13,64 @@
 <div class="row g-3">
     <!-- 1. Total Feedback -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/total-feedbacks.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($totalFeedbacks) }}</div>
-                        <div class="saas-stat-label">Total feedback submissions</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box blue">
+                <i class="bi bi-chat-square-text-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">Total Feedback Submissions</div>
+                <div class="saas-metric-value">{{ number_format($totalFeedbacks) }}</div>
+                <div class="saas-trend-badge cyan">
+                    <span>Surveyed</span>
                 </div>
-                <span class="saas-stat-badge cyan">Surveyed</span>
             </div>
         </div>
     </div>
 
     <!-- 2. 5-Star Ratings -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/positive-feedbacks.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($fiveStar) }}</div>
-                        <div class="saas-stat-label">5-Star exceptional reviews</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box green">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">5-Star Exceptional Reviews</div>
+                <div class="saas-metric-value">{{ number_format($fiveStar) }}</div>
+                <div class="saas-trend-badge green">
+                    <span>Top Tier</span>
                 </div>
-                <span class="saas-stat-badge emerald">Top Tier</span>
             </div>
         </div>
     </div>
 
     <!-- 3. 4-Star Ratings -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/average-rating.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($fourStar) }}</div>
-                        <div class="saas-stat-label">4-Star positive reviews</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box amber">
+                <i class="bi bi-hand-thumbs-up-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">4-Star Positive Reviews</div>
+                <div class="saas-metric-value">{{ number_format($fourStar) }}</div>
+                <div class="saas-trend-badge amber">
+                    <span>Good</span>
                 </div>
-                <span class="saas-stat-badge amber">Good</span>
             </div>
         </div>
     </div>
 
     <!-- 4. Critical Ratings -->
     <div class="col-6 col-lg-3">
-        <div class="saas-stat-card">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="/icons/pending-actions.svg" width="48" height="48" alt="">
-                    <div>
-                        <div class="saas-stat-value">{{ number_format($critical) }}</div>
-                        <div class="saas-stat-label">≤ 3-Star feedback actions</div>
-                    </div>
+        <div class="saas-metric-card h-100">
+            <div class="saas-icon-box rose">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <div class="saas-metric-title">≤ 3-Star Feedback Actions</div>
+                <div class="saas-metric-value">{{ number_format($critical) }}</div>
+                <div class="saas-trend-badge rose">
+                    <span>Attention</span>
                 </div>
-                <span class="saas-stat-badge rose">Attention</span>
             </div>
         </div>
     </div>
