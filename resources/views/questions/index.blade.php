@@ -465,7 +465,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                    <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn-modern-primary btn-sm px-4">
@@ -491,8 +491,7 @@
                                 <i class="bi bi-pencil-square text-emerald-600 fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="modal-title fw-bold text-dark mb-0" id="editQuestionModalLabel">Edit
-                                    Questionnaire Item</h5>
+                                <h5 class="modal-title fw-bold text-dark mb-0" id="editQuestionModalLabel">Edit Questions</h5>
                                 <p class="text-muted small mb-0">Modify question prompt, scoring, and configuration</p>
                             </div>
                         </div>
@@ -563,7 +562,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                    <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-secondary btn-sm"
                             data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn-modern-primary btn-sm px-4">

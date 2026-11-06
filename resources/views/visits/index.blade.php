@@ -7,12 +7,6 @@
 @section('page_title', 'Plant Visitor Directory')
 @section('page_subtitle', 'Browse all plant visitors, escort assignments, and feedback statuses')
 
-@section('topbar_banner')
-    <div class="d-none d-xl-flex align-items-center ms-2" title="Shibaura Machine Plant Facility">
-        <img src="{{ asset('images/plants/plant-hero-banner.jpg') }}" alt="Shibaura Machine Facility" style="height: 42px; width: 210px; object-fit: cover; border-radius: 9px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-    </div>
-@endsection
-
 @section('content')
 @php
     $totalVisits = $tabCounts['all'] ?? 0;
@@ -24,16 +18,23 @@
     // Color palette for visitor avatar circles
     $avatarPalette = ['#10b981', '#3b82f6', '#8b5cf6', '#f43f5e', '#06b6d4', '#d97706'];
 
-    // Staff dropdown options
+    // Staff dropdown options (Coordinator-role users only)
+    $coordinatorOrganizers = $organizers->filter(function ($o) {
+        $rName = strtolower($o->role ?? '');
+        return $rName === 'coordinator'
+            || (method_exists($o, 'hasRole') && $o->hasRole('coordinator'))
+            || (isset($o->roleModel) && strtolower($o->roleModel->slug ?? $o->roleModel->name ?? '') === 'coordinator');
+    });
+
     $staffOptions = collect([['value' => '', 'label' => 'All Staff']])
-        ->concat($organizers->map(fn($o) => ['value' => (string)$o->id, 'label' => $o->name]))
+        ->concat($coordinatorOrganizers->map(fn($o) => ['value' => (string)$o->id, 'label' => $o->name]))
         ->toArray();
 @endphp
 
 <!-- SUMMARY METRIC CARDS ROW (5-Column Reference Design) -->
 <div class="visit-metrics-grid">
     <!-- 1. Total Registered Visitors -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])) }}" class="visit-metric-card">
+    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])) }}" class="visit-metric-card {{ ($currentTab ?? 'all') === 'all' && !request('today') ? 'active-metric-card' : '' }}" title="View all registered visitors">
         <div class="visit-metric-content">
             <div class="visit-metric-icon green">
                 <i class="bi bi-people-fill"></i>
@@ -53,7 +54,7 @@
     </a>
 
     <!-- 2. Feedback Submitted -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card">
+    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'completed' && !request('today') ? 'active-metric-card' : '' }}" title="View visitors with submitted feedback">
         <div class="visit-metric-content">
             <div class="visit-metric-icon blue">
                 <i class="bi bi-clipboard-check-fill"></i>
@@ -73,7 +74,7 @@
     </a>
 
     <!-- 3. Pending Feedback -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'pending'])) }}" class="visit-metric-card">
+    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'pending'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'pending' && !request('today') ? 'active-metric-card' : '' }}" title="View visitors with pending feedback">
         <div class="visit-metric-content">
             <div class="visit-metric-icon amber">
                 <i class="bi bi-hourglass-split"></i>
@@ -93,7 +94,7 @@
     </a>
 
     <!-- 4. Feedback Response Rate -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card">
+    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card" title="Feedback submission rate">
         <div class="visit-metric-content">
             <div class="visit-metric-icon purple">
                 <i class="bi bi-chat-dots-fill"></i>
@@ -113,7 +114,7 @@
     </a>
 
     <!-- 5. Today's Visitors -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['today' => 1])) }}" class="visit-metric-card">
+    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), request('today') ? [] : ['today' => 1])) }}" class="visit-metric-card {{ request('today') ? 'active-metric-card' : '' }}" title="{{ request('today') ? 'Click to show all visitors' : 'Click to filter by today\'s visitors' }}">
         <div class="visit-metric-content">
             <div class="visit-metric-icon emerald">
                 <i class="bi bi-person-check-fill"></i>
@@ -174,6 +175,7 @@
             auto-submit
         />
 
+        @if(!auth()->user()?->isCoordinator())
         <!-- All Staff Filter Dropdown -->
         <x-custom-select 
             name="organizer_id" 
@@ -184,6 +186,7 @@
             auto-submit 
             min-width="155px" 
         />
+        @endif
 
         <!-- More Filters Dropdown -->
         <div class="dropdown">
@@ -288,7 +291,12 @@
             <div class="visit-dir-sub">
                 Showing {{ $visits->firstItem() ?? 0 }} - {{ $visits->lastItem() ?? 0 }} of {{ $visits->total() }} visitors
                 @if(!empty($isTodayFilter))
-                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-2">Today's Visits Only</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle ms-2 d-inline-flex align-items-center gap-1">
+                        Today's Visits Only
+                        <a href="{{ route('visits.index', request()->except(['today', 'page'])) }}" class="text-success ms-1 text-decoration-none" title="Clear today filter">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </a>
+                    </span>
                 @endif
                 @if(request('tab') === 'completed')
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">Completed Feedback</span>
@@ -320,7 +328,9 @@
                     <th style="min-width: 220px;">VISITOR DETAILS</th>
                     <th style="min-width: 200px;">COMPANY / ORGANIZATION</th>
                     <th style="min-width: 190px;">PURPOSE</th>
-                    <th style="min-width: 170px;">ASSIGNED STAFF</th>
+                    @if(!auth()->user()?->isCoordinator())
+                        <th style="min-width: 170px;">ASSIGNED STAFF</th>
+                    @endif
                     <th style="min-width: 120px;">STATUS</th>
                     <th style="min-width: 110px;" class="text-end">ACTIONS</th>
                 </tr>
@@ -445,6 +455,7 @@
                         </div>
                     </td>
 
+                    @if(!auth()->user()?->isCoordinator())
                     <!-- 5. ASSIGNED STAFF -->
                     <td>
                         <div class="staff-cell">
@@ -455,6 +466,7 @@
                             </div>
                         </div>
                     </td>
+                    @endif
 
                     <!-- 6. STATUS -->
                     <td>
@@ -526,9 +538,17 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
+                    <td colspan="{{ auth()->user()?->isCoordinator() ? '6' : '7' }}" class="text-center text-muted py-5">
                         <i class="bi bi-calendar-x fs-2 d-block mb-2 text-slate-300"></i>
-                        No visitor records match the selected criteria.
+                        @if(!empty($isTodayFilter))
+                            <div class="fw-medium text-dark">No visitor records found for today.</div>
+                            <div class="small text-muted mb-2">There are currently no visits registered for today's date.</div>
+                            <a href="{{ route('visits.index', request()->except(['today', 'page'])) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="bi bi-people me-1"></i>View All Visitors
+                            </a>
+                        @else
+                            No visitor records match the selected criteria.
+                        @endif
                     </td>
                 </tr>
             @endforelse
@@ -573,10 +593,12 @@
                             <span class="text-muted"><i class="bi bi-calendar3 me-1"></i>Date:</span>
                             <span class="fw-semibold text-dark">{{ $v->visit_date ? $v->visit_date->format('d M Y') : '—' }}</span>
                         </div>
+                        @if(!auth()->user()?->isCoordinator())
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted"><i class="bi bi-person me-1"></i>Staff:</span>
                             <span class="fw-semibold text-dark">{{ $v->organizer ? $v->organizer->name : 'Unassigned' }}</span>
                         </div>
+                        @endif
                         <div class="d-flex justify-content-between">
                             <span class="text-muted"><i class="bi bi-telephone me-1"></i>Phone:</span>
                             <span class="fw-semibold text-dark">{{ $v->visitor_mobile ? '+91 ' . $v->visitor_mobile : '—' }}</span>
@@ -595,7 +617,16 @@
             </div>
         @empty
             <div class="col-12 text-center text-muted py-5">
-                No visitor records found.
+                <i class="bi bi-calendar-x fs-2 d-block mb-2 text-slate-300"></i>
+                @if(!empty($isTodayFilter))
+                    <div class="fw-medium text-dark">No visitor records found for today.</div>
+                    <div class="small text-muted mb-2">There are currently no visits registered for today's date.</div>
+                    <a href="{{ route('visits.index', request()->except(['today', 'page'])) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <i class="bi bi-people me-1"></i>View All Visitors
+                    </a>
+                @else
+                    No visitor records found.
+                @endif
             </div>
         @endforelse
     </div>

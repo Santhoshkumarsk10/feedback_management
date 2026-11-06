@@ -27,6 +27,7 @@ class VisitController extends Controller
 
         $tab = $request->input('tab', 'all');
         $isTodayFilter = $request->boolean('today') || $request->input('date_filter') === 'today';
+        $isCoordinator = auth()->user()?->isCoordinator();
         $perPage = (int) $request->input('per_page', 10);
         if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
@@ -36,7 +37,7 @@ class VisitController extends Controller
             ->when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
             ->when(! $isTodayFilter && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
             ->when(! $isTodayFilter && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
-            ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
+            ->when(! $isCoordinator && $request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
                 ->orWhereHas('visitor', fn ($vq) => $vq
@@ -46,10 +47,9 @@ class VisitController extends Controller
             ->when($tab === 'completed', fn ($q) => $q->has('feedback'))
             ->when($tab === 'pending', fn ($q) => $q->doesntHave('feedback'));
 
-        $baseCount = Visit::when($isTodayFilter, fn ($q) => $q->whereDate('visit_date', today()))
-            ->when(! $isTodayFilter && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
+        $baseCount = Visit::when(! $isTodayFilter && $request->filled('from'), fn ($q) => $q->whereDate('visit_date', '>=', $request->input('from')))
             ->when(! $isTodayFilter && $request->filled('to'), fn ($q) => $q->whereDate('visit_date', '<=', $request->input('to')))
-            ->when($request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
+            ->when(! $isCoordinator && $request->organizer_id, fn ($q, $v) => $q->where('organizer_id', $v))
             ->when($request->q, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('visitor_code', 'like', "%$v%")
                 ->orWhereHas('visitor', fn ($vq) => $vq
@@ -80,7 +80,7 @@ class VisitController extends Controller
 
         return view('visits.index', [
             'visits' => $visits,
-            'organizers' => User::where('is_active', true)->orderBy('name')->get(['id', 'name', 'department']),
+            'organizers' => User::where('is_active', true)->coordinators()->orderBy('name')->get(['id', 'name', 'department', 'role']),
             'tabCounts' => [
                 'all' => $totalCount,
                 'completed' => $completedCount,
@@ -96,7 +96,7 @@ class VisitController extends Controller
 
     public function create()
     {
-        $organizers = User::where('is_active', true)->orderBy('name')->get(['id', 'name', 'role', 'department']);
+        $organizers = User::where('is_active', true)->coordinators()->orderBy('name')->get(['id', 'name', 'role', 'department']);
 
         return view('visits.create', compact('organizers'));
     }
@@ -188,7 +188,7 @@ class VisitController extends Controller
 
         $visit->load(['organizer', 'plant']);
         $plants = Plant::where('is_active', true)->orderBy('name')->get();
-        $organizers = User::where('is_active', true)->orderBy('name')->get();
+        $organizers = User::where('is_active', true)->coordinators()->orderBy('name')->get();
         $questions = Question::active()->get();
         $sections = $questions->groupBy(fn ($q) => $q->section ?: 'General Questionnaire');
 
