@@ -123,6 +123,7 @@
                 auto-submit
             />
 
+            @if(!auth()->user()?->isCoordinator())
             <x-custom-select 
                 name="organizer_id" 
                 :value="request('organizer_id')" 
@@ -130,9 +131,10 @@
                 search-placeholder="Search staff..." 
                 icon="bi-person-badge" 
                 min-width="160px" 
-                :options="$organizers->map(fn($o) => ['value' => $o->id, 'label' => $o->name])" 
+                :options="$organizers->filter(fn($o) => strtolower($o->role ?? '') === 'coordinator' || (method_exists($o, 'hasRole') && $o->hasRole('coordinator')))->map(fn($o) => ['value' => $o->id, 'label' => $o->name])" 
                 auto-submit
             />
+            @endif
 
             <x-custom-select 
                 name="rating" 

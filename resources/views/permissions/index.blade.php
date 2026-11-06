@@ -507,7 +507,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
                         <i class="bi bi-key-fill me-1"></i> Save Permission
@@ -593,7 +593,7 @@
                         </div>
                     @endif
                 </div>
-                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
                         <i class="bi bi-check2-circle me-1"></i> {{ $isSuperAdmin ? 'Update Permission' : 'Save Coordinator Access' }}

@@ -100,4 +100,24 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->role === 'admin' || (method_exists($this, 'hasRole') && $this->hasRole('admin'));
     }
+
+    /**
+     * Check if the user has coordinator role.
+     */
+    public function isCoordinator(): bool
+    {
+        return $this->role === 'coordinator' || (method_exists($this, 'hasRole') && $this->hasRole('coordinator'));
+    }
+
+    /**
+     * Scope a query to only include users with the coordinator role.
+     */
+    public function scopeCoordinators($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('role', 'coordinator')
+              ->orWhereHas('roles', fn ($rq) => $rq->where('name', 'coordinator'))
+              ->orWhereHas('roleModel', fn ($rq) => $rq->where('slug', 'coordinator')->orWhere('name', 'coordinator'));
+        });
+    }
 }
