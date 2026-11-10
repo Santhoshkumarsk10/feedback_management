@@ -15,12 +15,13 @@ use Illuminate\Validation\ValidationException;
 /** Public endpoints for the VISITOR app - no login. */
 class VisitorController extends Controller
 {
-    /** Screen 1: list of organizers to pick from. */
+    /** Screen 1: list of organizers (coordinators only) to pick from. */
     public function organizers()
     {
         return User::where('is_active', true)
-            ->whereIn('role', ['superadmin', 'admin', 'coordinator'])
-            ->orderBy('name')->get(['id', 'name', 'department', 'role']);
+            ->coordinators()
+            ->orderBy('name')
+            ->get(['id', 'name', 'department', 'role']);
     }
 
     /** List of active plants for visitors/kiosk to pick from. */
@@ -90,12 +91,12 @@ class VisitorController extends Controller
             'visitor_code' => 'nullable|string|max:100',
             'plant_id' => 'required|integer|exists:plants,id',
             'organizer_id' => 'required|integer',
-            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s\.\-’\']+$~u'],
-            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{M}\s\.\-’\']+$~u'],
+            'visitor_designation' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{M}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'visitor_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
-            'visitor_company' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'visitor_company' => ['nullable', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{M}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'visitor_email' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:150'],
-            'purpose' => ['nullable', 'string', 'min:2', 'max:255', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
+            'purpose' => ['nullable', 'string', 'min:2', 'max:255', 'regex:~^[\p{L}\p{M}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'overall_rating' => 'nullable|integer|between:1,5',
             'comments' => 'nullable|string|max:2000',
             'answers' => 'required|array|min:1',

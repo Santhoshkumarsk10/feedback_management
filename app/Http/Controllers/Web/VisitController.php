@@ -104,7 +104,7 @@ class VisitController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\s]+$~u'],
+            'visitor_name' => ['required', 'string', 'min:2', 'max:100', 'regex:~^[\p{L}\p{M}\s\.\-’\']+$~u'],
             'visitor_company' => ['required', 'string', 'min:2', 'max:150', 'regex:~^[\p{L}\p{N}\s\-–—_&/,\.()\'’]+$~u'],
             'visitor_mobile' => ['nullable', 'regex:/^[6-9][0-9]{9}$/'],
             'visitor_email' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/', 'max:150'],
