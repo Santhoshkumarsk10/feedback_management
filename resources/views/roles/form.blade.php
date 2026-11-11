@@ -4,7 +4,7 @@
 @section('page_subtitle', $role->exists ? 'Modify role metadata, descriptive responsibilities, and capability permissions' : 'Define a new organizational role and assign fine-grained capability permissions')
 
 @section('content')
-<div class="mb-3 d-flex align-items-center justify-content-between">
+<div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
     <a href="{{ route('roles.index') }}" class="btn-modern-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Back to Role List
     </a>
@@ -19,11 +19,11 @@
         @method('PUT')
     @endif
 
-    <div class="row g-4">
+    <div class="row g-3 g-lg-4">
         <!-- Main Role Form Column -->
         <div class="col-lg-8">
             <div class="card-modern mb-4" style="border-left: 4px solid var(--shibaura-blue);">
-                <div class="card-header bg-white">
+                <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div class="card-title">
                         <i class="bi bi-shield-lock-fill text-primary"></i>
                         <span>{{ $role->exists ? 'Role Specification' : 'New Role Configuration' }}</span>
@@ -35,7 +35,7 @@
                     @endif
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body p-3 p-md-4">
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-modern-label" for="role_name">Role Title / Display Name <span class="text-danger">*</span></label>
@@ -92,12 +92,12 @@
                     <!-- Active Status Switch -->
                     @if(!$role->is_system)
                         <div class="p-3 rounded-3 bg-light border border-slate-200">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="min-w-0">
                                     <div class="fw-semibold text-dark">Active Assignment Status</div>
                                     <div class="small text-muted">Active roles can be assigned to team members and administrators.</div>
                                 </div>
-                                <div class="form-check form-switch fs-5 m-0">
+                                <div class="form-check form-switch fs-5 m-0 flex-shrink-0">
                                     <input type="hidden" name="is_active" value="0">
                                     <input class="form-check-input" type="checkbox" name="is_active" value="1" id="role_act" @checked(old('is_active', $role->is_active ?? true))>
                                 </div>
@@ -111,13 +111,13 @@
 
             <!-- Permission Allocation Matrix -->
             <div class="card-modern">
-                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <div class="card-title">
                         <i class="bi bi-key-fill text-primary"></i>
                         <span>Capability Permissions Matrix</span>
                     </div>
                     @if($role->name !== 'superadmin')
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex flex-wrap align-items-center gap-2">
                             <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-3" id="btnSelectAllPerms">
                                 <i class="bi bi-check-all"></i> Select All
                             </button>
@@ -128,10 +128,10 @@
                     @endif
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body p-3 p-md-4">
                     @if($role->name === 'superadmin')
-                        <div class="alert alert-info d-flex align-items-center gap-3 mb-0">
-                            <i class="bi bi-shield-check fs-2 text-primary"></i>
+                        <div class="alert alert-info d-flex align-items-start align-items-sm-center gap-3 mb-0">
+                            <i class="bi bi-shield-check fs-2 text-primary flex-shrink-0"></i>
                             <div>
                                 <div class="fw-bold">Full Administrative Privileges</div>
                                 <div class="small text-muted">The Super Administrator role inherently possesses all current and future capabilities across the platform. Permissions are permanently enabled.</div>
@@ -145,13 +145,13 @@
                         <div class="d-flex flex-column gap-4">
                             @foreach($groupedPermissions as $module => $perms)
                                 <div class="border rounded-3 p-3 bg-white shadow-xs module-perm-block">
-                                    <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="bi bi-folder2-open text-primary fs-5"></i>
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 mb-3 border-bottom">
+                                        <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
+                                            <i class="bi bi-folder2-open text-primary fs-5 flex-shrink-0"></i>
                                             <span class="fw-bold text-dark fs-6">{{ $module }}</span>
                                             <span class="badge-modern badge-slate py-0 px-2 fs-xs">{{ count($perms) }} Capabilities</span>
                                         </div>
-                                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none module-toggle-btn" style="font-size: 0.8rem;">
+                                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none module-toggle-btn flex-shrink-0" style="font-size: 0.8rem;">
                                             Toggle All in Group
                                         </button>
                                     </div>
@@ -161,9 +161,9 @@
                                             @php
                                                 $isChecked = in_array($p->name, old('permissions', $rolePermissions ?? []));
                                             @endphp
-                                            <div class="col-md-6">
+                                            <div class="col-12 col-md-6">
                                                 <div class="p-2 rounded-2 border bg-light-subtle h-100 perm-card d-flex gap-2 align-items-start">
-                                                    <div class="form-check mt-1">
+                                                    <div class="form-check mt-1 flex-shrink-0">
                                                         <input class="form-check-input perm-checkbox" 
                                                                type="checkbox" 
                                                                name="permissions[]" 
@@ -171,9 +171,9 @@
                                                                id="perm_{{ $p->id }}"
                                                                @checked($isChecked)>
                                                     </div>
-                                                    <label class="form-check-label flex-grow-1 cursor-pointer" for="perm_{{ $p->id }}">
+                                                    <label class="form-check-label flex-grow-1 cursor-pointer role-perm-item-label" for="perm_{{ $p->id }}">
                                                         <div class="fw-semibold text-dark small">{{ $p->title }}</div>
-                                                        <code class="text-primary fs-xs d-block">{{ $p->name }}</code>
+                                                        <code class="text-primary fs-xs d-block text-break">{{ $p->name }}</code>
                                                         @if($p->description)
                                                             <div class="text-muted fs-xs mt-1" style="line-height: 1.3;">
                                                                 {{ $p->description }}
@@ -192,7 +192,7 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="d-flex align-items-center gap-2 mt-4">
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
                 <button type="submit" class="btn-modern-primary">
                     <i class="bi bi-check-lg"></i> {{ $role->exists ? 'Save Changes' : 'Create Role' }}
                 </button>
@@ -211,7 +211,7 @@
                         <span>Role Design Guidelines</span>
                     </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body p-3 p-md-4">
                     <h6 class="fw-bold fs-6 mb-2">Role Best Practices</h6>
                     <ul class="small text-muted ps-3 mb-3">
                         <li class="mb-1"><strong>Staff:</strong> Restrict to viewing/managing visitors, gathering reviews, and tablet mobile app.</li>

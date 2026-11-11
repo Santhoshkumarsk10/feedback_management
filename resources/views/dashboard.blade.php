@@ -7,104 +7,52 @@
 <div class="saas-dashboard-container">
 
     <!-- Top 5 Metric Cards Row (Matching Reference Design) -->
+    @php
+        $saasCardDefs = [
+            ['key' => 'total_visitors', 'title' => 'Total Visitors', 'iconBg' => 'blue', 'icon' => 'bi-people-fill', 'invert' => false],
+            ['key' => 'total_feedbacks', 'title' => 'Total Feedbacks', 'iconBg' => 'teal', 'icon' => 'bi-chat-left-dots', 'invert' => false],
+            ['key' => 'average_rating', 'title' => 'Average Rating', 'iconBg' => 'amber', 'icon' => 'bi-star', 'invert' => false],
+            ['key' => 'positive_feedbacks', 'title' => 'Positive Feedbacks', 'iconBg' => 'vivid-green', 'icon' => 'bi-hand-thumbs-up', 'invert' => false],
+            ['key' => 'pending_actions', 'title' => 'Pending Actions', 'iconBg' => 'orange', 'icon' => 'bi-card-checklist', 'invert' => true],
+        ];
+    @endphp
     <div class="saas-metric-grid">
-        <!-- 1. Total Visitors -->
-        <div class="saas-metric-card">
-            <div class="saas-icon-box blue">
-                <i class="bi bi-people-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Total Visitors</div>
-                <div class="saas-metric-value">{{ $saasMetrics['total_visitors']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['total_visitors']['dir'] === 'up' ? 'green' : ($saasMetrics['total_visitors']['dir'] === 'down' ? 'rose' : 'gray') }}">
-                    @if($saasMetrics['total_visitors']['dir'] === 'up')
-                        <span>&#8599;</span>
-                    @elseif($saasMetrics['total_visitors']['dir'] === 'down')
-                        <span>&#8600;</span>
-                    @else
-                        <span>&#8599;</span>
-                    @endif
-                    <span>{{ ltrim($saasMetrics['total_visitors']['growth'], '+-') }}</span>
-                    <span class="saas-trend-sub">vs. last period</span>
-                </div>
-            </div>
-        </div>
+        @foreach($saasCardDefs as $card)
+            @php
+                $metric = $saasMetrics[$card['key']];
+                $dir = $metric['dir'] ?? 'neutral';
+                $rawValPart = explode('/', (string) $metric['value'])[0];
+                $isMetricZero = (float) str_replace(',', '', trim($rawValPart)) == 0.0;
+                $growthText = ltrim((string) $metric['growth'], '+-');
+                $isGrowthZero = $dir === 'neutral'
+                    || preg_match('/^0(?:\.0+)?\s*(?:%|pts)?$/i', trim($growthText)) === 1;
+                $showArrow = !$isMetricZero && !$isGrowthZero;
 
-        <!-- 2. Total Feedbacks -->
-        <div class="saas-metric-card">
-            <div class="saas-icon-box green">
-                <i class="bi bi-chat-left-dots"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Total Feedbacks</div>
-                <div class="saas-metric-value">{{ $saasMetrics['total_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['total_feedbacks']['dir'] === 'down' ? 'rose' : 'green' }}">
-                    @if($saasMetrics['total_feedbacks']['dir'] === 'down')
-                        <span>&#8600;</span>
-                    @else
-                        <span>&#8599;</span>
-                    @endif
-                    <span>{{ ltrim($saasMetrics['total_feedbacks']['growth'], '+-') }}</span>
-                    <span class="saas-trend-sub">vs. last period</span>
+                if ($dir === 'neutral' || $isGrowthZero) {
+                    $badgeColor = 'gray';
+                } elseif ($card['invert']) {
+                    $badgeColor = $dir === 'down' ? 'green' : 'rose';
+                } else {
+                    $badgeColor = $dir === 'down' ? 'rose' : 'green';
+                }
+            @endphp
+            <div class="saas-metric-card">
+                <div class="saas-icon-box {{ $card['iconBg'] }}">
+                    <i class="bi {{ $card['icon'] }}"></i>
+                </div>
+                <div>
+                    <div class="saas-metric-title">{{ $card['title'] }}</div>
+                    <div class="saas-metric-value">{{ $metric['value'] }}</div>
+                    <div class="saas-trend-badge {{ $badgeColor }}">
+                        @if($showArrow)
+                            <span>{!! $dir === 'down' ? '&#8600;' : '&#8599;' !!}</span>
+                        @endif
+                        <span>{{ $growthText }}</span>
+                        <span class="saas-trend-sub">vs. last period</span>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- 3. Average Rating -->
-        <div class="saas-metric-card">
-            <div class="saas-icon-box amber">
-                <i class="bi bi-star"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Average Rating</div>
-                <div class="saas-metric-value">{{ $saasMetrics['average_rating']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['average_rating']['dir'] === 'down' ? 'rose' : 'green' }}">
-                    @if($saasMetrics['average_rating']['dir'] === 'down')
-                        <span>&#8600;</span>
-                    @else
-                        <span>&#8599;</span>
-                    @endif
-                    <span>{{ ltrim($saasMetrics['average_rating']['growth'], '+-') }}</span>
-                    <span class="saas-trend-sub">vs. last period</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. Positive Feedbacks -->
-        <div class="saas-metric-card">
-            <div class="saas-icon-box rose">
-                <i class="bi bi-hand-thumbs-up"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Positive Feedbacks</div>
-                <div class="saas-metric-value">{{ $saasMetrics['positive_feedbacks']['value'] }}</div>
-                <div class="saas-trend-badge green">
-                    <span>&#8599;</span>
-                    <span>{{ ltrim($saasMetrics['positive_feedbacks']['growth'], '+-') }}</span>
-                    <span class="saas-trend-sub">vs. last period</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. Pending Actions -->
-        <div class="saas-metric-card">
-            <div class="saas-icon-box purple">
-                <i class="bi bi-card-checklist"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Pending Actions</div>
-                <div class="saas-metric-value">{{ $saasMetrics['pending_actions']['value'] }}</div>
-                <div class="saas-trend-badge {{ $saasMetrics['pending_actions']['dir'] === 'down' ? 'green' : ($saasMetrics['pending_actions']['dir'] === 'up' ? 'rose' : 'green') }}">
-                    @if($saasMetrics['pending_actions']['dir'] === 'down')
-                        <span>&#8600;</span>
-                    @else
-                        <span>&#8599;</span>
-                    @endif
-                    <span>{{ ltrim($saasMetrics['pending_actions']['growth'], '+-') }}</span>
-                    <span class="saas-trend-sub">vs. last period</span>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     <!-- 2. Dual Charts Row: Feedback Trends & Rating Distribution -->
@@ -146,7 +94,7 @@
             <div class="saas-panel-card h-100 d-flex flex-column justify-content-between">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Rating Distribution</h5>
-                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium" title="Filtered period">
+                    <span class="badge bg-light text-secondary border px-2 py-1 small fw-medium d-none" title="Filtered period">
                         <i class="bi bi-calendar3 me-1 text-primary"></i>{{ $rangeLabel }}
                     </span>
                 </div>
@@ -235,7 +183,7 @@
                         <h5 class="saas-panel-title">Top Departments Visited</h5>
                         <div class="text-muted small" style="font-size: 0.72rem;">Visitor volume by Plant Department</div>
                     </div>
-                    <div class="dropdown">
+                    <div class="dropdown d-none">
                         <button class="widget-date-pill dropdown-toggle" type="button" id="departmentsDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Top Departments date range">
                             <i class="bi bi-diagram-3 text-primary"></i>
                             <span id="departmentsRangeLabel">{{ $rangeLabel }}</span>
@@ -347,7 +295,7 @@
             <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Visitor Type</h5>
-                    <div class="dropdown">
+                    <div class="dropdown d-none">
                         <button class="widget-date-pill dropdown-toggle" type="button" id="visitorTypeDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Visitor Type date range">
                             <i class="bi bi-clock text-primary"></i>
                             <span id="visitor_typeRangeLabel">{{ $rangeLabel }}</span>
@@ -431,7 +379,7 @@
             <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Status</h5>
-                    <div class="dropdown">
+                    <div class="dropdown d-none">
                         <button class="widget-date-pill dropdown-toggle" type="button" id="feedbackStatusDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Filter Feedback Status date range">
                             <i class="bi bi-check2-circle text-primary"></i>
                             <span id="feedback_statusRangeLabel">{{ $rangeLabel }}</span>
