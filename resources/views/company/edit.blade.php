@@ -190,7 +190,7 @@
                 </div>
             </div>
 
-            <!-- Card 3: Manufacturing Facility Location & Postal Address -->
+            <!-- Card 3: Manufacturing Plant Location & Postal Address -->
             <div class="cms-form-card">
                 <div class="cms-form-card-header">
                     <div class="cms-icon-badge" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">

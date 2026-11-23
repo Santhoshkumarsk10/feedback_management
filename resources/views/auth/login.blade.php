@@ -571,7 +571,7 @@
                 </div>
                 <div class="hero-feature-text">
                     <strong>Operations & KPI Insights</strong>
-                    <span>Automated facility metrics & reports</span>
+                    <span>Automated plant metrics & reports</span>
                 </div>
             </div>
 

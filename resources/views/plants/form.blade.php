@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', $plant->exists ? 'Edit Plant: '.$plant->code : 'Register New Plant')
-@section('page_title', $plant->exists ? 'Edit Plant Details' : 'Register Manufacturing Facility')
-@section('page_subtitle', $plant->exists ? 'Update factory metadata, address, contact, and operation status' : 'Add a new Shibaura Machine manufacturing plant or technical experience facility')
+@section('page_title', $plant->exists ? 'Edit Plant Details' : 'Register Manufacturing Plant')
+@section('page_subtitle', $plant->exists ? 'Update factory metadata, address, contact, and operation status' : 'Add a new Shibaura Machine manufacturing plant or technical experience plant')
 
 @section('content')
 <div class="mb-3">
@@ -47,16 +47,16 @@
                                        maxlength="20"
                                        style="text-transform: uppercase;">
                             </div>
-                            <div class="form-text text-muted small mt-1">Unique facility identifier</div>
+                            <div class="form-text text-muted small mt-1">Unique plant identifier</div>
                             @error('code')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             <div class="invalid-feedback d-none custom-live-err" id="live_err_plant_code"></div>
                         </div>
 
-                        <!-- Facility / Division Name -->
+                        <!-- Plant Name -->
                         <div class="col-md-8">
-                            <label class="form-modern-label" for="plant_name">Facility / Division Name <span class="text-danger">*</span></label>
+                            <label class="form-modern-label" for="plant_name">Plant Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-building"></i></span>
                                 <input name="name" 
@@ -137,10 +137,10 @@
                             <div class="invalid-feedback d-none custom-live-err" id="live_err_plant_phone"></div>
                         </div>
 
-                        <!-- Facility Description & Specialization -->
+                        <!-- Plant Description & Capabilities -->
                         <div class="col-md-12">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-modern-label mb-0" for="plant_description">Facility Description & Specialization</label>
+                                <label class="form-modern-label mb-0" for="plant_description">Plant Description & Capabilities</label>
                                 <span class="small text-muted char-count" data-target="plant_description">0 / 1000</span>
                             </div>
                             <textarea name="description" 
@@ -173,7 +173,7 @@
 
                     <div class="d-flex align-items-center gap-2">
                         <button type="submit" class="btn-modern-primary" id="btnSubmitPlant">
-                            <i class="bi bi-check-lg"></i> {{ $plant->exists ? 'Save Changes' : 'Register Facility' }}
+                            <i class="bi bi-check-lg"></i> {{ $plant->exists ? 'Save Changes' : 'Register Plant' }}
                         </button>
                         <a href="{{ route('plants.index') }}" class="btn-modern-secondary">
                             Cancel
@@ -200,7 +200,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold text-dark mb-1">User Assignment</h6>
-                        <p class="small text-muted mb-0">Tour organizers and engineers can be mapped to specific plants. When visitors arrive, feedback will be tracked by facility.</p>
+                        <p class="small text-muted mb-0">Tour organizers and engineers can be mapped to specific plants. When visitors arrive, feedback will be tracked by plant.</p>
                     </div>
                 </div>
 
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
             msg: 'Only letters, numbers, hyphens (-) and underscores (_) are allowed (No spaces).'
         },
         plant_name: {
-            label: 'Facility / Division Name',
+            label: 'Plant Name',
             disallowedRegex: /[<>{}\[\]$^*~=\\\|]/g,
             min: 2,
             max: 100,
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
             msg: 'Phone must be exactly 10 digits starting with 6, 7, 8, or 9.'
         },
         plant_description: {
-            label: 'Facility Description',
+            label: 'Plant Description',
             disallowedRegex: /[<>{}\[\]$^*~=\\\|]/g,
             min: 5,
             max: 1000,
@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    // Initial validation on load (e.g. on Edit Plant Facility)
+    // Initial validation on load (e.g. on Edit Plant)
     if (document.getElementById('plant_email')?.value.trim()) {
         validatePlantEmailField();
     }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Plant Master')
 @section('page_title', 'Plant Master')
-@section('page_subtitle', 'Manage Shibaura Machine manufacturing plant details, locations, and operational facility information')
+@section('page_subtitle', 'Manage Shibaura Machine manufacturing plant details, locations, and operational plant information')
 
 @section('content')
 @php
@@ -34,145 +34,163 @@
 <!-- SUMMARY METRIC CARDS ROW (5-Column Reference Design) -->
 <div class="plant-metrics-grid">
     <!-- 1. Total Plants -->
-    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'all'])) }}" class="plant-metric-card text-decoration-none">
-        <div class="plant-metric-content">
-            <div class="plant-metric-icon green">
+    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'all'])) }}" class="visit-metric-card text-decoration-none {{ request('status', 'all') === 'all' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon green">
                 <i class="bi bi-buildings-fill"></i>
             </div>
-            <div>
-                <div class="plant-metric-val">{{ number_format($totalPlants) }}</div>
-                <div class="plant-metric-lbl">Total Plants</div>
+            <div class="visit-metric-val">{{ number_format($totalPlants) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="plant-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Total Plants</div>
+            <div class="visit-metric-trend green">
+                <span>Manufacturing units</span>
+            </div>
         </div>
     </a>
 
     <!-- 2. Active Plants -->
-    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'active'])) }}" class="plant-metric-card text-decoration-none">
-        <div class="plant-metric-content">
-            <div class="plant-metric-icon blue">
+    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'active'])) }}" class="visit-metric-card text-decoration-none {{ request('status') === 'active' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon blue">
                 <i class="bi bi-geo-alt-fill"></i>
             </div>
-            <div>
-                <div class="plant-metric-val">{{ number_format($activePlants) }}</div>
-                <div class="plant-metric-lbl">Active Plants</div>
+            <div class="visit-metric-val">{{ number_format($activePlants) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="plant-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Active Plants</div>
+            <div class="visit-metric-trend blue">
+                <span>In operation</span>
+            </div>
         </div>
     </a>
 
     <!-- 3. Inactive Plants -->
-    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'inactive'])) }}" class="plant-metric-card text-decoration-none">
-        <div class="plant-metric-content">
-            <div class="plant-metric-icon amber">
+    <a href="{{ route('plants.index', array_merge(request()->except(['status', 'tab', 'page']), ['status' => 'inactive'])) }}" class="visit-metric-card text-decoration-none {{ request('status') === 'inactive' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon amber">
                 <i class="bi bi-pause-circle-fill"></i>
             </div>
-            <div>
-                <div class="plant-metric-val">{{ number_format($inactivePlants) }}</div>
-                <div class="plant-metric-lbl">Inactive Plants</div>
+            <div class="visit-metric-val">{{ number_format($inactivePlants) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="plant-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Inactive Plants</div>
+            <div class="visit-metric-trend amber">
+                <span>Standby / Offline</span>
+            </div>
         </div>
     </a>
 
     <!-- 4. Locations -->
-    <div class="plant-metric-card">
-        <div class="plant-metric-content">
-            <div class="plant-metric-icon purple">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon purple">
                 <i class="bi bi-pin-map-fill"></i>
             </div>
-            <div>
-                <div class="plant-metric-val">{{ number_format(max($locationsCount, 1)) }}</div>
-                <div class="plant-metric-lbl">Locations</div>
+            <div class="visit-metric-val">{{ number_format(max($locationsCount, 1)) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="plant-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Locations</div>
+            <div class="visit-metric-trend purple">
+                <span>Plant sites</span>
+            </div>
         </div>
     </div>
 
     <!-- 5. Industrial Zones -->
-    <div class="plant-metric-card">
-        <div class="plant-metric-content">
-            <div class="plant-metric-icon emerald">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon emerald">
                 <i class="bi bi-building-gear"></i>
             </div>
-            <div>
-                <div class="plant-metric-val">{{ $zoneCoverage }}</div>
-                <div class="plant-metric-lbl">Industrial Zones</div>
+            <div class="visit-metric-val">{{ $zoneCoverage }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="plant-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Industrial Zones</div>
+            <div class="visit-metric-trend emerald">
+                <span>Area coverage</span>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- SEARCH & FILTERS TOOLBAR (Reference Design) -->
-<div class="plant-toolbar-row">
-    <form method="GET" action="{{ route('plants.index') }}" class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap m-0" id="plantToolbarForm">
+<div class="plant-toolbar-card">
+    <form method="GET" action="{{ route('plants.index') }}" class="plant-toolbar-form m-0" id="plantToolbarForm">
         @if(request('per_page'))
             <input type="hidden" name="per_page" value="{{ request('per_page') }}">
         @endif
 
-        <!-- Search Input with centered icon and modern styling -->
-        <div class="plant-search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input type="text" 
-                   name="q" 
-                   value="{{ request('q') }}" 
-                   class="plant-search-input" 
-                   placeholder="Search plant code, name or location..."
-                   autocomplete="off">
-            @if(request('q'))
-                <a href="{{ route('plants.index', request()->except('q')) }}" class="search-clear-btn" title="Clear search">
-                    <i class="bi bi-x-circle-fill"></i>
-                </a>
-            @endif
+        <!-- Row 1: Search Input (100% on mobile) -->
+        <div class="plant-toolbar-row plant-toolbar-row-search">
+            <div class="plant-search-box">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" 
+                       name="q" 
+                       value="{{ request('q') }}" 
+                       class="plant-search-input" 
+                       placeholder="Search plant code, name or location..."
+                       autocomplete="off">
+                @if(request('q'))
+                    <a href="{{ route('plants.index', request()->except('q')) }}" class="search-clear-btn" title="Clear search">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                @endif
+            </div>
         </div>
 
-        <!-- Location Filter Dropdown -->
-        <x-custom-select 
-            name="location" 
-            :value="request('location', 'all')" 
-            placeholder="All Locations" 
-            icon="bi-geo-alt-fill" 
-            :options="$locationOptions" 
-            auto-submit 
-            min-width="170px" 
-        />
+        <!-- Row 2: Location and Status Filter Dropdowns (2 Equal Columns on mobile) -->
+        <div class="plant-toolbar-row plant-toolbar-row-filters">
+            <div class="plant-filter-col">
+                <x-custom-select 
+                    name="location" 
+                    :value="request('location', 'all')" 
+                    placeholder="All Locations" 
+                    icon="bi-geo-alt-fill" 
+                    :options="$locationOptions" 
+                    auto-submit 
+                    min-width="170px" 
+                />
+            </div>
+            <div class="plant-filter-col">
+                <x-custom-select 
+                    name="status" 
+                    :value="request('status', request('tab', 'all'))" 
+                    placeholder="All Status" 
+                    icon="bi-record-circle" 
+                    :options="$statusOptions" 
+                    auto-submit 
+                    min-width="155px" 
+                />
+            </div>
+        </div>
 
-        <!-- Status Filter Dropdown -->
-        <x-custom-select 
-            name="status" 
-            :value="request('status', request('tab', 'all'))" 
-            placeholder="All Status" 
-            icon="bi-record-circle" 
-            :options="$statusOptions" 
-            auto-submit 
-            min-width="155px" 
-        />
+        <!-- Row 3: Actions (Reset on Left, Add Plant on Right) -->
+        <div class="plant-toolbar-row plant-toolbar-row-actions">
+            <div class="plant-actions-left">
+                @if(request()->hasAny(['q', 'location', 'status', 'tab']) && (request('location') !== 'all' || request('status') !== 'all' || request('q')))
+                    <a href="{{ route('plants.index') }}" class="btn-plant-reset text-decoration-none" title="Reset all filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <span>Reset</span>
+                    </a>
+                @endif
+            </div>
 
-        @if(request()->hasAny(['q', 'location', 'status', 'tab']) && (request('location') !== 'all' || request('status') !== 'all' || request('q')))
-            <a href="{{ route('plants.index') }}" class="saas-btn-filter text-decoration-none" title="Reset all filters">
-                <i class="bi bi-arrow-counterclockwise"></i>
-            </a>
-        @endif
+            @can('plantmaster.create')
+                <div class="plant-actions-right">
+                    <button type="button" class="btn-plant-add" data-bs-toggle="modal" data-bs-target="#addPlantModal" title="Register New Plant">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Add Plant</span>
+                    </button>
+                </div>
+            @endcan
+        </div>
     </form>
-
-    <!-- Add Plant Button -->
-    @can('plantmaster.create')
-        <button type="button" class="btn-plant-add" data-bs-toggle="modal" data-bs-target="#addPlantModal" title="Register New Plant Facility">
-            <i class="bi bi-plus-circle"></i>
-            <span>Add Plant</span>
-        </button>
-    @endcan
 </div>
 
 <!-- 4. TABLE / LIST CARD -->
@@ -315,7 +333,7 @@
                             @can('plantmaster.edit')
                                 <button type="button" 
                                         class="btn-plant-action" 
-                                        title="Edit plant facility"
+                                        title="Edit plant"
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editPlantModal"
                                         data-id="{{ $p->id }}"
@@ -350,7 +368,7 @@
                                                 @csrf @method('PATCH')
                                                 <button type="submit" class="dropdown-item py-2 d-flex align-items-center gap-2">
                                                     <i class="bi {{ $p->is_active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted' }}"></i>
-                                                    <span>{{ $p->is_active ? 'Deactivate Facility' : 'Activate Facility' }}</span>
+                                                    <span>{{ $p->is_active ? 'Deactivate Plant' : 'Activate Plant' }}</span>
                                                 </button>
                                             </form>
                                         </li>
@@ -363,7 +381,7 @@
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="dropdown-item py-2 d-flex align-items-center gap-2 text-danger">
                                                     <i class="bi bi-trash"></i>
-                                                    <span>Delete Facility</span>
+                                                    <span>Delete Plant</span>
                                                 </button>
                                             </form>
                                         </li>
@@ -515,7 +533,7 @@
                     <img id="view_plant_thumb" src="" class="plant-thumb" style="width: 48px; height: 48px;" alt="Plant">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <h5 class="modal-title fw-bold text-dark mb-0" id="view_plant_name">Facility Details</h5>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="view_plant_name">Plant Details</h5>
                             <span class="plant-code-pill" id="view_plant_code">PLANT-01</span>
                             <span id="view_plant_status_badge"></span>
                         </div>
@@ -537,7 +555,7 @@
                     <!-- Location info -->
                     <div class="col-md-6">
                         <div class="p-3 bg-white rounded-3 border h-100">
-                            <div class="fw-bold text-dark small mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Facility Location</div>
+                            <div class="fw-bold text-dark small mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Plant Location</div>
                             <div class="text-dark fw-semibold small" id="view_plant_location">Chembarambakkam, Chennai</div>
                             <div class="text-muted small mt-1">Shibaura Machine India Private Limited</div>
                         </div>
@@ -571,7 +589,7 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                 @can('plantmaster.edit')
                     <button type="button" class="btn-plant-add" id="btnEditFromView" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#editPlantModal">
-                        <i class="bi bi-pencil"></i> Edit Facility
+                        <i class="bi bi-pencil"></i> Edit Plant
                     </button>
                 @endcan
             </div>
@@ -592,7 +610,7 @@
                             <i class="bi bi-building-add text-primary fs-5"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title fw-bold text-dark mb-0" id="addPlantModalLabel">Register New Plant Facility</h5>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="addPlantModalLabel">Register New Plant</h5>
                             <p class="text-muted small mb-0">Add a Shibaura Machine manufacturing division or technical centre</p>
                         </div>
                     </div>
@@ -606,11 +624,11 @@
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Letters, digits, hyphen, underscore</div>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-modern-label required" for="add_plant_name">Facility Name</label>
+                            <label class="form-modern-label required" for="add_plant_name">Plant Name</label>
                             <input type="text" name="name" id="add_plant_name" class="form-control form-control-modern" placeholder="e.g. Plant 5 — Precision Tooling Centre" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="add_plant_location">Facility Location / City</label>
+                            <label class="form-modern-label" for="add_plant_location">Plant Location / City</label>
                             <input type="text" name="location" id="add_plant_location" class="form-control form-control-modern" placeholder="e.g. Chembarambakkam, Chennai" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
@@ -634,7 +652,7 @@
                         <div class="col-md-6">
                             <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
                                 <div>
-                                    <span class="fw-semibold text-dark small d-block">Facility Status</span>
+                                    <span class="fw-semibold text-dark small d-block">Plant Status</span>
                                     <span class="text-muted" style="font-size: 0.72rem;">Operational / Accepting Visits</span>
                                 </div>
                                 <div class="form-check form-switch m-0">
@@ -674,7 +692,7 @@
                             <i class="bi bi-pencil-square text-emerald-600 fs-5"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title fw-bold text-dark mb-0" id="editPlantModalLabel">Edit Plant Facility</h5>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="editPlantModalLabel">Edit Plant</h5>
                             <p class="text-muted small mb-0">Update division capabilities, contact info, and status</p>
                         </div>
                     </div>
@@ -688,11 +706,11 @@
                             <div class="small text-muted mt-1" style="font-size: 0.72rem;">Letters, digits, hyphen, underscore</div>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-modern-label required" for="edit_plant_name">Facility Name</label>
+                            <label class="form-modern-label required" for="edit_plant_name">Plant Name</label>
                             <input type="text" name="name" id="edit_plant_name" class="form-control form-control-modern" required minlength="2" maxlength="100">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-modern-label" for="edit_plant_location">Facility Location / City</label>
+                            <label class="form-modern-label" for="edit_plant_location">Plant Location / City</label>
                             <input type="text" name="location" id="edit_plant_location" class="form-control form-control-modern" minlength="3" maxlength="150">
                         </div>
                         <div class="col-md-6">
@@ -716,7 +734,7 @@
                         <div class="col-md-6">
                             <div class="p-2 px-3 rounded-3 bg-light border d-flex align-items-center justify-content-between h-100">
                                 <div>
-                                    <span class="fw-semibold text-dark small d-block">Facility Status</span>
+                                    <span class="fw-semibold text-dark small d-block">Plant Status</span>
                                     <span class="text-muted" style="font-size: 0.72rem;">Operational / Accepting Visits</span>
                                 </div>
                                 <div class="form-check form-switch m-0">
@@ -870,7 +888,7 @@
         const loc = btn.getAttribute('data-location') || 'Chembarambakkam, Chennai, Tamil Nadu';
         const email = btn.getAttribute('data-email') || '—';
         const phone = btn.getAttribute('data-phone') || '—';
-        const desc = btn.getAttribute('data-description') || 'No description available for this facility.';
+        const desc = btn.getAttribute('data-description') || 'No description available for this plant.';
         const isActive = btn.getAttribute('data-is-active') === '1';
         const thumb = btn.getAttribute('data-thumb') || '';
         const feedbacks = btn.getAttribute('data-feedbacks') || '0';

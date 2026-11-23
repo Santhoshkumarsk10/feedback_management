@@ -65,104 +65,73 @@
 <!-- SUMMARY METRIC CARDS ROW (4-Column Reference Design) -->
 <div class="report-metrics-grid">
     <!-- 1. TOURS IN PERIOD -->
-    <div class="report-metric-card">
-        <div class="report-metric-content">
-            <div class="report-metric-icon blue">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon blue">
                 <i class="bi bi-people-fill"></i>
             </div>
-            <div>
-                <div class="report-metric-lbl">TOURS IN PERIOD</div>
-                <div class="report-metric-val">{{ number_format($totalVisits) }}</div>
-                <div class="report-metric-pill blue">
-                    <i class="bi bi-clipboard2-check"></i>
-                    <span>Total Tours</span>
-                </div>
+            <div class="visit-metric-val">{{ number_format($totalVisits) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Tours In Period</div>
+            <div class="visit-metric-trend blue">
+                <span>Total Tours</span>
             </div>
         </div>
-        <div class="report-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-        <!-- Decorative subtle wave SVG -->
-        <svg class="report-metric-wave" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 48C20 40 40 45 60 30C80 15 95 25 110 5V48H0Z" fill="#3b82f6" fill-opacity="0.12"/>
-            <path d="M0 48C25 44 45 38 65 24C85 10 98 18 110 0V48H0Z" fill="#3b82f6" fill-opacity="0.08"/>
-        </svg>
     </div>
 
     <!-- 2. FEEDBACK RATE -->
-    <div class="report-metric-card">
-        <div class="report-metric-content">
-            <div class="report-metric-icon green">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon green">
                 <i class="bi bi-chat-dots-fill"></i>
             </div>
-            <div>
-                <div class="report-metric-lbl">FEEDBACK RATE</div>
-                <div class="report-metric-val">{{ $overallRate }}%</div>
-                <div class="report-metric-pill green">
-                    <i class="bi bi-chat-left-text"></i>
-                    <span>{{ $totalFeedbacks }} Responses</span>
-                </div>
+            <div class="visit-metric-val">{{ $overallRate }}%</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Feedback Rate</div>
+            <div class="visit-metric-trend green">
+                <span>{{ $totalFeedbacks }} Responses</span>
             </div>
         </div>
-        <div class="report-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-        <!-- Decorative subtle wave SVG -->
-        <svg class="report-metric-wave" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 48C20 40 40 45 60 30C80 15 95 25 110 5V48H0Z" fill="#10b981" fill-opacity="0.12"/>
-            <path d="M0 48C25 44 45 38 65 24C85 10 98 18 110 0V48H0Z" fill="#10b981" fill-opacity="0.08"/>
-        </svg>
     </div>
 
     <!-- 3. PERIOD MEAN SCORE -->
-    <div class="report-metric-card">
-        <div class="report-metric-content">
-            <div class="report-metric-icon amber">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon amber">
                 <i class="bi bi-star-fill"></i>
             </div>
-            <div>
-                <div class="report-metric-lbl">PERIOD MEAN SCORE</div>
-                <div class="report-metric-val">{{ number_format($meanRating, 1) }}<span class="fs-6 text-muted fw-normal">/5</span></div>
-                <div class="report-metric-pill amber">
-                    <i class="bi bi-trophy"></i>
-                    <span>Overall Quality</span>
-                </div>
+            <div class="visit-metric-val">{{ number_format($meanRating, 1) }}<span class="fs-6 text-muted fw-normal">/5</span></div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Period Mean Score</div>
+            <div class="visit-metric-trend amber">
+                <span>Overall Quality</span>
             </div>
         </div>
-        <div class="report-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-        <!-- Decorative subtle wave SVG -->
-        <svg class="report-metric-wave" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 48C20 40 40 45 60 30C80 15 95 25 110 5V48H0Z" fill="#f59e0b" fill-opacity="0.12"/>
-            <path d="M0 48C25 44 45 38 65 24C85 10 98 18 110 0V48H0Z" fill="#f59e0b" fill-opacity="0.08"/>
-        </svg>
     </div>
 
     <!-- 4. ACTIVE STAFF -->
-    <div class="report-metric-card">
-        <div class="report-metric-content">
-            <div class="report-metric-icon purple">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon purple">
                 <i class="bi bi-person-fill"></i>
             </div>
-            <div>
-                <div class="report-metric-lbl">ACTIVE STAFF</div>
-                <div class="report-metric-val">{{ number_format($activeStaffCount) }}</div>
-                <div class="report-metric-pill purple">
-                    <i class="bi bi-people"></i>
-                    <span>On Duty</span>
-                </div>
+            <div class="visit-metric-val">{{ number_format($activeStaffCount) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Active Staff</div>
+            <div class="visit-metric-trend purple">
+                <span>On Duty</span>
             </div>
         </div>
-        <div class="report-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-        <!-- Decorative subtle wave SVG -->
-        <svg class="report-metric-wave" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 48C20 40 40 45 60 30C80 15 95 25 110 5V48H0Z" fill="#8b5cf6" fill-opacity="0.12"/>
-            <path d="M0 48C25 44 45 38 65 24C85 10 98 18 110 0V48H0Z" fill="#8b5cf6" fill-opacity="0.08"/>
-        </svg>
     </div>
+</div>
 </div>
 
 <!-- DATE PRESET & FILTER PANEL (Reference Design) -->

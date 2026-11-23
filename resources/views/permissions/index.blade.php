@@ -32,66 +32,70 @@
 <!-- SUMMARY METRIC CARDS ROW (4-Column Reference Design) -->
 <div class="perm-metrics-grid">
     <!-- 1. Total Permissions -->
-    <a href="{{ route('permissions.index', array_merge(request()->except(['module', 'page']))) }}" class="perm-metric-card">
-        <div class="perm-metric-content">
-            <div class="perm-metric-icon blue">
+    <a href="{{ route('permissions.index', array_merge(request()->except(['module', 'page']))) }}" class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon blue">
                 <i class="bi bi-lock-fill"></i>
             </div>
-            <div>
-                <div class="perm-metric-val">{{ number_format($totalPerms) }}</div>
-                <div class="perm-metric-lbl">Total permissions</div>
+            <div class="visit-metric-val">{{ number_format($totalPerms) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="perm-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Total Permissions</div>
+            <div class="visit-metric-trend blue">
+                <span>System capabilities</span>
+            </div>
         </div>
     </a>
 
     <!-- 2. Security Modules -->
-    <div class="perm-metric-card" onclick="document.getElementById('filterButtonDropdown')?.click();" title="Click to view all modules" role="button">
-        <div class="perm-metric-content">
-            <div class="perm-metric-icon green">
+    <div class="visit-metric-card" onclick="document.getElementById('filterButtonDropdown')?.click();" title="Click to view all modules" role="button">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon green">
                 <i class="bi bi-grid-fill"></i>
             </div>
-            <div>
-                <div class="perm-metric-val">{{ number_format($totalMods) }}</div>
-                <div class="perm-metric-lbl">Security modules</div>
+            <div class="visit-metric-val">{{ number_format($totalMods) }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="perm-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Security Modules</div>
+            <div class="visit-metric-trend green">
+                <span>Access categories</span>
+            </div>
         </div>
     </div>
 
     <!-- 3. Filtered Scope -->
-    <div class="perm-metric-card" onclick="document.getElementById('filterButtonDropdown')?.click();" title="Click to change module filter" role="button">
-        <div class="perm-metric-content">
-            <div class="perm-metric-icon purple">
+    <div class="visit-metric-card" onclick="document.getElementById('filterButtonDropdown')?.click();" title="Click to change module filter" role="button">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon purple">
                 <i class="bi bi-funnel-fill"></i>
             </div>
-            <div>
-                <div class="perm-metric-val fs-3 text-truncate" style="max-width: 140px;">{{ $currentMod ? ucfirst($currentMod) : 'All' }}</div>
-                <div class="perm-metric-lbl">Filtered scope</div>
+            <div class="visit-metric-val text-truncate">{{ $currentMod ? ucfirst($currentMod) : 'All' }}</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="perm-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Filtered Scope</div>
+            <div class="visit-metric-trend purple">
+                <span>Current view</span>
+            </div>
         </div>
     </div>
 
     <!-- 4. Gate Policy -->
-    <div class="perm-metric-card">
-        <div class="perm-metric-content">
-            <div class="perm-metric-icon amber">
+    <div class="visit-metric-card">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon amber">
                 <i class="bi bi-shield-check"></i>
             </div>
-            <div>
-                <div class="perm-metric-val">RBAC</div>
-                <div class="perm-metric-lbl">Gate policy</div>
+            <div class="visit-metric-val">RBAC</div>
+            <div class="visit-metric-arrow">
+                <i class="bi bi-chevron-right"></i>
             </div>
-        </div>
-        <div class="perm-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
+            <div class="visit-metric-lbl">Gate Policy</div>
+            <div class="visit-metric-trend amber">
+                <span>Role-based control</span>
+            </div>
         </div>
     </div>
 </div>

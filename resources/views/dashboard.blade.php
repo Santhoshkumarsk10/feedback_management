@@ -36,19 +36,22 @@
                     $badgeColor = $dir === 'down' ? 'rose' : 'green';
                 }
             @endphp
-            <div class="saas-metric-card">
-                <div class="saas-icon-box {{ $card['iconBg'] }}">
-                    <i class="bi {{ $card['icon'] }}"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">{{ $card['title'] }}</div>
-                    <div class="saas-metric-value">{{ $metric['value'] }}</div>
-                    <div class="saas-trend-badge {{ $badgeColor }}">
+            <div class="visit-metric-card">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon {{ $card['iconBg'] }}">
+                        <i class="bi {{ $card['icon'] }}"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ $metric['value'] }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">{{ $card['title'] }}</div>
+                    <div class="visit-metric-trend {{ $badgeColor }}">
                         @if($showArrow)
                             <span>{!! $dir === 'down' ? '&#8600;' : '&#8599;' !!}</span>
                         @endif
                         <span>{{ $growthText }}</span>
-                        <span class="saas-trend-sub">vs. last period</span>
+                        <span class="subtext">vs. last period</span>
                     </div>
                 </div>
             </div>
@@ -68,7 +71,7 @@
                         <option value="7">Last 7 Days</option>
                     </select>
                 </div>
-                <div style="position: relative; height: 230px; width: 100%;">
+                <div class="saas-chart-height-wrap" style="position: relative; width: 100%;">
                     <div id="trendsEmptyNotice" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted {{ $hasTrendsData ? 'd-none' : '' }}" style="background: rgba(248, 250, 252, 0.7); border-radius: 8px;">
                         <i class="bi bi-bar-chart-line fs-2 text-secondary opacity-50 mb-1"></i>
                         <div class="fw-semibold small text-dark">No Feedback Trends Available</div>
@@ -76,7 +79,7 @@
                     </div>
                     <canvas id="feedbackTrendsChart" class="{{ !$hasTrendsData ? 'd-none' : '' }}"></canvas>
                 </div>
-                <div class="d-flex align-items-center justify-content-center gap-4 mt-2 pt-2">
+                <div class="d-flex align-items-center justify-content-center flex-wrap gap-3 mt-2 pt-2">
                     <div class="d-flex align-items-center gap-2 small fw-semibold text-secondary">
                         <span style="width: 10px; height: 10px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
                         <span>Total Feedbacks</span>
@@ -100,7 +103,7 @@
                 </div>
                 @if($ratingDist['total'] > 0)
                     <div class="row align-items-center g-3 my-auto">
-                        <div class="col-12 col-sm-6 text-center">
+                        <div class="col-12 col-sm-5 text-center">
                             <div class="saas-donut-box">
                                 <canvas id="ratingDistributionDonut"></canvas>
                                 <div class="saas-donut-center">
@@ -109,7 +112,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-7">
                             <div class="d-flex flex-column gap-1">
                                 @foreach($ratingDist['items'] as $item)
                                     <div class="saas-legend-item">
@@ -169,7 +172,7 @@
                     <div class="d-flex flex-column align-items-center justify-content-center py-4 my-auto text-muted">
                         <i class="bi bi-card-checklist text-secondary opacity-50 fs-2 mb-2"></i>
                         <div class="fw-semibold small text-dark">No Category Ratings Available</div>
-                        <div class="small text-muted" style="font-size: 0.75rem;">No Section 4 facility ratings recorded for this period.</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">No Section 4 plant ratings recorded for this period.</div>
                     </div>
                 @endif
             </div>
@@ -291,7 +294,7 @@
     <!-- 3. Donut Summaries Row: Visitor Type & Feedback Status -->
     <div class="row g-3 mb-4">
         <!-- Visitor Type Donut -->
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Visitor Type</h5>
@@ -375,7 +378,7 @@
         </div>
 
         <!-- Feedback Status Donut -->
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="saas-panel-card h-100">
                 <div class="saas-panel-header">
                     <h5 class="saas-panel-title">Feedback Status</h5>

@@ -20,17 +20,20 @@
         $mandatoryCount = $questions->where('is_required', true)->count();
         $activeQuestions = $questions->where('is_active', true)->count();
     @endphp
-    <div class="row g-3">
+    <div class="row g-3 saas-summary-cards-row">
         <!-- 1. Total Questions -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box blue">
-                    <i class="bi bi-patch-question-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Total Questions</div>
-                    <div class="saas-metric-value">{{ number_format($totalQuestions) }}</div>
-                    <div class="saas-trend-badge cyan">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon blue">
+                        <i class="bi bi-patch-question-fill"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($totalQuestions) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Total Questions</div>
+                    <div class="visit-metric-trend cyan">
                         <span>Survey criteria</span>
                     </div>
                 </div>
@@ -38,15 +41,18 @@
         </div>
 
         <!-- 2. Active Sections -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box green">
-                    <i class="bi bi-ui-checks-grid"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Active Sections</div>
-                    <div class="saas-metric-value">{{ number_format($totalSections) }}</div>
-                    <div class="saas-trend-badge green">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon green">
+                        <i class="bi bi-ui-checks-grid"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($totalSections) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Active Sections</div>
+                    <div class="visit-metric-trend green">
                         <span>Questions Category</span>
                     </div>
                 </div>
@@ -54,15 +60,18 @@
         </div>
 
         <!-- 3. Mandatory Fields -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box amber">
-                    <i class="bi bi-asterisk"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Mandatory Questions</div>
-                    <div class="saas-metric-value">{{ number_format($mandatoryCount) }}</div>
-                    <div class="saas-trend-badge amber">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon amber">
+                        <i class="bi bi-asterisk"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($mandatoryCount) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Mandatory Questions</div>
+                    <div class="visit-metric-trend amber">
                         <span>Required</span>
                     </div>
                 </div>
@@ -70,15 +79,18 @@
         </div>
 
         <!-- 4. Live Status -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box purple">
-                    <i class="bi bi-broadcast"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Live Status</div>
-                    <div class="saas-metric-value">{{ number_format($activeQuestions) }}</div>
-                    <div class="saas-trend-badge indigo">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon purple">
+                        <i class="bi bi-broadcast"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($activeQuestions) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Live Status</div>
+                    <div class="visit-metric-trend indigo">
                         <span>Published</span>
                     </div>
                 </div>

@@ -35,72 +35,73 @@
 <!-- SUMMARY METRIC CARDS ROW (4-Column Reference Design) -->
 <div class="role-metrics-grid">
     <!-- 1. Total Roles -->
-    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'all'])) }}" class="role-metric-card">
-        <div class="role-metric-card-inner">
-            <div class="role-metric-icon blue">
+    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'all'])) }}" class="visit-metric-card {{ ($currentTab ?? 'all') === 'all' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon blue">
                 <i class="bi bi-people-fill"></i>
             </div>
-            <div class="role-metric-info">
-                <div class="role-metric-val">{{ number_format($totalRoles) }}</div>
-                <div class="role-metric-lbl">Total Roles</div>
-            </div>
-            <div class="role-metric-arrow">
+            <div class="visit-metric-val">{{ number_format($totalRoles) }}</div>
+            <div class="visit-metric-arrow">
                 <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Total Roles</div>
+            <div class="visit-metric-trend blue">
+                <span>System roles defined</span>
             </div>
         </div>
     </a>
 
     <!-- 2. Active Roles -->
-    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'active'])) }}" class="role-metric-card">
-        <div class="role-metric-card-inner">
-            <div class="role-metric-icon purple">
+    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'active'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'active' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon purple">
                 <i class="bi bi-shield-shaded"></i>
             </div>
-            <div class="role-metric-info">
-                <div class="role-metric-val">{{ number_format($activeRoles) }}</div>
-                <div class="role-metric-lbl">Active Roles</div>
-            </div>
-            <span class="role-metric-badge-top green">Operational</span>
-            <div class="role-metric-arrow">
+            <div class="visit-metric-val">{{ number_format($activeRoles) }}</div>
+            <div class="visit-metric-arrow">
                 <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Active Roles</div>
+            <div class="visit-metric-trend green">
+                <span>Operational</span>
             </div>
         </div>
     </a>
 
     <!-- 3. Inactive Roles -->
-    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'inactive'])) }}" class="role-metric-card">
-        <div class="role-metric-card-inner">
-            <div class="role-metric-icon green">
+    <a href="{{ route('roles.index', array_merge(request()->except(['tab', 'page']), ['tab' => 'inactive'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'inactive' ? 'active-metric-card' : '' }}">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon green">
                 <i class="bi bi-power"></i>
             </div>
-            <div class="role-metric-info">
-                <div class="role-metric-val">{{ number_format($inactiveRoles) }}</div>
-                <div class="role-metric-lbl">Inactive Roles</div>
-            </div>
-            <span class="role-metric-badge-top amber">Standby</span>
-            <div class="role-metric-arrow">
+            <div class="visit-metric-val">{{ number_format($inactiveRoles) }}</div>
+            <div class="visit-metric-arrow">
                 <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Inactive Roles</div>
+            <div class="visit-metric-trend amber">
+                <span>Standby</span>
             </div>
         </div>
     </a>
 
     <!-- 4. Permissions Matrix -->
     @can('permissionmaster.view')
-        <a href="{{ route('permissions.index') }}" class="role-metric-card">
+        <a href="{{ route('permissions.index') }}" class="visit-metric-card">
     @else
-        <div class="role-metric-card">
+        <div class="visit-metric-card">
     @endcan
-        <div class="role-metric-card-inner">
-            <div class="role-metric-icon amber">
+        <div class="visit-metric-card-inner">
+            <div class="visit-metric-icon amber">
                 <i class="bi bi-key-fill"></i>
             </div>
-            <div class="role-metric-info">
-                <div class="role-metric-val">Granted</div>
-                <div class="role-metric-lbl">Permissions</div>
-            </div>
-            <span class="role-metric-badge-top purple">Matrix access</span>
-            <div class="role-metric-arrow">
+            <div class="visit-metric-val">Granted</div>
+            <div class="visit-metric-arrow">
                 <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="visit-metric-lbl">Permissions</div>
+            <div class="visit-metric-trend purple">
+                <span>Matrix access</span>
             </div>
         </div>
     @can('permissionmaster.view')

@@ -86,12 +86,12 @@ class PlantController extends Controller
         $validated['code'] = strtoupper(trim($validated['code']));
         $plant = Plant::create($validated);
 
-        \App\Models\AuditLog::record('create', 'plants', "Registered new plant facility: {$plant->code} — {$plant->name}", [
+        \App\Models\AuditLog::record('create', 'plants', "Registered new plant: {$plant->code} — {$plant->name}", [
             'code' => $plant->code,
             'location' => $plant->location,
         ]);
 
-        return redirect()->route('plants.index')->with('success', 'Plant facility registered successfully.');
+        return redirect()->route('plants.index')->with('success', 'Plant registered successfully.');
     }
 
     public function edit(Plant $plant)
@@ -107,11 +107,11 @@ class PlantController extends Controller
         $validated['code'] = strtoupper(trim($validated['code']));
         $plant->update($validated);
 
-        \App\Models\AuditLog::record('update', 'plants', "Updated plant facility details: {$plant->code}", [
+        \App\Models\AuditLog::record('update', 'plants', "Updated plant details: {$plant->code}", [
             'changes' => $plant->getChanges(),
         ]);
 
-        return redirect()->route('plants.index')->with('success', 'Plant facility updated successfully.');
+        return redirect()->route('plants.index')->with('success', 'Plant updated successfully.');
     }
 
     /**
@@ -177,10 +177,10 @@ class PlantController extends Controller
             'code.regex' => 'Plant Code may only contain letters, numbers, hyphens (-), and underscores (_). Spaces and other special characters are not allowed.',
             'code.unique' => 'This Plant Code has already been registered.',
 
-            'name.required' => 'Facility / Division Name is required.',
-            'name.min' => 'Facility / Division Name must be at least :min characters.',
-            'name.max' => 'Facility / Division Name cannot exceed :max characters.',
-            'name.regex' => 'Facility / Division Name may only contain letters, numbers, spaces, and allowed symbols (&, -, —, _, /, ., ,, (), \'). Other special characters are not allowed.',
+            'name.required' => 'Plant Name is required.',
+            'name.min' => 'Plant Name must be at least :min characters.',
+            'name.max' => 'Plant Name cannot exceed :max characters.',
+            'name.regex' => 'Plant Name may only contain letters, numbers, spaces, and allowed symbols (&, -, —, _, /, ., ,, (), \'). Other special characters are not allowed.',
 
             'location.min' => 'Factory Location must be at least :min characters if provided.',
             'location.max' => 'Factory Location cannot exceed :max characters.',
@@ -193,9 +193,9 @@ class PlantController extends Controller
 
             'contact_phone.regex' => 'Desk / Helpdesk Phone must be a valid 10-digit number starting with 6, 7, 8, or 9.',
 
-            'description.min' => 'Facility Description must be at least :min characters if provided.',
-            'description.max' => 'Facility Description cannot exceed :max characters.',
-            'description.regex' => 'Facility Description contains disallowed special characters (code/script tags like < > { } [ ] $ ^ * = \\ | are not permitted).',
+            'description.min' => 'Plant Description must be at least :min characters if provided.',
+            'description.max' => 'Plant Description cannot exceed :max characters.',
+            'description.regex' => 'Plant Description contains disallowed special characters (code/script tags like < > { } [ ] $ ^ * = \\ | are not permitted).',
         ];
     }
 
@@ -209,7 +209,7 @@ class PlantController extends Controller
         $name = $plant->name;
         $plant->delete();
 
-        \App\Models\AuditLog::record('delete', 'plants', "Deleted plant facility: {$code} — {$name}");
+        \App\Models\AuditLog::record('delete', 'plants', "Deleted plant: {$code} — {$name}");
 
         return redirect()->route('plants.index')->with('success', 'Plant removed successfully.');
     }
