@@ -10,17 +10,20 @@
     $fourStar = $tabCounts['4_star'] ?? 0;
     $critical = $tabCounts['critical'] ?? 0;
 @endphp
-<div class="row g-3">
+<div class="row g-3 saas-summary-cards-row">
     <!-- 1. Total Feedback -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box blue">
-                <i class="bi bi-chat-square-text-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Total Feedback Submissions</div>
-                <div class="saas-metric-value">{{ number_format($totalFeedbacks) }}</div>
-                <div class="saas-trend-badge cyan">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon blue">
+                    <i class="bi bi-chat-square-text-fill"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($totalFeedbacks) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">Total Feedback</div>
+                <div class="visit-metric-trend cyan">
                     <span>Surveyed</span>
                 </div>
             </div>
@@ -28,15 +31,18 @@
     </div>
 
     <!-- 2. 5-Star Ratings -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box green">
-                <i class="bi bi-star-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">5-Star Exceptional Reviews</div>
-                <div class="saas-metric-value">{{ number_format($fiveStar) }}</div>
-                <div class="saas-trend-badge green">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon green">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($fiveStar) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">5-Star Exceptional</div>
+                <div class="visit-metric-trend green">
                     <span>Top Tier</span>
                 </div>
             </div>
@@ -44,15 +50,18 @@
     </div>
 
     <!-- 3. 4-Star Ratings -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box amber">
-                <i class="bi bi-hand-thumbs-up-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">4-Star Positive Reviews</div>
-                <div class="saas-metric-value">{{ number_format($fourStar) }}</div>
-                <div class="saas-trend-badge amber">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon amber">
+                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($fourStar) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">4-Star Positive</div>
+                <div class="visit-metric-trend amber">
                     <span>Good</span>
                 </div>
             </div>
@@ -60,15 +69,18 @@
     </div>
 
     <!-- 4. Critical Ratings -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box rose">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">≤ 3-Star Feedback Actions</div>
-                <div class="saas-metric-value">{{ number_format($critical) }}</div>
-                <div class="saas-trend-badge rose">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon rose">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($critical) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">≤ 3-Star Feedback</div>
+                <div class="visit-metric-trend rose">
                     <span>Attention</span>
                 </div>
             </div>
@@ -187,7 +199,7 @@
                 <tr>
                     <th style="width: 140px;">SUBMITTED TIME</th>
                     <th>VISITOR & COMPANY</th>
-                    <th>PLANT FACILITY</th>
+                    <th>PLANT</th>
                     <th>ASSIGNED STAFF</th>
                     <th>OVERALL RATING</th>
                     <th style="width: 30%;">VISITOR COMMENTS</th>

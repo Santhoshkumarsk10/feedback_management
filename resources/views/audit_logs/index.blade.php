@@ -9,17 +9,20 @@
     $masterLogs = $tabCounts['masters'] ?? 0;
     $securityLogs = $tabCounts['security'] ?? 0;
 @endphp
-<div class="row g-3">
+<div class="row g-3 saas-summary-cards-row">
     <!-- 1. Total Audit Records -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box blue">
-                <i class="bi bi-clock-history"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Total Audit Records</div>
-                <div class="saas-metric-value">{{ number_format($totalLogs) }}</div>
-                <div class="saas-trend-badge cyan">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon blue">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($totalLogs) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">Total Audit Records</div>
+                <div class="visit-metric-trend cyan">
                     <span>Logs</span>
                 </div>
             </div>
@@ -27,15 +30,18 @@
     </div>
 
     <!-- 2. Master Modifications -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box green">
-                <i class="bi bi-pencil-square"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Master Changes</div>
-                <div class="saas-metric-value">{{ number_format($masterLogs) }}</div>
-                <div class="saas-trend-badge green">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon green">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($masterLogs) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">Master Changes</div>
+                <div class="visit-metric-trend green">
                     <span>Masters</span>
                 </div>
             </div>
@@ -43,15 +49,18 @@
     </div>
 
     <!-- 3. Security Events -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box amber">
-                <i class="bi bi-shield-lock-fill"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Auth & Security</div>
-                <div class="saas-metric-value">{{ number_format($securityLogs) }}</div>
-                <div class="saas-trend-badge amber">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon amber">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="visit-metric-val">{{ number_format($securityLogs) }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">Auth & Security</div>
+                <div class="visit-metric-trend amber">
                     <span>Security</span>
                 </div>
             </div>
@@ -59,15 +68,18 @@
     </div>
 
     <!-- 4. Tamper Evident -->
-    <div class="col-6 col-lg-3">
-        <div class="saas-metric-card h-100">
-            <div class="saas-icon-box purple">
-                <i class="bi bi-check2-all"></i>
-            </div>
-            <div>
-                <div class="saas-metric-title">Tamper-Evident Trail</div>
-                <div class="saas-metric-value fs-5">Active</div>
-                <div class="saas-trend-badge purple">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="visit-metric-card h-100">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon purple">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+                <div class="visit-metric-val fs-5">Active</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">Tamper-Evident Trail</div>
+                <div class="visit-metric-trend purple">
                     <span>Verified</span>
                 </div>
             </div>

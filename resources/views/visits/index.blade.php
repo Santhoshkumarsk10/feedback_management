@@ -32,111 +32,91 @@
 @endphp
 
 <!-- SUMMARY METRIC CARDS ROW (5-Column Reference Design) -->
+@php
+    $visitMetricCards = [
+        [
+            'href' => route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])),
+            'active' => ($currentTab ?? 'all') === 'all' && !request('today'),
+            'title' => 'View all registered visitors',
+            'iconBg' => 'green',
+            'icon' => 'bi-people-fill',
+            'val' => number_format($totalVisits),
+            'lbl' => 'Total Registered Visitors',
+            'trend' => '↗ +12%',
+            'subtext' => 'vs last week',
+        ],
+        [
+            'href' => route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])),
+            'active' => ($currentTab ?? '') === 'completed' && !request('today'),
+            'title' => 'View visitors with submitted feedback',
+            'iconBg' => 'blue',
+            'icon' => 'bi-clipboard-check-fill',
+            'val' => number_format($completedVisits),
+            'lbl' => 'Feedback Submitted',
+            'trend' => '↗ +8%',
+            'subtext' => 'vs last week',
+        ],
+        [
+            'href' => route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'pending'])),
+            'active' => ($currentTab ?? '') === 'pending' && !request('today'),
+            'title' => 'View visitors with pending feedback',
+            'iconBg' => 'amber',
+            'icon' => 'bi-hourglass-split',
+            'val' => number_format($pendingVisits),
+            'lbl' => 'Pending Feedback',
+            'trend' => '↗ +5%',
+            'subtext' => 'vs last week',
+        ],
+        [
+            'href' => route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])),
+            'active' => false,
+            'title' => 'Feedback submission rate',
+            'iconBg' => 'purple',
+            'icon' => 'bi-chat-dots-fill',
+            'val' => $completionRate . '%',
+            'lbl' => 'Feedback Response Rate',
+            'trend' => '↗ +10%',
+            'subtext' => 'vs last week',
+        ],
+        [
+            'href' => route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), request('today') ? [] : ['today' => 1])),
+            'active' => (bool) request('today'),
+            'title' => request('today') ? 'Click to show all visitors' : "Click to filter by today's visitors",
+            'iconBg' => 'emerald',
+            'icon' => 'bi-person-check-fill',
+            'val' => number_format($todayCount),
+            'lbl' => "Today's Visitors",
+            'trend' => '↗ +3%',
+            'subtext' => 'vs yesterday',
+        ],
+    ];
+@endphp
 <div class="visit-metrics-grid">
-    <!-- 1. Total Registered Visitors -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])) }}" class="visit-metric-card {{ ($currentTab ?? 'all') === 'all' && !request('today') ? 'active-metric-card' : '' }}" title="View all registered visitors">
-        <div class="visit-metric-content">
-            <div class="visit-metric-icon green">
-                <i class="bi bi-people-fill"></i>
-            </div>
-            <div>
-                <div class="visit-metric-val">{{ number_format($totalVisits) }}</div>
-                <div class="visit-metric-lbl">Total Registered Visitors</div>
+    @foreach($visitMetricCards as $metric)
+        <a href="{{ $metric['href'] }}"
+           class="visit-metric-card {{ $metric['active'] ? 'active-metric-card' : '' }}"
+           title="{{ $metric['title'] }}">
+            <div class="visit-metric-card-inner">
+                <div class="visit-metric-icon {{ $metric['iconBg'] }}">
+                    <i class="bi {{ $metric['icon'] }}"></i>
+                </div>
+                <div class="visit-metric-val">{{ $metric['val'] }}</div>
+                <div class="visit-metric-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+                <div class="visit-metric-lbl">{{ $metric['lbl'] }}</div>
                 <div class="visit-metric-trend">
-                    <span>↗ +12%</span>
-                    <span class="subtext">vs last week</span>
+                    <span>{{ $metric['trend'] }}</span>
+                    <span class="subtext">{{ $metric['subtext'] }}</span>
                 </div>
             </div>
-        </div>
-        <div class="visit-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-    </a>
-
-    <!-- 2. Feedback Submitted -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'completed' && !request('today') ? 'active-metric-card' : '' }}" title="View visitors with submitted feedback">
-        <div class="visit-metric-content">
-            <div class="visit-metric-icon blue">
-                <i class="bi bi-clipboard-check-fill"></i>
-            </div>
-            <div>
-                <div class="visit-metric-val">{{ number_format($completedVisits) }}</div>
-                <div class="visit-metric-lbl">Feedback Submitted</div>
-                <div class="visit-metric-trend">
-                    <span>↗ +8%</span>
-                    <span class="subtext">vs last week</span>
-                </div>
-            </div>
-        </div>
-        <div class="visit-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-    </a>
-
-    <!-- 3. Pending Feedback -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'pending'])) }}" class="visit-metric-card {{ ($currentTab ?? '') === 'pending' && !request('today') ? 'active-metric-card' : '' }}" title="View visitors with pending feedback">
-        <div class="visit-metric-content">
-            <div class="visit-metric-icon amber">
-                <i class="bi bi-hourglass-split"></i>
-            </div>
-            <div>
-                <div class="visit-metric-val">{{ number_format($pendingVisits) }}</div>
-                <div class="visit-metric-lbl">Pending Feedback</div>
-                <div class="visit-metric-trend">
-                    <span>↗ +5%</span>
-                    <span class="subtext">vs last week</span>
-                </div>
-            </div>
-        </div>
-        <div class="visit-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-    </a>
-
-    <!-- 4. Feedback Response Rate -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'completed'])) }}" class="visit-metric-card" title="Feedback submission rate">
-        <div class="visit-metric-content">
-            <div class="visit-metric-icon purple">
-                <i class="bi bi-chat-dots-fill"></i>
-            </div>
-            <div>
-                <div class="visit-metric-val">{{ $completionRate }}%</div>
-                <div class="visit-metric-lbl">Feedback Response Rate</div>
-                <div class="visit-metric-trend">
-                    <span>↗ +10%</span>
-                    <span class="subtext">vs last week</span>
-                </div>
-            </div>
-        </div>
-        <div class="visit-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-    </a>
-
-    <!-- 5. Today's Visitors -->
-    <a href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), request('today') ? [] : ['today' => 1])) }}" class="visit-metric-card {{ request('today') ? 'active-metric-card' : '' }}" title="{{ request('today') ? 'Click to show all visitors' : 'Click to filter by today\'s visitors' }}">
-        <div class="visit-metric-content">
-            <div class="visit-metric-icon emerald">
-                <i class="bi bi-person-check-fill"></i>
-            </div>
-            <div>
-                <div class="visit-metric-val">{{ number_format($todayCount) }}</div>
-                <div class="visit-metric-lbl">Today's Visitors</div>
-                <div class="visit-metric-trend">
-                    <span>↗ +3%</span>
-                    <span class="subtext">vs yesterday</span>
-                </div>
-            </div>
-        </div>
-        <div class="visit-metric-arrow">
-            <i class="bi bi-chevron-right"></i>
-        </div>
-    </a>
+        </a>
+    @endforeach
 </div>
 
 <!-- SEARCH & FILTERS TOOLBAR (Reference Design) -->
 <div class="visit-toolbar-card">
-    <form method="GET" action="{{ route('visits.index') }}" class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap m-0" id="visitToolbarForm">
+    <form method="GET" action="{{ route('visits.index') }}" class="visit-toolbar-form m-0" id="visitToolbarForm">
         @if(request('tab'))
             <input type="hidden" name="tab" value="{{ request('tab') }}">
         @endif
@@ -147,133 +127,154 @@
             <input type="hidden" name="per_page" value="{{ request('per_page') }}">
         @endif
 
-        <!-- Search Input with centered icon and modern styling -->
-        <div class="visit-search-box">
-            <i class="bi bi-search search-icon"></i>
-            <input type="text" 
-                   name="q" 
-                   value="{{ request('q') }}" 
-                   class="visit-search-input" 
-                   placeholder="Search visitor, company, mobile number..."
-                   autocomplete="off">
-            @if(request('q'))
-                <a href="{{ route('visits.index', request()->except('q')) }}" class="search-clear-btn" title="Clear search">
-                    <i class="bi bi-x-circle-fill"></i>
-                </a>
-            @endif
-        </div>
-
-        <!-- Date Range Filter -->
-        <x-date-range-picker 
-            from-name="from" 
-            to-name="to" 
-            :from-value="request('from')" 
-            :to-value="request('to')" 
-            placeholder="Date Range" 
-            icon="bi-calendar3" 
-            title="Filter by Visit Date" 
-            auto-submit
-        />
-
-        @if(!auth()->user()?->isCoordinator())
-        <!-- All Staff Filter Dropdown -->
-        <x-custom-select 
-            name="organizer_id" 
-            :value="request('organizer_id', '')" 
-            placeholder="All Staff" 
-            icon="bi-person" 
-            :options="$staffOptions" 
-            auto-submit 
-            min-width="155px" 
-        />
-        @endif
-
-        <!-- More Filters Dropdown -->
-        <div class="dropdown">
-            <button type="button" class="btn-visit-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-funnel text-success"></i>
-                <span>More Filters</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 200px; font-size: 0.84rem;">
-                <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted px-3 py-1">Quick Scope</h6></li>
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? 'all') === 'all' && !request('today') ? 'active' : '' }}" 
-                       href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])) }}">
-                        <span><i class="bi bi-people me-2 text-muted"></i>All Visitors</span>
-                        <span class="badge bg-light text-dark border">{{ $totalVisits }}</span>
+        <!-- Row 1: Search Input (Full width on mobile) -->
+        <div class="visit-toolbar-row visit-toolbar-row-search">
+            <div class="visit-search-box">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" 
+                       name="q" 
+                       value="{{ request('q') }}" 
+                       class="visit-search-input" 
+                       placeholder="Search visitor, company, mobile number..."
+                       autocomplete="off">
+                @if(request('q'))
+                    <a href="{{ route('visits.index', request()->except('q')) }}" class="search-clear-btn" title="Clear search">
+                        <i class="bi bi-x-circle-fill"></i>
                     </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? '') === 'completed' ? 'active' : '' }}" 
-                       href="{{ route('visits.index', array_merge(request()->except(['page', 'today']), ['tab' => 'completed'])) }}">
-                        <span><i class="bi bi-check-circle me-2 text-success"></i>Feedback Submitted</span>
-                        <span class="badge bg-light text-success border">{{ $completedVisits }}</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? '') === 'pending' ? 'active' : '' }}" 
-                       href="{{ route('visits.index', array_merge(request()->except(['page', 'today']), ['tab' => 'pending'])) }}">
-                        <span><i class="bi bi-hourglass me-2 text-warning"></i>Pending Feedback</span>
-                        <span class="badge bg-light text-warning border">{{ $pendingVisits }}</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ request('today') ? 'active' : '' }}" 
-                       href="{{ route('visits.index', array_merge(request()->except(['page', 'tab']), ['today' => 1])) }}">
-                        <span><i class="bi bi-calendar-check me-2 text-primary"></i>Today's Visits Only</span>
-                        <span class="badge bg-light text-primary border">{{ $todayCount }}</span>
-                    </a>
-                </li>
-                @if(request()->hasAny(['q', 'organizer_id', 'from', 'to', 'tab', 'today']))
-                    <li><hr class="dropdown-divider my-1"></li>
-                    <li>
-                        <a class="dropdown-item py-2 text-danger fw-semibold" href="{{ route('visits.index') }}">
-                            <i class="bi bi-arrow-counterclockwise me-2"></i>Reset All Filters
-                        </a>
-                    </li>
                 @endif
-            </ul>
+            </div>
         </div>
 
-        <!-- Export Dropdown / Action -->
-        <div class="dropdown">
-            <button type="button" class="btn-visit-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-download text-success"></i>
-                <span>Export</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 210px; font-size: 0.84rem;">
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ route('shift_queue.export_pending') }}">
-                        <i class="bi bi-file-earmark-excel text-success"></i>
-                        <div>
-                            <div class="fw-semibold">Export Pending CSV</div>
-                            <div class="fs-xs text-muted">Awaiting feedback records</div>
-                        </div>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ route('reports.export', request()->all()) }}">
-                        <i class="bi bi-file-earmark-spreadsheet text-primary"></i>
-                        <div>
-                            <div class="fw-semibold">Export Filtered Report</div>
-                            <div class="fs-xs text-muted">Current date &amp; filter scope</div>
-                        </div>
-                    </a>
-                </li>
-            </ul>
+        <!-- Row 2: Date Range Filter (Full width on mobile) -->
+        <div class="visit-toolbar-row visit-toolbar-row-date">
+            <x-date-range-picker 
+                from-name="from" 
+                to-name="to" 
+                :from-value="request('from')" 
+                :to-value="request('to')" 
+                placeholder="Date Range" 
+                icon="bi-calendar3" 
+                title="Filter by Visit Date" 
+                auto-submit
+            />
         </div>
 
-        @can('plantvisitors.create')
-            <!-- Sync Gate API & Register Visitor Buttons -->
-            <button type="submit" form="syncGateApiForm" class="btn-visit-toolbar text-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                <i class="bi bi-arrow-repeat"></i>
-                <span class="d-none d-xxl-inline">Sync API</span>
-            </button>
-            <a href="{{ route('visits.create') }}" class="btn-visit-toolbar primary text-decoration-none">
-                <i class="bi bi-person-plus-fill"></i>
-                <span>Register Visitor</span>
-            </a>
-        @endcan
+        <!-- Row 3: All Staff & More Filters (2 Equal Columns on mobile) -->
+        <div class="visit-toolbar-row visit-toolbar-row-filters">
+            @if(!auth()->user()?->isCoordinator())
+                <div class="visit-filter-col">
+                    <x-custom-select 
+                        name="organizer_id" 
+                        :value="request('organizer_id', '')" 
+                        placeholder="All Staff" 
+                        icon="bi-person" 
+                        :options="$staffOptions" 
+                        auto-submit 
+                        min-width="100%" 
+                    />
+                </div>
+            @endif
+
+            <div class="visit-filter-col">
+                <div class="dropdown w-100">
+                    <button type="button" class="btn-visit-toolbar dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-funnel text-success"></i>
+                            <span>More Filters</span>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 200px; font-size: 0.84rem;">
+                        <li><h6 class="dropdown-header text-uppercase fs-xs fw-bold text-muted px-3 py-1">Quick Scope</h6></li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? 'all') === 'all' && !request('today') ? 'active' : '' }}" 
+                               href="{{ route('visits.index', array_merge(request()->except(['tab', 'page', 'today']), ['tab' => 'all'])) }}">
+                                <span><i class="bi bi-people me-2 text-muted"></i>All Visitors</span>
+                                <span class="badge bg-light text-dark border">{{ $totalVisits }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? '') === 'completed' ? 'active' : '' }}" 
+                               href="{{ route('visits.index', array_merge(request()->except(['page', 'today']), ['tab' => 'completed'])) }}">
+                                <span><i class="bi bi-check-circle me-2 text-success"></i>Feedback Submitted</span>
+                                <span class="badge bg-light text-success border">{{ $completedVisits }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ ($currentTab ?? '') === 'pending' ? 'active' : '' }}" 
+                               href="{{ route('visits.index', array_merge(request()->except(['page', 'today']), ['tab' => 'pending'])) }}">
+                                <span><i class="bi bi-hourglass me-2 text-warning"></i>Pending Feedback</span>
+                                <span class="badge bg-light text-warning border">{{ $pendingVisits }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center justify-content-between {{ request('today') ? 'active' : '' }}" 
+                               href="{{ route('visits.index', array_merge(request()->except(['page', 'tab']), ['today' => 1])) }}">
+                                <span><i class="bi bi-calendar-check me-2 text-primary"></i>Today's Visits Only</span>
+                                <span class="badge bg-light text-primary border">{{ $todayCount }}</span>
+                            </a>
+                        </li>
+                        @if(request()->hasAny(['q', 'organizer_id', 'from', 'to', 'tab', 'today']))
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item py-2 text-danger fw-semibold" href="{{ route('visits.index') }}">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset All Filters
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Actions (Export + Sync on Left, Register Visitor on Right) -->
+        <div class="visit-toolbar-row visit-toolbar-row-actions">
+            <div class="visit-actions-left">
+                <!-- Export Dropdown / Action -->
+                <div class="dropdown">
+                    <button type="button" class="btn-visit-toolbar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download text-success"></i>
+                        <span>Export</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-start shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 215px; font-size: 0.84rem; z-index: 1050;">
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ route('shift_queue.export_pending') }}">
+                                <i class="bi bi-file-earmark-excel text-success"></i>
+                                <div>
+                                    <div class="fw-semibold">Export Pending CSV</div>
+                                    <div class="fs-xs text-muted">Awaiting feedback records</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 d-flex align-items-center gap-2" href="{{ route('reports.export', request()->all()) }}">
+                                <i class="bi bi-file-earmark-spreadsheet text-primary"></i>
+                                <div>
+                                    <div class="fw-semibold">Export Filtered Report</div>
+                                    <div class="fs-xs text-muted">Current date &amp; filter scope</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                @can('plantvisitors.create')
+                    <!-- Sync Gate API Button -->
+                    <button type="submit" form="syncGateApiForm" class="btn-visit-toolbar btn-visit-sync text-success" title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span class="d-none d-xxl-inline">Sync API</span>
+                    </button>
+                @endcan
+            </div>
+
+            @can('plantvisitors.create')
+                <div class="visit-actions-right">
+                    <a href="{{ route('visits.create') }}" class="btn-visit-toolbar primary text-decoration-none">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Register Visitor</span>
+                    </a>
+                </div>
+            @endcan
+        </div>
     </form>
 
     @can('plantvisitors.create')

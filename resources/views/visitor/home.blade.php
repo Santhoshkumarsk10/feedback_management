@@ -451,7 +451,7 @@
                                     </div>
                                     <div class="d-flex justify-content-between">
                                         <span class="text-muted">Plant / Unit:</span>
-                                        <span class="fw-bold text-dark">{{ $visit->plant?->code ?? ($visit->plant?->name ?? 'Plant Facility') }}</span>
+                                        <span class="fw-bold text-dark">{{ $visit->plant?->code ?? ($visit->plant?->name ?? 'Plant') }}</span>
                                     </div>
                                 </div>
                             </div>

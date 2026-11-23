@@ -16,20 +16,23 @@
 
 @section('summary_cards')
     @php
-        $cardCol = auth()->user()?->isSuperAdmin() ? 'col-lg-3 col-6' : 'col-lg-4 col-md-6 col-12';
+        $cardCol = auth()->user()?->isSuperAdmin() ? 'col-12 col-sm-6 col-lg-3' : 'col-12 col-sm-6 col-lg-4';
     @endphp
-    <div class="row g-3">
+    <div class="row g-3 saas-summary-cards-row">
         <!-- 1. Total Users -->
         <div class="{{ $cardCol }}">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box blue">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Total Users</div>
-                    <div class="saas-metric-value">{{ number_format($totalUsers) }}</div>
-                    <div class="saas-trend-badge cyan">
-                        <span>Users</span>
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon blue">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($totalUsers) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Total Users</div>
+                    <div class="visit-metric-trend cyan">
+                        <span>All registered users</span>
                     </div>
                 </div>
             </div>
@@ -38,15 +41,18 @@
         @if(auth()->user()?->isSuperAdmin())
         <!-- 2. Super Admins -->
         <div class="{{ $cardCol }}">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box purple">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Super Admins</div>
-                    <div class="saas-metric-value">{{ number_format($roleCounts['superadmin'] ?? 0) }}</div>
-                    <div class="saas-trend-badge purple">
-                        <span>Root Access</span>
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon purple">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($roleCounts['superadmin'] ?? 0) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Super Admins</div>
+                    <div class="visit-metric-trend purple">
+                        <span>Root access</span>
                     </div>
                 </div>
             </div>
@@ -55,15 +61,18 @@
 
         <!-- 3. Administrators -->
         <div class="{{ $cardCol }}">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box amber">
-                    <i class="bi bi-person-badge-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Administrators</div>
-                    <div class="saas-metric-value">{{ number_format($roleCounts['admin'] ?? 0) }}</div>
-                    <div class="saas-trend-badge amber">
-                        <span>Admin</span>
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon amber">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($roleCounts['admin'] ?? 0) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Administrators</div>
+                    <div class="visit-metric-trend amber">
+                        <span>Admin role</span>
                     </div>
                 </div>
             </div>
@@ -71,17 +80,18 @@
 
         <!-- 4. Organizers & Staff -->
         <div class="{{ $cardCol }}">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box green">
-                    <i class="bi bi-person-video3"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Tour Coordinators</div>
-                    <div class="saas-metric-value">
-                        {{ number_format($roleCounts['coordinator'] ?? 0) }}
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon green">
+                        <i class="bi bi-person-video3"></i>
                     </div>
-                    <div class="saas-trend-badge green">
-                        <span>Coordinator</span>
+                    <div class="visit-metric-val">{{ number_format($roleCounts['coordinator'] ?? 0) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Tour Coordinators</div>
+                    <div class="visit-metric-trend green">
+                        <span>Active coordinators</span>
                     </div>
                 </div>
             </div>

@@ -55,7 +55,7 @@
                         </div>
                     </div>
 
-                    <!-- Plant Facility Info -->
+                    <!-- Plant Info -->
                     <div class="col-sm-6 col-md-3">
                         <div class="p-3 rounded-3 bg-light border border-slate-200 h-100">
                             <div class="small text-muted fw-semibold mb-1">

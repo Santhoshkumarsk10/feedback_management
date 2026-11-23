@@ -22,17 +22,20 @@
 
 @section('content')
     <!-- Section: Today's Feedback Metrics -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4 saas-summary-cards-row">
         <!-- Visitors Today -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box blue">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Visitors Today</div>
-                    <div class="saas-metric-value" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
-                    <div class="saas-trend-badge cyan">
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon blue">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="visit-metric-val" id="cardTodayTotal">{{ number_format($stats['today_total']) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Visitors Today</div>
+                    <div class="visit-metric-trend cyan">
                         <span>Arrivals</span>
                     </div>
                 </div>
@@ -40,15 +43,18 @@
         </div>
 
         <!-- Feedback Given -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box green">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Feedback Given</div>
-                    <div class="saas-metric-value" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
-                    <div class="saas-trend-badge green">
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon green">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="visit-metric-val" id="cardTodayGiven">{{ number_format($stats['today_given']) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Feedback Given</div>
+                    <div class="visit-metric-trend green">
                         <span id="cardTodayGivenPct">&#8599; {{ $stats['today_given_pct'] }}% Done</span>
                     </div>
                 </div>
@@ -56,15 +62,18 @@
         </div>
 
         <!-- Feedback Pending -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box amber">
-                    <i class="bi bi-hourglass-split"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Feedback Pending</div>
-                    <div class="saas-metric-value" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
-                    <div class="saas-trend-badge amber">
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon amber">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div class="visit-metric-val" id="cardTodayPending">{{ number_format($stats['today_pending']) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Feedback Pending</div>
+                    <div class="visit-metric-trend amber">
                         <span id="cardTodayPendingPct">&#8600; {{ $stats['today_pending_pct'] }}% Pending</span>
                     </div>
                 </div>
@@ -72,17 +81,20 @@
         </div>
 
         <!-- Today's Avg Rating -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box yellow">
-                    <i class="bi bi-star-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Today's Avg Rating</div>
-                    <div class="saas-metric-value" id="cardTodayAvg">
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon yellow">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="visit-metric-val" id="cardTodayAvg">
                         {{ $stats['today_avg'] ? (fmod($stats['today_avg'], 1) == 0.0 ? (int)$stats['today_avg'] : number_format($stats['today_avg'], 1)) : '0' }} / 5
                     </div>
-                    <div class="saas-trend-badge purple">
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Today's Avg Rating</div>
+                    <div class="visit-metric-trend purple">
                         <span>Sentiment</span>
                     </div>
                 </div>
@@ -90,17 +102,20 @@
         </div>
 
         <!-- API Sync Time -->
-        <div class="col-6 col-md-4 col-xl">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box purple">
-                    <i class="bi bi-arrow-repeat"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">API Sync Feed</div>
-                    <div class="saas-metric-value fs-5 text-truncate" id="cardLastSync" style="font-size: 1.25rem !important;">
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon purple">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <div class="visit-metric-val text-truncate" id="cardLastSync">
                         {{ $stats['last_sync_at'] ? \Carbon\Carbon::parse($stats['last_sync_at'])->diffForHumans(null, true) . ' ago' : 'Live' }}
                     </div>
-                    <div class="saas-trend-badge gray">
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">API Sync Feed</div>
+                    <div class="visit-metric-trend gray">
                         <span>Gate Pass</span>
                     </div>
                 </div>
@@ -110,75 +125,89 @@
 
     <!-- Today's Visitors: Queue & Operations Board -->
     <div class="saas-table-card mb-4">
-        <div class="saas-table-header">
-            <div>
+        <div class="saas-table-header shift-queue-table-header">
+            <div class="shift-queue-title-wrap">
                 <div class="saas-table-title">Today's Visitors & Feedback Queue</div>
                 <div class="saas-table-subtitle">Track visitor feedback status for today's visits and submit evaluations on behalf of visitors</div>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <!-- Scope toggle: All Visitors vs My Visitors -->
-                <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'all'])) }}"
-                    class="saas-btn-filter text-decoration-none {{ ($scope ?? 'all') === 'all' ? 'active' : '' }}"
-                    title="Show all today's visitors">
-                    <i class="bi bi-people-fill me-1 text-primary"></i>
-                    <span>All Visitors ({{ $todayCounts['scope_all'] }})</span>
-                </a>
-                <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'my'])) }}"
-                    class="saas-btn-filter text-decoration-none {{ ($scope ?? '') === 'my' ? 'active' : '' }}"
-                    title="Show only my assigned visitors">
-                    <i class="bi bi-person-badge-fill me-1 text-info"></i>
-                    <span>My Visitors ({{ $todayCounts['scope_my'] }})</span>
-                </a>
+            <div class="shift-queue-header-actions d-flex flex-wrap align-items-center gap-2">
+                <!-- Scope toggle: All Visitors vs My Visitors (Left & Right Pair) -->
+                <div class="shift-queue-scope-row">
+                    <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'all'])) }}"
+                        class="saas-btn-filter shift-queue-scope-btn text-decoration-none {{ ($scope ?? 'all') === 'all' ? 'active' : '' }}"
+                        title="Show all today's visitors">
+                        <i class="bi bi-people-fill me-1 text-primary"></i>
+                        <span>All Visitors ({{ $todayCounts['scope_all'] }})</span>
+                    </a>
+                    <a href="{{ route('shift_queue', array_merge(request()->query(), ['scope' => 'my'])) }}"
+                        class="saas-btn-filter shift-queue-scope-btn text-decoration-none {{ ($scope ?? '') === 'my' ? 'active' : '' }}"
+                        title="Show only my assigned visitors">
+                        <i class="bi bi-person-badge-fill me-1 text-info"></i>
+                        <span>My Visitors ({{ $todayCounts['scope_my'] }})</span>
+                    </a>
+                </div>
 
-                <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="saas-btn-filter text-decoration-none" title="Export today pending list to CSV">
-                    <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Export Pending
-                </a>
+                <!-- Export & Log Row (Left & Right Pair) -->
+                <div class="shift-queue-middle-row">
+                    <a href="{{ route('shift_queue.export_pending', request()->query()) }}" class="saas-btn-filter shift-queue-export-btn text-decoration-none" title="Export today pending list to CSV">
+                        <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i>
+                        <span>Export Pending</span>
+                    </a>
 
-                <form action="{{ route('visits.sync') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="saas-btn-filter text-success border-success-subtle bg-white"
-                        title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
-                        <i class="bi bi-arrow-repeat me-1"></i> Sync Gate API
-                    </button>
-                </form>
+                    <a href="{{ route('visits.index', ['today' => 1]) }}" class="shift-queue-log-btn text-decoration-none text-muted" title="View all visits log">
+                        <span>Full Log</span> <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
 
-                <a href="{{ route('visits.create') }}" class="btn-action-edit-pill text-decoration-none">
-                    <i class="bi bi-person-plus-fill"></i> Add Visitor
-                </a>
+                <!-- Sync & Add Visitor Action Row (Left & Right Pair) -->
+                <div class="shift-queue-bottom-actions">
+                    <form action="{{ route('visits.sync') }}" method="POST" class="shift-queue-btn-left-form m-0">
+                        @csrf
+                        <button type="submit" class="saas-btn-filter shift-queue-btn-left text-success border-success-subtle bg-white"
+                            title="Poll & Sync new visitors from 3rd Party Gate/ERP API">
+                            <i class="bi bi-arrow-repeat me-1"></i>
+                            <span>Sync Gate API</span>
+                        </button>
+                    </form>
 
-                <a href="{{ route('visits.index', ['today' => 1]) }}" class="btn btn-sm btn-link text-decoration-none text-muted">
-                    <span>Full Log</span> <i class="bi bi-arrow-right"></i>
-                </a>
+                    <a href="{{ route('visits.create') }}" class="saas-btn-filter shift-queue-btn-right text-decoration-none" title="Register new visitor">
+                        <i class="bi bi-person-plus-fill me-1"></i>
+                        <span>Add Visitor</span>
+                    </a>
+                </div>
             </div>
         </div>
 
         <!-- Filter Tabs & Controls Toolbar -->
-        <div class="saas-toolbar-card border-0 rounded-0 border-bottom mb-0 shadow-none px-3 py-2 bg-light">
-            <div class="saas-filter-pills">
+        <div class="saas-toolbar-card border-0 rounded-0 border-bottom mb-0 shadow-none px-3 py-2 bg-light shift-queue-filter-toolbar">
+            <div class="saas-filter-pills shift-queue-filter-pills">
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'all'])) }}"
-                    class="saas-pill-btn {{ ($todayTab ?? 'all') === 'all' ? 'active' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? 'all') === 'all' ? 'active' : '' }}"
+                    title="All Today's Visitors">
                     <i class="bi bi-people-fill text-primary"></i>
-                    <span>All Today's Visitors</span>
+                    <span>All</span>
                     <span class="pill-counter" id="badgeAllCount">{{ $todayCounts['all'] }}</span>
                 </a>
 
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'pending'])) }}"
-                    class="saas-pill-btn {{ ($todayTab ?? '') === 'pending' ? 'active' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? '') === 'pending' ? 'active' : '' }}"
+                    title="Awaiting Feedback (Pending)">
                     <i class="bi bi-clock-history text-warning"></i>
-                    <span>Awaiting Feedback (Pending)</span>
+                    <span>Pending</span>
                     <span class="pill-counter" id="badgePendingCount">{{ $todayCounts['pending'] }}</span>
                 </a>
 
                 <a href="{{ route('shift_queue', array_merge(request()->query(), ['today_tab' => 'completed'])) }}"
-                    class="saas-pill-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}">
+                    class="saas-pill-btn {{ ($todayTab ?? '') === 'completed' ? 'active' : '' }}"
+                    title="Feedback Completed">
                     <i class="bi bi-check-circle-fill text-success"></i>
-                    <span>Feedback Completed</span>
+                    <span>Completed</span>
                     <span class="pill-counter" id="badgeCompletedCount">{{ $todayCounts['completed'] }}</span>
                 </a>
             </div>
 
-            <div class="saas-toolbar-controls">
-                <form method="GET" action="{{ route('shift_queue') }}" class="d-flex align-items-center gap-2">
+            <div class="saas-toolbar-controls shift-queue-search-controls">
+                <form method="GET" action="{{ route('shift_queue') }}" class="shift-queue-search-form d-flex align-items-center gap-2 m-0 w-100">
                     @if(request('today_tab'))
                         <input type="hidden" name="today_tab" value="{{ request('today_tab') }}">
                     @endif
@@ -186,15 +215,15 @@
                         <input type="hidden" name="scope" value="{{ request('scope') }}">
                     @endif
 
-                    <div class="saas-search-box">
+                    <div class="saas-search-box shift-queue-search-box">
                         <i class="bi bi-search"></i>
                         <input type="text" name="search" class="saas-search-input" placeholder="Search visitor, company, mobile..."
                                value="{{ request('search') }}">
                     </div>
 
-                    <button type="submit" class="saas-btn-filter">Search</button>
+                    <button type="submit" class="saas-btn-filter shift-queue-search-submit">Search</button>
                     @if(request('search'))
-                        <a href="{{ route('shift_queue', request()->except('search')) }}" class="saas-btn-filter text-muted">Clear</a>
+                        <a href="{{ route('shift_queue', request()->except('search')) }}" class="saas-btn-filter shift-queue-search-clear text-muted">Clear</a>
                     @endif
                 </form>
             </div>

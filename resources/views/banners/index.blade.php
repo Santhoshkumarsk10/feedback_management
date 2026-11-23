@@ -18,62 +18,74 @@
         $activeBanners = $tabCounts['active'] ?? 0;
         $inactiveBanners = $tabCounts['inactive'] ?? 0;
     @endphp
-    <div class="row g-3">
+    <div class="row g-3 saas-summary-cards-row">
         <!-- 1. Total Banners -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box blue">
-                    <i class="bi bi-images"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Total Banners</div>
-                    <div class="saas-metric-value">{{ number_format($totalBanners) }}</div>
-                    <div class="saas-trend-badge cyan">
-                        <span>Media</span>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon blue">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($totalBanners) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Total Banners</div>
+                    <div class="visit-metric-trend cyan">
+                        <span>Media assets</span>
                     </div>
                 </div>
             </div>
         </div>
         <!-- 2. Live Banners -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box green">
-                    <i class="bi bi-display"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Active on Kiosk</div>
-                    <div class="saas-metric-value">{{ number_format($activeBanners) }}</div>
-                    <div class="saas-trend-badge green">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon green">
+                        <i class="bi bi-display"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($activeBanners) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Active on Kiosk</div>
+                    <div class="visit-metric-trend green">
                         <span>Live</span>
                     </div>
                 </div>
             </div>
         </div>
         <!-- 3. Offline Banners -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box amber">
-                    <i class="bi bi-eye-slash-fill"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Hidden / Draft</div>
-                    <div class="saas-metric-value">{{ number_format($inactiveBanners) }}</div>
-                    <div class="saas-trend-badge amber">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon amber">
+                        <i class="bi bi-eye-slash-fill"></i>
+                    </div>
+                    <div class="visit-metric-val">{{ number_format($inactiveBanners) }}</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Hidden / Draft</div>
+                    <div class="visit-metric-trend amber">
                         <span>Offline</span>
                     </div>
                 </div>
             </div>
         </div>
         <!-- 4. Device Targets -->
-        <div class="col-6 col-lg-3">
-            <div class="saas-metric-card h-100">
-                <div class="saas-icon-box purple">
-                    <i class="bi bi-phone"></i>
-                </div>
-                <div>
-                    <div class="saas-metric-title">Mobile • Tablet • Web</div>
-                    <div class="saas-metric-value">3 Devices</div>
-                    <div class="saas-trend-badge indigo">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="visit-metric-card h-100">
+                <div class="visit-metric-card-inner">
+                    <div class="visit-metric-icon purple">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="visit-metric-val">3 Devices</div>
+                    <div class="visit-metric-arrow">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="visit-metric-lbl">Device Targets</div>
+                    <div class="visit-metric-trend indigo">
                         <span>Omnichannel</span>
                     </div>
                 </div>

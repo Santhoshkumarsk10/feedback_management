@@ -104,7 +104,7 @@
                             <span class="stat-icon-bubble shibaura" style="width: 32px; height: 32px; font-size: 0.9rem;">
                                 <i class="bi bi-buildings-fill"></i>
                             </span>
-                            <span class="fw-bold text-dark fs-6">Facility & Organizer Selection</span>
+                            <span class="fw-bold text-dark fs-6">Plant & Organizer Selection</span>
                         </div>
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle small px-2 py-1">Mandatory Fields</span>
                     </div>
@@ -113,7 +113,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark" for="feedback_plant_id">
-                                    Manufacturing Plant / Facility <span class="text-danger">*</span>
+                                    Manufacturing Plant <span class="text-danger">*</span>
                                 </label>
                                 <x-custom-select 
                                     name="plant_id"
@@ -126,7 +126,7 @@
                                     ])"
                                     :value="(string) old('plant_id', $visit->plant_id ?? ($plants->first()->id ?? ''))"
                                     placeholder="— Select Evaluated Plant Unit —"
-                                    search-placeholder="Search plant facility or code..."
+                                    search-placeholder="Search plant or code..."
                                     icon="bi-buildings"
                                     :auto-submit="false"
                                     :allow-empty="false"
@@ -134,7 +134,7 @@
                                 />
                                 <div id="plant_id_client_error" class="validation-feedback-box error d-none mt-1">
                                     <i class="bi bi-exclamation-circle-fill"></i>
-                                    <span>Please select the manufacturing plant facility.</span>
+                                    <span>Please select the manufacturing plant.</span>
                                 </div>
                                 @error('plant_id')
                                     <div class="validation-feedback-box error mt-1">
